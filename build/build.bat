@@ -1,0 +1,1 @@
+call run-build-file.bat CoreCompile

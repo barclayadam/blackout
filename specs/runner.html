@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Blackout Test Runner</title>
+  <link rel="stylesheet" type="text/css" href="./lib/jasmine/jasmine.css">
+  
+  <script type="text/javascript" src="./lib/jasmine/jasmine.js"></script>
+  <script type="text/javascript" src="./lib/jasmine/jasmine-html.js"></script>
+  <script type="text/javascript" src="./lib/jasmine-reporters/jasmine.teamcity-reporter.js"></script>
+
+  <script type="text/javascript" src="./lib/sinon/sinon-1.1.1.js"></script>
+  <script type="text/javascript" src="./lib/sinon/jasmine-sinon.js"></script>
+  
+  <script type="text/javascript" src='./lib/coffeescript.js'></script>
+
+  <!-- Lib Files -->
+  <script type="text/javascript" src='../lib/json2.js'></script>
+  <script type="text/javascript" src='../lib/jquery.js'></script>
+  <script type="text/javascript" src='../lib/underscore.js'></script>
+  <script type="text/javascript" src='../lib/knockout.js'></script>
+  <script type="text/javascript" src='../lib/history.js'></script>
+  <script type="text/javascript" src='../lib/history.html4.js'></script>
+  <script type="text/javascript" src='../lib/history.adapter.jquery.js'></script>
+  <script type="text/javascript" src='../lib/jquery.tmpl.js'></script>
+  <script type="text/javascript" src='../lib/jquery.ui.js'></script>
+  <script type="text/javascript" src='../lib/jquery.hotkeys.js'></script>
+  
+  <!-- Source Files -->  
+  <script type="text/javascript" src='../build/output/blackout-latest.js'></script>
+  <script type="text/javascript" src='../build/output/blackout-latest.spec.js'></script>
+</head>
+<body>
+
+<script type="text/javascript">
+  jasmine.getEnv().addReporter(new jasmine.TrivialReporter());
+  jasmine.getEnv().addReporter(new jasmine.TeamCityReporter());
+  jasmine.getEnv().execute();
+</script>
+
+</body>
+</html>

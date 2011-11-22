@@ -1,0 +1,11 @@
+specs\bo.global.specs.coffee    
+specs\bo.bus.specs.coffee   
+specs\bo.global.specs.coffee   
+specs\bo.messaging.specs.coffee   
+specs\bo.parts.specs.coffee   
+specs\bo.routing.specs.coffee   
+specs\bo.sitemap.specs.coffee   
+specs\bo.ui.tree.specs.coffee   
+specs\bo.utils.specs.coffee   
+specs\bo.validation.specs.coffee   
+specs\bo.viewmodel.specs.coffee
