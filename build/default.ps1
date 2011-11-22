@@ -86,8 +86,6 @@ task NuGet -depends CoreCompile, JsTests {
     [string]::join([environment]::newline, (gc Blackout.nuspec)).Replace('$Version', $Version) | Out-File $NuspecFile -encoding "ascii"
 
     &.\tools\nuget.exe pack $NuspecFile -OutputDirectory $OutputDirectory
-    &.\tools\nuget.exe push "$OutputDirectory\$NupkgFile" -s $NuGetUrl $NuGetKey
-
     del $NuspecFile
 }
 

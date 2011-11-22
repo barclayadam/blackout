@@ -55,6 +55,23 @@ describe 'Messaging', ->
             # Assert
             expect(callback).toHaveBeenCalled()
 
+        it 'Should publish a message with the query on successful completion of the query', ->
+            # Arrange
+            bo.messaging.config.query.url = "/ExecuteMyQuery/?query.name=$queryName&query.values=$queryValues"
+            bo.messaging.config.query.optionsParameterName = "myOptions"
+
+            @server.respondWith "GET", "/ExecuteMyQuery/?query.name=My Query&query.values={}", [200, { "Content-Type": "application/json" },'{}']
+
+            callback = @spy()
+            bo.bus.subscribe "QueryExecuted", callback
+
+            # Act
+            bo.messaging.query 'My Query'
+            @server.respond()
+
+            # Assert
+            expect(callback).toHaveBeenCalledWith( { name: 'My Query', options: {} })
+
     describe 'When executing a command', ->
         it 'Makes a POST request to the command URL with name of command', ->
             # Arrange			
@@ -99,3 +116,21 @@ describe 'Messaging', ->
 
             # Assert
             expect(callback).toHaveBeenCalled()
+
+        it 'Should publish a message on successful completion of the command', ->
+            # Arrange
+            bo.messaging.config.command.url = "/DoCommand/$commandName"
+            bo.messaging.config.command.optionsParameterName = "myOptions"
+
+            @server.respondWith "POST", "/DoCommand/My Command", [200, { "Content-Type": "application/json" },'{}']
+
+            callback = @spy()
+            bo.bus.subscribe "CommandExecuted", callback
+
+            # Act
+            bo.messaging.command  new bo.Command 'My Command'
+
+            @server.respond()
+
+            # Assert
+            expect(callback).toHaveBeenCalledWith( { name: 'My Command', options: {} })

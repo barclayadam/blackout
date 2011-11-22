@@ -36,11 +36,16 @@ bo.messaging.query = (queryName, options = {}) ->
     
     queryOptions = bo.messaging.processOptions options
     
-    jQuery.ajax
-        url: bo.messaging.config.query.url.replace("$queryValues", ko.toJSON queryOptions).replace("$queryName", queryName)
-        type: "GET"
-        dataType: "json"
-        contentType: "application/json; charset=utf-8"
+    ajaxPromise = jQuery.ajax
+                    url: bo.messaging.config.query.url.replace("$queryValues", ko.toJSON queryOptions).replace("$queryName", queryName)
+                    type: "GET"
+                    dataType: "json"
+                    contentType: "application/json; charset=utf-8"
+
+    ajaxPromise.done ->
+      bo.bus.publish 'QueryExecuted', { name: queryName, options: options }
+
+    ajaxPromise
 
 bo.messaging.queryDownload = (queryName, contentType, options = {}) ->
     bo.arg.ensureDefined queryName, "queryName"
@@ -67,16 +72,19 @@ bo.messaging.command = (command) ->
     bo.arg.ensureDefined command, "command"
 
     commandName = command.name
-    commandProperties = command.properties()
-   
-    commandProperties = bo.messaging.processOptions commandProperties
+    commandProperties = bo.messaging.processOptions command.properties()
 
-    jQuery.ajax
-        url: bo.messaging.config.command.url.replace("$commandName", commandName)
-        type: "POST"
-        data: ko.toJSON { command: { name: commandName, values: commandProperties } }
-        dataType: "json"
-        contentType: "application/json; charset=utf-8"
+    ajaxPromise = jQuery.ajax
+                    url: bo.messaging.config.command.url.replace("$commandName", commandName)
+                    type: "POST"
+                    data: ko.toJSON { command: { name: commandName, values: commandProperties } }
+                    dataType: "json"
+                    contentType: "application/json; charset=utf-8"
+
+    ajaxPromise.done ->
+      bo.bus.publish 'CommandExecuted', { name: commandName, options: commandProperties }
+
+    ajaxPromise
 
 bo.messaging.commands = (commands) ->
     bo.arg.ensureDefined commands, "commands"
