@@ -85,11 +85,10 @@ task NuGet -depends CoreCompile, JsTests {
 
     [string]::join([environment]::newline, (gc Blackout.nuspec)).Replace('$Version', $Version) | Out-File $NuspecFile -encoding "ascii"
 
-    &.\tools\nuget.exe pack $NuspecFile
-    &.\tools\nuget.exe push $NupkgFile -s $NuGetUrl $NuGetKey
+    &.\tools\nuget.exe pack $NuspecFile -OutputDirectory $OutputDirectory
+    &.\tools\nuget.exe push "$OutputDirectory\$NupkgFile" -s $NuGetUrl $NuGetKey
 
     del $NuspecFile
-    del $NupkgFile
 }
 
 task TeamCityBuild -depends CoreCompile,JsTests,NuGet
