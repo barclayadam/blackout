@@ -3,7 +3,7 @@ Import-Module '.\teamcity.psm1'
 $CurrentDir = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
     
 properties {
-    $BuildNumber = "0"
+    $BuildNumber = if ("$env:BUILD_NUMBER".length -gt 0) { "$env:BUILD_NUMBER" } else { "0" }
     $Version = "0.1." + $BuildNumber
     $OutputDirectory = "$CurrentDir\output"
 
@@ -47,7 +47,7 @@ task Clean {
  'Compiles' the project by creating a concatenated version of the library and specs, 
  compiled to JavaScript.
 #>
-task CoreCompile -depends Clean {        
+task CoreCompile -depends Clean {
     CreateDirectoryIfMissing $OutputDirectory
 
     $OutDebugFile = "output\blackout-latest"
