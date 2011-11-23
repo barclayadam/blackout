@@ -2,7 +2,9 @@ Import-Module '.\teamcity.psm1'
 
 $CurrentDir = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
     
-properties {     
+properties {
+    $BuildNumber = "0"
+    $Version = "0.1." + $BuildNumber
     $OutputDirectory = "$CurrentDir\output"
 
     $SpecRunnerPath = "runner.html"
@@ -52,7 +54,7 @@ task CoreCompile -depends Clean {
     $OutDebugFileSpec = "output\blackout-latest.spec"
     
     # Source    
-    [string]::join([environment]::newline, (gc version-header.coffee)).Replace('$Version', (gc "..\version.txt")) | Out-File "$OutDebugFile.coffeescript" -encoding "ascii"
+    [string]::join([environment]::newline, (gc version-header.coffee)).Replace('$Version', $Version) | Out-File "$OutDebugFile.coffeescript" -encoding "ascii"
 
     type "..\src\module.txt" | foreach {ac "$OutDebugFile.coffeescript" (gc "..\$_")}
     tools\Nodejs\node.exe tools\CoffeeScript\bin\coffee -c "$OutDebugFile.coffeescript"
@@ -79,7 +81,6 @@ task JsTests -depends CoreCompile {
 }
 
 task NuGet -depends CoreCompile, JsTests {
-    $Version = (gc "..\version.txt")
     $NuspecFile = "Blackout.v$Version.nuspec"
     $NupkgFile = "Blackout.$Version.nupkg"
 
