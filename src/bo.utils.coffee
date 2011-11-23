@@ -37,9 +37,3 @@ window.bo.utils =
         for o in others
             o.subscribe (newValue) ->
                 masterObservable newValue
-
-    replaceHtml: (oldEl, html) ->
-        newEl = oldEl.cloneNode false
-        newEl.innerHTML = html
-        oldEl.parentNode.replaceChild newEl, oldEl
-        newEl  
