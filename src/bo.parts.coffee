@@ -16,24 +16,24 @@
 class bo.Part
     @region: "main"
 
-    constructor: (@name, options = {}) ->  
+    constructor: (@name, @options = {}) ->
         bo.arg.ensureDefined name, 'name'
 
-        @title = options.title || name
-        @region = options.region || Part.region
-        @templateName = options.templateName || name
-        
-        if _.isFunction options.viewModel
-            @viewModelTemplate = options.viewModel || {}
+        @title = @options.title || name
+        @region = @options.region || Part.region
+        @templateName = @options.templateName || "Part-#{@name}"
+        @templatePath = @options.templatePath || "/Templates/Get/#{@name}" if @options.templateName is undefined
+        @_isTemplateLoaded = false
+
+        if _.isFunction @options.viewModel
+            @viewModelTemplate = @options.viewModel || {}
         else
-            @viewModel = options.viewModel || {}
+            @viewModel = @options.viewModel || {}
 
     canDeactivate: ->	    
         if @viewModel && @viewModel.isDirty? then !(ko.utils.unwrapObservable @viewModel.isDirty) else true
                     
     deactivate: ->
-        regionNode = document.getElementById @region
-        regionNode.innerHTML = '' if regionNode?
 
     # Activates this part.
     # The default behaviour on activation is to:
@@ -52,14 +52,18 @@ class bo.Part
         showPromises = @_show parameters || []
         showPromises = [showPromises] if not _.isArray showPromises
 
-        jQuery.when.apply(@, loadPromises.concat(showPromises)).done =>
+        jQuery.when.apply(@, showPromises).done =>
             @viewModel.reset() if @viewModel.reset
 
+        loadPromises.concat(showPromises)
+
+        ###
             contentContainer = document.getElementById @region
 
             if contentContainer?
                 contentContainer.innerHTML = @templateHtml
                 ko.applyBindings @viewModel, contentContainer
+         ###
 
     # A function that will be executed on activation of this part, used to
     # set-up this part with the specified parameters (as taken from the URL).
@@ -69,6 +73,18 @@ class bo.Part
         if @viewModel.show
             @viewModel.show parameters
 
+    _loadTemplate: ->
+        if not @_isTemplateLoaded and @templatePath?
+            return jQuery.ajax
+                    url: @templatePath
+                    dataType: 'html'
+                    type: 'GET'
+                    success: (template) =>
+                        @_isTemplateLoaded = true
+                        bo.utils.addTemplate @templateName, template
+
+        bo.utils.resolvedPromise()
+
     _initialiseViewModel: ->
         if @viewModelTemplate
             @viewModel = new @viewModelTemplate() || {}
@@ -76,86 +92,3 @@ class bo.Part
         else
             @viewModel.initialise() if @viewModel.initialise
             @_initialiseViewModel = ->
-            
-    _loadTemplate: ->         
-        if not @templateHtml
-            jQuery.ajax
-                url: "/Templates/Get/#{@templateName}"
-                dataType: 'html'
-                type: 'GET'
-                success: (template) =>
-                    @templateHtml = template
-
-# The part manager is a key component of any application, being responsible for 
-# maintaining all 'parts' within the application and to provide the plumbing required
-# to support navigation throughout the application by using the routing mechanism
-# to load parts of the application.
-class bo.PartManager
-    @reactivateEvent: "PartManager.reactivateParts"
-
-    constructor: () ->
-        @routeNameToParts = {}
-
-        @currentRoute = null
-        @currentParameters = null
-        @currentParts = ko.observableArray []
-        
-        bo.bus.subscribe bo.routing.RouteNavigatedToEvent, (data) => @_handleRouteNavigatedTo data
-        bo.bus.subscribe bo.routing.RouteNavigatingToEvent, (data) => @canDeactivate()
-        bo.bus.subscribe PartManager.reactivateEvent, () => @reactivateParts()
-
-    partsForRoute: (routeName) ->
-        @routeNameToParts[routeName]
-
-    register: (routeName, part) ->
-        bo.arg.ensureDefined routeName, 'routeName'
-        bo.arg.ensureDefined part, 'part'
-
-        throw "Cannot find route with name '#{routeName}'" if (bo.routing.routes.getRoute routeName) is undefined
-
-        @routeNameToParts[routeName] = [] if not @routeNameToParts[routeName]
-        @routeNameToParts[routeName].push part
-
-    reactivateParts: () ->
-        part.activate @currentParameters for part in @currentParts()
-
-    canDeactivate: (options = {}) ->
-        dirtyCount = (true for part in @currentParts() when !part.canDeactivate()).length
-
-        if dirtyCount > 0 
-            if options.showConfirmation is false
-                false
-            else
-                window.confirm "Do you wish to lose your changes?"
-        else
-            true
-
-    _handleRouteNavigatedTo: (data) ->
-        data.parameters ?= {}
-        changedParts = true
-                        
-        if @_isRouteDifferent data.route
-            partsRegisteredForRoute = @partsForRoute data.route.name
-
-            if not partsRegisteredForRoute
-                console.log "Could not find any parts registered against the route '#{data.route.name}'"
-            else
-                @_deactivateAll()
-                
-                @_loadPart part, data.parameters for part in partsRegisteredForRoute
-
-                @currentRoute = data.route.name
-                @currentParameters = data.parameters
-
-        changedParts
-
-    _deactivateAll: ->
-        part.deactivate() for part in @currentParts()
-        @currentParts.removeAll()
-
-    _isRouteDifferent: (route) ->
-        !@currentRoute or @currentRoute isnt route.name
-
-    _loadPart: (part, parameters) ->        
-        @currentParts.push part
-        part.activate parameters
