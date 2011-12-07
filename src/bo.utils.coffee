@@ -4,7 +4,7 @@
 window.bo.utils =
     addTemplate: (name, template) ->
         if jQuery("##{name}").length is 0
-            document.write "<script type='text/x-jquery-tmpl' id='#{name}'>#{template}</script>"
+            jQuery('head').append "<script type='text/x-jquery-tmpl' id='#{name}'>#{template}</script>"
 
     fromCamelToTitleCase: (str) ->
         str
@@ -37,3 +37,8 @@ window.bo.utils =
         for o in others
             o.subscribe (newValue) ->
                 masterObservable newValue
+
+    resolvedPromise: () ->
+        deferred = new jQuery.Deferred()
+        deferred.resolve()
+        deferred

@@ -217,5 +217,3 @@ bo.routing =
 
     routes: routeTableInstance
     router: routerInstance
-
-    initialise: -> routerInstance.initialise.call routerInstance

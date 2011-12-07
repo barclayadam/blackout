@@ -12,8 +12,16 @@ while($true) {
       $changed.Name.Contains("lib") -or
       $changed.Name.Contains("src"))
      {
-        start-sleep -s 2
-        &.\build\run-build-file.bat CoreCompile
+        start-sleep -s 1
+        &.\build\run-build-file.bat Concatenate
+
+        if ($LastExitCode -eq 0) {
+            &.\build\run-build-file.bat UpdateExamples
+        }
+        else {
+            &.\build\run-build-file.bat CoreCompile
+        }
+
 
         "Waiting for changes"
      }

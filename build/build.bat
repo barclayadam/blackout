@@ -1,1 +1,1 @@
-call run-build-file.bat CoreCompile
+call run-build-file.bat UpdateExamples

@@ -7,9 +7,10 @@ src\bo.query.coffee
 src\bo.messaging.coffee
 src\bo.bindingHandlers.coffee    
 src\bo.sitemap.coffee    
-src\bo.routing.coffee    
-src\bo.parts.coffee    
-src\bo.viewmodel.coffee    
+src\bo.routing.coffee
+src\bo.parts.coffee
+src\bo.regions.coffee
+src\bo.viewmodel.coffee
 src\bo.ui.controls.coffee    
 src\bo.ui.breadcrumb.coffee  
 src\bo.ui.context.coffee

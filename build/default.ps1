@@ -1,20 +1,20 @@
 Import-Module '.\teamcity.psm1'
 
-$CurrentDir = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
+$CurrentFolder = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
     
 properties {
     $BuildNumber = if ("$env:BUILD_NUMBER".length -gt 0) { "$env:BUILD_NUMBER" } else { "0" }
     $Version = "0.1." + $BuildNumber
-    $OutputDirectory = "$CurrentDir\output"
+    $OutputFolder = "$CurrentFolder\output"
 
     $SpecRunnerPath = "runner.html"
-    $JsTestsFolder = "$CurrentDir\..\specs\"
-    $PhantomJsToolPath = "$CurrentDir\tools\phantomjs\phantomjs.exe"
+    $JsTestsFolder = "$CurrentFolder\..\specs\"
+    $PhantomJsToolPath = "$CurrentFolder\tools\phantomjs\phantomjs.exe"
 }
 
-function CreateDirectoryIfMissing([string]$Directory) {
-    if(!(Test-Path $Directory)) {
-        md $Directory > $null
+function CreateFolderIfMissing([string]$Folder) {
+    if(!(Test-Path $Folder)) {
+        md $Folder > $null
     }
 }
 
@@ -38,17 +38,30 @@ TaskTearDown {
  as the Visual Studio 'Clean' command.
 #>
 task Clean {    
-    if(Test-Path $OutputDirectory) {
-        rm -Recurse -Force $OutputDirectory
+    if(Test-Path $OutputFolder) {
+        rm -Recurse -Force $OutputFolder
     }
 }
 
 <#
- 'Compiles' the project by creating a concatenated version of the library and specs, 
+ 'Compiles' the project by creating a concatenated version of the library and specs,
  compiled to JavaScript.
 #>
 task CoreCompile -depends Clean {
-    CreateDirectoryIfMissing $OutputDirectory
+    CreateFolderIfMissing "$OutputFolder\src"
+    CreateFolderIfMissing "$OutputFolder\specs"
+
+    type "..\src\module.txt" | foreach { tools\Nodejs\node.exe tools\CoffeeScript\bin\coffee -o "$OutputFolder\src" -c "..\$_" }
+
+    # Spec
+    type "..\specs\module.txt" | foreach { tools\Nodejs\node.exe tools\CoffeeScript\bin\coffee -o "$OutputFolder\specs" -c "..\$_" }
+}
+
+<#
+ Creates a concatenated version of the library and specs, compiled to JavaScript.
+#>
+task Concatenate -depends Clean {
+    CreateFolderIfMissing "$OutputFolder"
 
     $OutDebugFile = "output\blackout-latest"
     $OutDebugFileSpec = "output\blackout-latest.spec"
@@ -65,29 +78,36 @@ task CoreCompile -depends Clean {
 }
 
 <#
+ Updates the examples to have the latest version of Blackout.
+#>
+task UpdateExamples -depends Concatenate {
+    copy "output\blackout-latest.js" "../examples/regionManager/assets/js/lib/blackout.js"
+}
+
+<#
  Performs the JavaScript tests using PhantomJs, reporting the results as an NUnit file to be included
  in TeamCity.
 #>
-task JsTests -depends CoreCompile {                                
+task JsTests -depends Concatenate {
     cd $JsTestsFolder    
-    &$PhantomJsToolPath "phantomjs_runner.js" "$SpecRunnerPath" "$OutputDirectory\test-result.png"
+    &$PhantomJsToolPath "phantomjs_runner.js" "$SpecRunnerPath" "$OutputFolder\test-result.png"
     $TestsFailed = $lastexitcode -ne 0
     
     if ($TestsFailed) {
         throw "JS Tests have failed"
     }
 
-    cd $CurrentDir
+    cd $CurrentFolder
 }
 
-task NuGet -depends CoreCompile, JsTests {
+task NuGet -depends Concatenate, JsTests {
     $NuspecFile = "Blackout.v$Version.nuspec"
     $NupkgFile = "Blackout.$Version.nupkg"
 
     [string]::join([environment]::newline, (gc Blackout.nuspec)).Replace('$Version', $Version) | Out-File $NuspecFile -encoding "ascii"
 
-    &.\tools\nuget.exe pack $NuspecFile -OutputDirectory $OutputDirectory
+    &.\tools\nuget.exe pack $NuspecFile -OutputDirectory $OutputFolder
     del $NuspecFile
 }
 
-task TeamCityBuild -depends CoreCompile,JsTests,NuGet
+task TeamCityBuild -depends Concatenate,JsTests,NuGet
