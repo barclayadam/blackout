@@ -66,46 +66,6 @@ ko.bindingHandlers.position =
             $element.width ko.utils.unwrapObservable value.width
 
         $element.position options
-                
-ko.bindingHandlers.draggable =
-    currentlyDragging: ko.observable()
-
-    init: (element, valueAccessor, allBindingsAccessor, viewModel) ->
-        $element = jQuery element
-        node = viewModel
-        value = valueAccessor() || {}
-            
-        if (ko.isObservable valueAccessor) or (valueAccessor() is true)
-            dragOptions = 
-                revert: 'invalid'
-                revertDuration: 250
-                appendTo: 'body'
-                helper: 'clone'
-                zIndex: 200000
-                distance: 10
-                start: (e, ui) ->
-                    ko.bindingHandlers.draggable.currentlyDragging node
-
-            $element.draggable jQuery.extend {}, dragOptions, value
-
-ko.bindingHandlers.dropTarget =
-    init: (element, valueAccessor, allBindingsAccessor, viewModel) ->
-        $element = jQuery element
-        value = valueAccessor() || {}
-        canAccept = ko.utils.unwrapObservable value.canAccept
-        handler = ko.utils.unwrapObservable value.onDropComplete
-            
-        dropOptions = 
-            greedy: true
-            tolerance: 'pointer'
-            hoverClass: 'active-drop-target'
-            accept: (e) -> 
-                canAccept.call viewModel, ko.bindingHandlers.draggable.currentlyDragging()
-            drop: (e, ui) ->
-                _.defer ->
-                    handler.call viewModel, ko.bindingHandlers.draggable.currentlyDragging()
-                        
-        $element.droppable jQuery.extend {}, dropOptions, value
 
 originalEnableBindingHandler = ko.bindingHandlers.enable
 

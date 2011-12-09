@@ -1,0 +1,90 @@
+<!doctype html>
+<!--[if lt IE 7]> <html class="ie6" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8" />
+    <title>Blackout - Drag and Drop</title>
+
+    <script type="text/javascript" src="./assets/js/lib/json2.js"></script>
+    <script type="text/javascript" src="./assets/js/lib/jquery.js"></script>
+    <script type="text/javascript" src="./assets/js/lib/underscore.js"></script>
+    <script type="text/javascript" src="./assets/js/lib/history.js"></script>
+    <script type="text/javascript" src="./assets/js/lib/history.html4.js"></script>
+    <script type="text/javascript" src="./assets/js/lib/history.adapter.jquery.js"></script>
+    <script type="text/javascript" src="./assets/js/lib/jquery.hotkeys.js"></script>
+    <script type="text/javascript" src="./assets/js/lib/jquery.ui.js"></script>
+    <script type="text/javascript" src="./assets/js/lib/knockout.js"></script>
+    <script type="text/javascript" src="./assets/js/lib/blackout.js"></script>
+
+    <style type="text/css">
+        body { position: relative; }
+
+        .ui-drag-in-progress .ui-valid-drop-target { border: 3px solid green; }
+        .ui-drag-in-progress .ui-hovered-drop-target.ui-valid-drop-target { border: 3px solid blue; }
+        .ui-drag-in-progress .ui-hovered-drop-target { border: 3px solid red; }
+    </style>
+</head>
+<body>
+
+<div data-bind="with: banana">
+    <div id="draggable-banana" data-bind="draggable: { template: 'draggable-helper-tmpl' }">
+        You can drag me around! I'm an item of type 'bananas'
+    </div>
+</div>
+
+<div data-bind="with: apple">
+    <div id="draggable-apple" data-bind="draggable: { template: 'draggable-helper-tmpl' }">
+        You can drag me around! I'm an item of type 'apple'
+    </div>
+</div>
+
+<div data-bind="with: pear">
+    <div id="draggable-pear" data-bind="draggable: { template: 'draggable-helper-tmpl' }">
+        You can drag me around! I'm an item of type 'pear'
+    </div>
+</div>
+
+<div id="non-droppable" data-bind="dropTarget: { canAccept : function() { return false } }">
+   You can not drop anything here!
+</div>
+
+<div id="droppable" data-bind="dropTarget: { canAccept : canAcceptDrop, onDropComplete: acceptDrop}">
+   You can drop items here though.
+
+    <ul data-bind="foreach: droppedItems">
+        <li>This is item number <span data-bind="text: index"></span> that has been dropped (of type <span data-bind="text: type"></span>).</li>
+    </ul>
+</div>
+
+<script id="draggable-helper-tmpl" type="text/x-tmpl">
+    Dragging: <span data-bind="text: currentlyDragging().typeName"></span>.
+    Can drop? <span data-bind="text: canDrop"></span>
+    Dropping to = <span data-bind="text: ko.toJSON(dropTarget)"></span>
+</script>
+
+<script type="text/javascript">
+    function Banana() { this.typeName = "Banana"; }
+    function Apple() { this.typeName = "Apple"; }
+    function Pear() { this.typeName = "Pear"; }
+
+    var viewModel = {
+        apple: new Apple(),
+        banana: new Banana(),
+        pear: new Pear(),
+
+        droppedItems: ko.observableArray(),
+        
+        canAcceptDrop: function(e) {
+            return e instanceof Apple || e instanceof Banana;
+        }
+    }
+
+    viewModel.acceptDrop = function(e) {
+        viewModel.droppedItems.push({ index: viewModel.droppedItems().length, type: e.typeName })
+    }
+
+    ko.applyBindings(viewModel);
+</script>
+
+</body>
+</html>
