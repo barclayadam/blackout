@@ -4,11 +4,12 @@
 
 bo.utils.addTemplate 'navigationItem', '''
         <li data-bind="css: { active: isActive, current: isCurrent, 'has-children': hasChildren }, visible: isVisible">
-            {{if hasRoute}}
+            <!-- ko if: hasRoute -->
                 <a href="#" data-bind="navigateTo: name, text: name"></a>
-            {{else}}
+            <!-- /ko -->
+            <!-- ko ifnot: hasRoute -->
                 <span data-bind="text: name"></span>
-            {{/if}}
+            <!-- /ko -->
             <ul class="bo-navigation-sub-item" data-bind="template: { name : 'navigationItem', foreach: children }"></ul>
         </li>
         '''
@@ -18,8 +19,10 @@ bo.utils.addTemplate 'navigationTemplate', '''
         '''
 
 ko.bindingHandlers.navigation = 
-    'init': (element, valueAccessor) ->            
+    init: (element, valueAccessor) ->
         sitemap = ko.utils.unwrapObservable valueAccessor()
 
         if sitemap
             ko.renderTemplate "navigationTemplate", sitemap, {}, element, "replaceChildren"
+
+         { "controlsDescendantBindings": true }

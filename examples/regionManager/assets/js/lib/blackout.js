@@ -1872,9 +1872,9 @@
 
   })();
 
-  bo.utils.addTemplate('contextItemTemplate', '<li data-bind="click: execute, bubble: false, css: { separator : separator, disabled : disabled }">\n    {{if !(separator()) }}\n        <a href=#" data-bind="css: { parent : hasChildren() }">\n            <!-- Add Image Here? -->\n            <span data-bind="text: text" />\n        </a>\n    {{/if}}\n    {{if hasChildren()}}\n        <div style="position:absolute;">\n            <ul data-bind=\'template: { name: "contextItemTemplate", foreach: subMenu.items }\'></ul>\n        </div>\n    {{/if}}\n</li>');
+  bo.utils.addTemplate('contextItemTemplate', '<li data-bind="click: execute, bubble: false, css: { separator : separator, disabled : disabled }">\n    <!-- ko ifnot: separator -->\n        <a href=#" data-bind="css: { parent : hasChildren() }">\n            <!-- Add Image Here? -->\n            <span data-bind="text: text" />\n        </a>\n    <!-- /ko -->\n    \n    <!-- ko if: hasChildren() -->\n        <div style="position:absolute;">\n            <ul data-bind=\'template: { name: "contextItemTemplate", foreach: subMenu.items }\'></ul>\n        </div>\n    <!-- /ko -->\n</li>');
 
-  bo.utils.addTemplate('contextMenuTemplate', '<div class="ui-context" \n     style="position:absolute;" \n     data-bind="position: { of: mousePosition }">\n    <div class="gutterLine"></div>\n    <ul data-bind=\'template: { name: "contextItemTemplate", foreach: menu.items }\'></ul>\n</div>');
+  bo.utils.addTemplate('contextMenuTemplate', '<div class="ui-context" style="position:absolute;" data-bind="position: { of: mousePosition }">\n    <div class="gutterLine"></div>\n    <ul data-bind=\'template: { name: "contextItemTemplate", foreach: menu.items }\'></ul>\n</div>');
 
   ko.bindingHandlers.contextMenu = {
     'init': function(element, valueAccessor, allBindingsAccessor, viewModel) {
@@ -1895,7 +1895,7 @@
           jQuery('.ui-context').remove();
           config.menu = menu;
           config.mousePosition = evt;
-          menuContainer = $('<div></div>').appendTo('body');
+          menuContainer = jQuery('<div></div>').appendTo('body');
           _ref = config.menu.items();
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             menuItem = _ref[_i];
@@ -1917,10 +1917,10 @@
         return false;
       });
       jQuery(document).bind('keydown', 'esc', function() {
-        return $('.ui-context').remove();
+        return jQuery('.ui-context').remove();
       });
       return jQuery('html').click(function() {
-        return $('.ui-context').remove();
+        return jQuery('.ui-context').remove();
       });
     }
   };
@@ -1936,7 +1936,7 @@
         jQuery(cssClass, $element).hide();
         return $element.hover(function() {
           var $parent;
-          $parent = $(this);
+          $parent = jQuery(this);
           return jQuery(cssClass, $parent).first().toggle().position({
             my: 'left top',
             at: 'right top',
@@ -1948,17 +1948,20 @@
     }
   };
 
-  bo.utils.addTemplate('navigationItem', '<li data-bind="css: { active: isActive, current: isCurrent, \'has-children\': hasChildren }, visible: isVisible">\n    {{if hasRoute}}\n        <a href="#" data-bind="navigateTo: name, text: name"></a>\n    {{else}}\n        <span data-bind="text: name"></span>\n    {{/if}}\n    <ul class="bo-navigation-sub-item" data-bind="template: { name : \'navigationItem\', foreach: children }"></ul>\n</li>');
+  bo.utils.addTemplate('navigationItem', '<li data-bind="css: { active: isActive, current: isCurrent, \'has-children\': hasChildren }, visible: isVisible">\n    <!-- ko if: hasRoute -->\n        <a href="#" data-bind="navigateTo: name, text: name"></a>\n    <!-- /ko -->\n    <!-- ko ifnot: hasRoute -->\n        <span data-bind="text: name"></span>\n    <!-- /ko -->\n    <ul class="bo-navigation-sub-item" data-bind="template: { name : \'navigationItem\', foreach: children }"></ul>\n</li>');
 
   bo.utils.addTemplate('navigationTemplate', '<ul class="bo-navigation" data-bind="template: { name : \'navigationItem\', foreach: nodes }"></ul>');
 
   ko.bindingHandlers.navigation = {
-    'init': function(element, valueAccessor) {
+    init: function(element, valueAccessor) {
       var sitemap;
       sitemap = ko.utils.unwrapObservable(valueAccessor());
       if (sitemap) {
-        return ko.renderTemplate("navigationTemplate", sitemap, {}, element, "replaceChildren");
+        ko.renderTemplate("navigationTemplate", sitemap, {}, element, "replaceChildren");
       }
+      return {
+        "controlsDescendantBindings": true
+      };
     }
   };
 
@@ -2479,7 +2482,7 @@
     }
   };
 
-  bo.utils.addTemplate('treeNodeTemplate', '<li data-bind="command: [{ callback: selectPrevious, keyboard: \'up\' },\n                         { callback: open, keyboard: \'right\' },\n                         { callback: close, keyboard: \'left\' },\n                         { callback: selectNext, keyboard: \'down\' },\n                         { callback: deleteSelf, keyboard: \'del\' },\n                         { callback: beginRenaming, keyboard: \'f2\' }],\n                attr: { \'class\': cssClass }, \n                css: { \'tree-item\': true, leaf: isLeaf, open: isOpen, rename: isRenaming }">        \n    <div class="tree-node" \n         data-bind="draggable: isDraggable,\n                    dropTarget: { canAccept : canAcceptDrop, onDropComplete: acceptDrop}, \n                    contextMenu: contextMenu, \n                    hoverClass: \'ui-state-hover\',\n                    css: { \'ui-state-active\': isSelected, \'ui-state-focus\': isFocused, childrenLoading: children.isLoading }, \n                    event: { mousedown: select }">\n        <span data-bind="click: toggleFolder, \n                         css: { \'handle\': true, \'ui-icon\': true, \'ui-icon-triangle-1-se\': isOpen, \'ui-icon-triangle-1-e\': !isOpen() },\n                         bubble : false, \n                         style: { marginLeft: indent }">&nbsp;</span>\n\n        {{if viewModel.options.checksEnabled}}\n            <input type="checkbox" class="checked" data-bind="hasfocus: isFocused, indeterminateCheckbox: checkState, visible: viewModel.options.checksEnabled" />\n            <span class="icon"></span>\n            <a href="javascript:void(0)" data-bind="visible: !isRenaming(), text: name" unselectable="on"></a>\n        {{else}}\n            <span class="icon"></span>\n            <a href="javascript:void(0)" data-bind="hasfocus: isFocused, visible: !isRenaming(), text: name" unselectable="on"></a>\n        {{/if}}\n\n        <input class="rename" type="text" data-bind="\n                   visible: isRenaming, \n                   value: editingName, \n                   valueUpdate: \'keyup\', \n                   hasfocus: isRenaming(), \n                   command: [{ callback: commitRenaming, event: \'blur\', keyboard: \'return\' },\n                             { callback: cancelRenaming, keyboard: \'esc\' }]" />\n    </div>\n    \n    <ul data-bind=\'visible: isOpen, template: { renderIf: isOpen, name: "treeNodeTemplate", foreach: children }\'></ul>\n</li>');
+  bo.utils.addTemplate('treeNodeTemplate', '<li data-bind="command: [{ callback: selectPrevious, keyboard: \'up\' },\n                         { callback: open, keyboard: \'right\' },\n                         { callback: close, keyboard: \'left\' },\n                         { callback: selectNext, keyboard: \'down\' },\n                         { callback: deleteSelf, keyboard: \'del\' },\n                         { callback: beginRenaming, keyboard: \'f2\' }],\n                attr: { \'class\': cssClass }, \n                css: { \'tree-item\': true, leaf: isLeaf, open: isOpen, rename: isRenaming }">        \n    <div class="tree-node" \n         data-bind="draggable: isDraggable,\n                    dropTarget: { canAccept : canAcceptDrop, onDropComplete: acceptDrop}, \n                    contextMenu: contextMenu, \n                    hoverClass: \'ui-state-hover\',\n                    css: { \'ui-state-active\': isSelected, \'ui-state-focus\': isFocused, childrenLoading: children.isLoading }, \n                    event: { mousedown: select }">\n        <span data-bind="click: toggleFolder, \n                         css: { \'handle\': true, \'ui-icon\': true, \'ui-icon-triangle-1-se\': isOpen, \'ui-icon-triangle-1-e\': !isOpen() },\n                         bubble : false, \n                         style: { marginLeft: indent }">&nbsp;</span>\n\n        <!-- ko if: viewModel.options.checksEnabled -->\n            <input type="checkbox" class="checked" data-bind="hasfocus: isFocused, indeterminateCheckbox: checkState, visible: viewModel.options.checksEnabled" />\n            <span class="icon"></span>\n            <a href="javascript:void(0)" data-bind="visible: !isRenaming(), text: name" unselectable="on"></a>\n        <!-- /ko -->\n        <!-- ko ifnot: viewModel.options.checksEnabled -->\n            <span class="icon"></span>\n            <a href="javascript:void(0)" data-bind="hasfocus: isFocused, visible: !isRenaming(), text: name" unselectable="on"></a>\n        <!-- /ko -->\n\n        <input class="rename" type="text" data-bind="\n                   visible: isRenaming, \n                   value: editingName, \n                   valueUpdate: \'keyup\', \n                   hasfocus: isRenaming(), \n                   command: [{ callback: commitRenaming, event: \'blur\', keyboard: \'return\' },\n                             { callback: cancelRenaming, keyboard: \'esc\' }]" />\n    </div>\n    \n    <ul data-bind=\'visible: isOpen, template: { renderIf: isOpen, name: "treeNodeTemplate", foreach: children }\'></ul>\n</li>');
 
   bo.utils.addTemplate('treeTemplate', '<ul class="bo-tree" data-bind="template: { name : \'treeNodeTemplate\', data: root }"></ul>');
 
