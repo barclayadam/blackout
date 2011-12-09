@@ -44,24 +44,23 @@ class bo.ui.ContextMenu
 
 bo.utils.addTemplate 'contextItemTemplate', '''
         <li data-bind="click: execute, bubble: false, css: { separator : separator, disabled : disabled }">
-            {{if !(separator()) }}
+            <!-- ko ifnot: separator -->
                 <a href=#" data-bind="css: { parent : hasChildren() }">
                     <!-- Add Image Here? -->
                     <span data-bind="text: text" />
                 </a>
-            {{/if}}
-            {{if hasChildren()}}
+            <!-- /ko -->
+
+            <!-- ko if: hasChildren() -->
                 <div style="position:absolute;">
                     <ul data-bind='template: { name: "contextItemTemplate", foreach: subMenu.items }'></ul>
                 </div>
-            {{/if}}
+            <!-- /ko -->
         </li>
         '''
 
 bo.utils.addTemplate 'contextMenuTemplate', '''
-        <div class="ui-context" 
-             style="position:absolute;" 
-             data-bind="position: { of: mousePosition }">
+        <div class="ui-context" style="position:absolute;" data-bind="position: { of: mousePosition }">
             <div class="gutterLine"></div>
             <ul data-bind='template: { name: "contextItemTemplate", foreach: menu.items }'></ul>
         </div>
@@ -93,7 +92,7 @@ ko.bindingHandlers.contextMenu =
 
                 config.menu = menu
                 config.mousePosition = evt
-                menuContainer = $('<div></div>').appendTo 'body'
+                menuContainer = jQuery('<div></div>').appendTo 'body'
                                                     
                 # assign the data item
                 menuItem.setDataItem parentVM for menuItem in config.menu.items()
@@ -103,7 +102,7 @@ ko.bindingHandlers.contextMenu =
                 true
             else
                 false
-                        
+
         $element.mousedown (evt) ->
             if evt.which == 3
                 !(showContextMenu evt)
@@ -115,10 +114,10 @@ ko.bindingHandlers.contextMenu =
             false
                 
         jQuery(document).bind 'keydown', 'esc', ->   
-            $('.ui-context').remove()
+            jQuery('.ui-context').remove()
 
         jQuery('html').click ->
-            $('.ui-context').remove()
+            jQuery('.ui-context').remove()
 
 ko.bindingHandlers.subContext = 
     'init': (element, valueAccessor, allBindingsAccessor, viewModel) ->
@@ -130,6 +129,6 @@ ko.bindingHandlers.subContext =
             cssClass = '.' + viewModel.container.cssClass()
             jQuery(cssClass, $element).hide()
             $element.hover ->
-                $parent = $(@)
+                $parent = jQuery(@)
                 jQuery(cssClass, $parent).first().toggle().position { my: 'left top', at: 'right top', of: $parent, collision: 'flip' }
                 

@@ -316,14 +316,15 @@ bo.utils.addTemplate 'treeNodeTemplate', '''
                                  bubble : false, 
                                  style: { marginLeft: indent }">&nbsp;</span>
 
-                {{if viewModel.options.checksEnabled}}
+                <!-- ko if: viewModel.options.checksEnabled -->
                     <input type="checkbox" class="checked" data-bind="hasfocus: isFocused, indeterminateCheckbox: checkState, visible: viewModel.options.checksEnabled" />
                     <span class="icon"></span>
                     <a href="javascript:void(0)" data-bind="visible: !isRenaming(), text: name" unselectable="on"></a>
-                {{else}}
+                <!-- /ko -->
+                <!-- ko ifnot: viewModel.options.checksEnabled -->
                     <span class="icon"></span>
                     <a href="javascript:void(0)" data-bind="hasfocus: isFocused, visible: !isRenaming(), text: name" unselectable="on"></a>
-                {{/if}}
+                <!-- /ko -->
 
                 <input class="rename" type="text" data-bind="
                            visible: isRenaming, 
