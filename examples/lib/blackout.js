@@ -955,7 +955,11 @@
         tolerance: 'pointer',
         hoverClass: 'ui-hovered-drop-target',
         accept: function() {
-          return canAccept.call(viewModel, currentlyDraggingViewModel.currentlyDragging());
+          if (currentlyDraggingViewModel.currentlyDragging() != null) {
+            return canAccept.call(viewModel, currentlyDraggingViewModel.currentlyDragging());
+          } else {
+            return false;
+          }
         },
         over: function() {
           var canAcceptDrop;

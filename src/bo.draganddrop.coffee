@@ -59,7 +59,10 @@ ko.bindingHandlers.dropTarget =
             hoverClass: 'ui-hovered-drop-target'
 
             accept: () ->
-                canAccept.call viewModel, currentlyDraggingViewModel.currentlyDragging()
+                if currentlyDraggingViewModel.currentlyDragging()?
+                    canAccept.call viewModel, currentlyDraggingViewModel.currentlyDragging()
+                else
+                    false
 
             over: () ->
                 canAcceptDrop = canAccept.call viewModel, currentlyDraggingViewModel.currentlyDragging()
