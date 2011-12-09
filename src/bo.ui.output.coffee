@@ -82,6 +82,9 @@ handlers =
         simpleHandler element, "jQuery(<span style='color: #080'>'#{value.selector}'</span>)"
 
 ko.bindingHandlers.output =
+    init: ->
+        { "controlsDescendantBindings": true }
+
     update: (element, valueAccessor) ->
         value = ko.utils.unwrapObservable valueAccessor()
 
