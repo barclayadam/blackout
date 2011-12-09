@@ -5,21 +5,21 @@
     <meta charset="utf-8" />
     <title>Blackout - Region Manager</title>
 
-    <script type="text/javascript" src="./assets/js/lib/json2.js"></script>
-    <script type="text/javascript" src="./assets/js/lib/jquery.js"></script>
-    <script type="text/javascript" src="./assets/js/lib/underscore.js"></script>
-    <script type="text/javascript" src="./assets/js/lib/history.js"></script>
-    <script type="text/javascript" src="./assets/js/lib/history.html4.js"></script>
-    <script type="text/javascript" src="./assets/js/lib/history.adapter.jquery.js"></script>
-    <script type="text/javascript" src="./assets/js/lib/jquery.hotkeys.js"></script>
-    <script type="text/javascript" src="./assets/js/lib/jquery.ui.js"></script>
-    <script type="text/javascript" src="./assets/js/lib/knockout.js"></script>
-    <script type="text/javascript" src="./assets/js/lib/blackout.js"></script>
+    <script type="text/javascript" src="../lib/json2.js"></script>
+    <script type="text/javascript" src="../lib/jquery.js"></script>
+    <script type="text/javascript" src="../lib/underscore.js"></script>
+    <script type="text/javascript" src="../lib/history.js"></script>
+    <script type="text/javascript" src="../lib/history.html4.js"></script>
+    <script type="text/javascript" src="../lib/history.adapter.jquery.js"></script>
+    <script type="text/javascript" src="../lib/jquery.hotkeys.js"></script>
+    <script type="text/javascript" src="../lib/jquery.ui.js"></script>
+    <script type="text/javascript" src="../lib/knockout.js"></script>
+    <script type="text/javascript" src="../lib/blackout.js"></script>
 
-    <script type="text/javascript" src="./assets/js/app/sitemap.js"></script>
-    <script type="text/javascript" src="./assets/js/app/app.js"></script>
-    <script type="text/javascript" src="./assets/js/app/shellViewModel.js"></script>
-    <script type="text/javascript" src="./assets/js/app/viewmodels/usersListViewModel.js"></script>
+    <script type="text/javascript" src="assets/js/sitemap.js"></script>
+    <script type="text/javascript" src="assets/js/app.js"></script>
+    <script type="text/javascript" src="assets/js/shellViewModel.js"></script>
+    <script type="text/javascript" src="assets/js/viewmodels/usersListViewModel.js"></script>
     
     <style type="text/css">
         .is-loading {
@@ -35,12 +35,8 @@
         Logo goes here
     </div>
 
-    <div id="nav">
-        <a href="#" data-bind="navigateTo: 'Home'">Home</a> |
-        <a href="#" data-bind="navigateTo: 'Users List'">Users List</a>
-    </div>
-
-    <div id="nav-special" data-bind="navigation: sitemap"></div>
+    <div id="nav" data-bind="navigation: sitemap"></div>
+    <div id="breadcrumb" data-bind="breadcrumb: sitemap"></div>
 </header>
 
 <div id="main-container" data-bind="regionManager: regionManager">

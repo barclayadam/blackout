@@ -58,7 +58,10 @@ class bo.Sitemap
         @currentNode = ko.observable()
         @nodes = []
         @breadcrumb = ko.computed =>
-            @currentNode()?.getAncestorsAndThis()
+            if @currentNode()?
+                @currentNode().getAncestorsAndThis()
+            else
+                []
 
         for pageName, pageDefinition of pages
             @nodes.push @_createNode pageName, pageDefinition

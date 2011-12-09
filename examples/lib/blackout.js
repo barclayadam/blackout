@@ -1076,8 +1076,11 @@
       this.currentNode = ko.observable();
       this.nodes = [];
       this.breadcrumb = ko.computed(function() {
-        var _ref;
-        return (_ref = _this.currentNode()) != null ? _ref.getAncestorsAndThis() : void 0;
+        if (_this.currentNode() != null) {
+          return _this.currentNode().getAncestorsAndThis();
+        } else {
+          return [];
+        }
       });
       for (pageName in pages) {
         pageDefinition = pages[pageName];
@@ -1766,17 +1769,18 @@
     }
   };
 
-  bo.utils.addTemplate('breadcrumbItem', '<li>\n    {{if isCurrent}}\n        <span class="current" data-bind="text: name"></span>\n    {{else !hasRoute}}\n        <span data-bind="text: name"></span>\n    {{else}}\n        <a href="#" data-bind="navigateTo: name, text: name"></a>\n    {{/if}}\n</li>');
-
-  bo.utils.addTemplate('breadcrumbTemplate', '<ul class="bo-breadcrumb" data-bind="template: { name : \'breadcrumbItem\', foreach: breadcrumb }"></ul>');
+  bo.utils.addTemplate('breadcrumbTemplate', '<ul class="bo-breadcrumb" data-bind="foreach: breadcrumb">\n    <li>\n        <!-- ko ifnot: hasRoute -->\n            <span class="current" data-bind="text: name"></span>\n        <!-- /ko -->\n\n        <!-- ko if: hasRoute -->\n            <a href="#" data-bind="navigateTo: name, text: name"></a>\n        <!-- /ko -->\n    </li>\n</ul>');
 
   ko.bindingHandlers.breadcrumb = {
     'init': function(element, valueAccessor) {
       var sitemap;
       sitemap = ko.utils.unwrapObservable(valueAccessor());
       if (sitemap) {
-        return ko.renderTemplate("breadcrumbTemplate", sitemap, {}, element, "replaceChildren");
+        ko.renderTemplate("breadcrumbTemplate", sitemap, {}, element, "replaceNode");
       }
+      return {
+        "controlsDescendantBindings": true
+      };
     }
   };
 
@@ -1872,7 +1876,7 @@
 
   })();
 
-  bo.utils.addTemplate('contextItemTemplate', '<li data-bind="click: execute, bubble: false, css: { separator : separator, disabled : disabled }">\n    <!-- ko ifnot: separator -->\n        <a href=#" data-bind="css: { parent : hasChildren() }">\n            <!-- Add Image Here? -->\n            <span data-bind="text: text" />\n        </a>\n    <!-- /ko -->\n    \n    <!-- ko if: hasChildren() -->\n        <div style="position:absolute;">\n            <ul data-bind=\'template: { name: "contextItemTemplate", foreach: subMenu.items }\'></ul>\n        </div>\n    <!-- /ko -->\n</li>');
+  bo.utils.addTemplate('contextItemTemplate', '<li data-bind="click: execute, bubble: false, css: { separator : separator, disabled : disabled }">\n    <!-- ko ifnot: separator -->\n        <a href=#" data-bind="css: { parent : hasChildren() }">\n            <!-- Add Image Here? -->\n            <span data-bind="text: text" />\n        </a>\n    <!-- /ko -->\n\n    <!-- ko if: hasChildren() -->\n        <div style="position:absolute;">\n            <ul data-bind=\'template: { name: "contextItemTemplate", foreach: subMenu.items }\'></ul>\n        </div>\n    <!-- /ko -->\n</li>');
 
   bo.utils.addTemplate('contextMenuTemplate', '<div class="ui-context" style="position:absolute;" data-bind="position: { of: mousePosition }">\n    <div class="gutterLine"></div>\n    <ul data-bind=\'template: { name: "contextItemTemplate", foreach: menu.items }\'></ul>\n</div>');
 
