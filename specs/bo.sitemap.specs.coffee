@@ -12,6 +12,17 @@ describe 'Sitemap', ->
             # Assert
             expect(sitemap.currentNode).toBeObservable()
             expect(sitemap.currentNode()).toBeUndefined()
+
+        it 'should have a breadcrumb observable set to an empty array', ->
+            # Act
+            RegionManager = new bo.RegionManager()
+            sitemap = new bo.Sitemap RegionManager,
+                'Home':
+                    url: '/'
+
+            # Assert
+            expect(sitemap.breadcrumb).toBeObservable()
+            expect(sitemap.breadcrumb()).toBeAnEmptyArray()
             
     describe 'When creating a sitemap with a named page', ->
         it 'registers the route using the url property into the route table', ->

@@ -81,8 +81,7 @@ task Concatenate -depends Clean {
  Updates the examples to have the latest version of Blackout.
 #>
 task UpdateExamples -depends Concatenate {
-    copy "output\blackout-latest.js" "../examples/regionManager/assets/js/lib/blackout.js"
-    copy "output\blackout-latest.js" "../examples/dragndrop/assets/js/lib/blackout.js"
+    copy "output\blackout-latest.js" "../examples/lib/blackout.js"
 }
 
 <#
