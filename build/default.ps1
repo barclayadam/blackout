@@ -82,6 +82,7 @@ task Concatenate -depends Clean {
 #>
 task UpdateExamples -depends Concatenate {
     copy "output\blackout-latest.js" "../examples/regionManager/assets/js/lib/blackout.js"
+    copy "output\blackout-latest.js" "../examples/dragndrop/assets/js/lib/blackout.js"
 }
 
 <#

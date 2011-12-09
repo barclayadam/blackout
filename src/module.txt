@@ -5,7 +5,8 @@ src\bo.extenders.coffee
 src\bo.validation.coffee    
 src\bo.query.coffee
 src\bo.messaging.coffee
-src\bo.bindingHandlers.coffee    
+src\bo.bindingHandlers.coffee
+src\bo.draganddrop.coffee
 src\bo.sitemap.coffee    
 src\bo.routing.coffee
 src\bo.parts.coffee
