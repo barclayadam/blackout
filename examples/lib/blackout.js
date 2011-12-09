@@ -2069,6 +2069,11 @@
   };
 
   ko.bindingHandlers.output = {
+    init: function() {
+      return {
+        "controlsDescendantBindings": true
+      };
+    },
     update: function(element, valueAccessor) {
       var value;
       value = ko.utils.unwrapObservable(valueAccessor());
