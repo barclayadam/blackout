@@ -521,6 +521,7 @@
         value = values[key];
         this[key] = bo.utils.asObservable(value);
       }
+      bo.bus.publish('CommandCreated', this);
     }
 
     Command.prototype.properties = function() {
