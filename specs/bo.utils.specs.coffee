@@ -121,3 +121,48 @@ describe 'Utils', ->
 
             # Assert
             expect(converted).toEqual 'My VIP Elephant'
+
+    describe 'When converting to an observable', ->
+        it 'should return an observable array if it is an array', ->
+            # Arrange
+            rawValue = ['a','b','c']
+
+            # Act
+            converted = bo.utils.asObservable rawValue
+
+            # Assert
+            expect(converted).toBeAnObservableArray()
+            expect(converted()).toEqual rawValue
+
+        it 'should return an observable if it is not an array', ->
+            # Arrange
+            rawValue = 'a'
+
+            # Act
+            converted = bo.utils.asObservable rawValue
+
+            # Assert
+            expect(converted).toBeObservable()
+            expect(converted()).toEqual rawValue
+
+        it 'should return an observable if it is undefined', ->
+            # Arrange
+            rawValue = null
+
+            # Act
+            converted = bo.utils.asObservable rawValue
+
+            # Assert
+            expect(converted).toBeObservable()
+            expect(converted()).toEqual rawValue
+
+        it 'should return the same observable if it is an observable', ->
+            # Arrange
+            rawValue = ko.observable 'a'
+
+            # Act
+            converted = bo.utils.asObservable rawValue
+
+            # Assert
+            expect(converted).toBeObservable()
+            expect(converted).toEqual rawValue
