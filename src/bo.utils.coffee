@@ -13,6 +13,7 @@ window.bo.utils =
             .replace(/^./, (s) -> s.toUpperCase()) # uppercase the first character
 
     asObservable: (value) ->
+        if ko.isObservable value then return value
         if _.isArray value then ko.observableArray value else ko.observable value
 
     toCssClass: (value) ->

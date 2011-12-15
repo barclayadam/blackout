@@ -89,6 +89,7 @@
       });
     },
     asObservable: function(value) {
+      if (ko.isObservable(value)) return value;
       if (_.isArray(value)) {
         return ko.observableArray(value);
       } else {

@@ -14,6 +14,9 @@ beforeEach ->
         toBeObservable: ->
             ko.isObservable @actual
 
+        toBeAnObservableArray: ->
+            ko.isObservable(@actual) and @actual().length isnt undefined
+
         toBeAFunction: ->
             jQuery.isFunction @actual
 
