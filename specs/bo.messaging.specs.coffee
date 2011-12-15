@@ -7,7 +7,7 @@ describe 'Messaging', ->
                 command = new bo.Command 'Command1'
                 expect(command.name).toEqual 'Command1'
 
-            it 'should have an modelErrors observable', ->
+            it 'should have a modelErrors observable', ->
                 command = new bo.Command 'Command1'
                 expect(command.modelErrors).toBeObservable()
                 expect(command.modelErrors()).toEqual {}
@@ -17,6 +17,17 @@ describe 'Messaging', ->
 
                 expect(command.myProperty).toBeObservable()
                 expect(command.myProperty()).toEqual 'This value'
+
+            it 'should publish a command created message', ->
+                # Arrange
+                commandCreatedSpy = @spy()
+                bo.bus.subscribe 'CommandCreated', commandCreatedSpy
+
+                # Act
+                command = new bo.Command 'Command1'
+
+                # Assert
+                expect(commandCreatedSpy).toHaveBeenCalledWith command
 
         describe 'With a command that has property values set', ->
             it 'has a properties function that returns all property key / value pairs', ->

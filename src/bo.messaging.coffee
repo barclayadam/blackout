@@ -8,6 +8,8 @@ class bo.Command
         for key, value of values
             @[key] = bo.utils.asObservable value
 
+        bo.bus.publish 'CommandCreated', @
+
     properties: ->
         properties = {}
         properties[key] = value for key, value of @ when not _(['name', 'validate', 'modelErrors', 'properties', 'modelValidationRules', 'isValid']).contains key
