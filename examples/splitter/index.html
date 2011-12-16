@@ -1,0 +1,62 @@
+<!doctype html>
+<!--[if lt IE 7]> <html class="ie6" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8" />
+    <title>Blackout - Splitter</title>
+
+    <script type="text/javascript" src="../lib/json2.js"></script>
+    <script type="text/javascript" src="../lib/jquery.js"></script>
+    <script type="text/javascript" src="../lib/underscore.js"></script>
+    <script type="text/javascript" src="../lib/history.js"></script>
+    <script type="text/javascript" src="../lib/history.html4.js"></script>
+    <script type="text/javascript" src="../lib/history.adapter.jquery.js"></script>
+    <script type="text/javascript" src="../lib/jquery.hotkeys.js"></script>
+    <script type="text/javascript" src="../lib/jquery.ui.js"></script>
+    <script type="text/javascript" src="../lib/knockout.js"></script>
+    <script type="text/javascript" src="../lib/blackout.js"></script>
+
+    <style type="text/css">
+        .mainContainer {
+            width: 400px;
+            height: 500px;
+            position: absolute;
+            left: 40px;
+            top: 40px;
+            border: 1px solid #8a2be2;
+        }
+
+        .splitter {
+            background: #f4f4f4 url('images/splitter.png') no-repeat center;
+            width: 10px;
+            cursor: ew-resize;
+            position: absolute;
+            top: 0px;
+            bottom: 0px;
+        }
+
+        .contentLeft{
+            width: 150px;
+            min-width: 50px;
+            padding: 3px;
+        }
+
+        .contentRight{
+            width: 230px;
+            min-width: 100px;
+            padding: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="mainContainer">
+        <div class="contentLeft">Content</div>
+        <div data-bind="splitter: 'vertical'"></div>
+        <div class="contentRight">Content</div>
+    </div>
+
+    <script type="text/javascript">
+        ko.applyBindings({});
+    </script>
+</body>
+</html>
