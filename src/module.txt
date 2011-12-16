@@ -18,3 +18,4 @@ src\bo.ui.context.coffee
 src\bo.ui.navigation.coffee
 src\bo.ui.output.coffee
 src\bo.ui.tree.coffee
+src\bo.ui.splitter.coffee
