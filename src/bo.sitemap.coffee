@@ -11,7 +11,7 @@ class SitemapNode
 
         if definition.url
             bo.routing.routes.add name, definition.url
-            sitemap.RegionManager.register name, part for part in definition.parts if definition.parts
+            sitemap.regionManager.register name, part for part in definition.parts if definition.parts
 
         @hasRoute = definition.url?
 
@@ -51,8 +51,8 @@ class bo.Sitemap
     # of child nodes by having a property with name that is not one of these values.
     @knownPropertyNames =  ['url', 'parts', 'isInNavigation']
 
-    constructor: (@RegionManager, pages) ->
-        bo.arg.ensureDefined RegionManager, "RegionManager"
+    constructor: (@regionManager, pages) ->
+        bo.arg.ensureDefined regionManager, "regionManager"
         bo.arg.ensureDefined pages, "pages"
 
         @currentNode = ko.observable()
