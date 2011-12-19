@@ -26,19 +26,6 @@ ko.bindingHandlers.yesno =
 
         element.innerHTML = (if value then "Yes" else "No")
 
-ko.bindingHandlers.navigateTo =
-    init: (element, valueAccessor, allBindingsAccessor) ->
-        value = valueAccessor()
-
-        routeName = value.name || value
-        parameters = value.parameters || {}
-
-        $(element).click (event) ->
-            bo.routing.router.navigateTo routeName, parameters, allBindingsAccessor().alwaysNavigate != true
-
-            event.preventDefault()
-            false
-
 ko.bindingHandlers.fadeVisible =
     init: (element, valueAccessor) ->
         value = ko.utils.unwrapObservable valueAccessor()

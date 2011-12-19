@@ -1,8 +1,7 @@
-currentlyDraggingViewModel = {
-    currentlyDragging: ko.observable(),
+draggableModel =
+    currentlyDragging: ko.observable()
     canDrop: ko.observable()
     dropTarget: ko.observable()
-}
 
 ko.bindingHandlers.draggable =
     init: (element, valueAccessor, allBindingsAccessor, viewModel) ->
@@ -15,7 +14,7 @@ ko.bindingHandlers.draggable =
                 helper = jQuery('<div id="custom-draggable-helper" />')
 
                 _.defer ->
-                    ko.renderTemplate value.template, currentlyDraggingViewModel, {}, helper[0], "replaceChildren"
+                    ko.renderTemplate value.template, draggableModel, {}, helper[0], "replaceChildren"
 
                 helper
 
@@ -28,9 +27,9 @@ ko.bindingHandlers.draggable =
             distance: 10
 
             start: (e, ui) ->
-                currentlyDraggingViewModel.canDrop false
-                currentlyDraggingViewModel.dropTarget undefined
-                currentlyDraggingViewModel.currentlyDragging node
+                draggableModel.canDrop false
+                draggableModel.dropTarget undefined
+                draggableModel.currentlyDragging node
 
                 $element.attr "aria-grabbed", true
 
@@ -38,13 +37,13 @@ ko.bindingHandlers.draggable =
                 $element.attr "aria-grabbed", false
 
                 _.defer ->
-                    currentlyDraggingViewModel.currentlyDragging undefined
+                    draggableModel.currentlyDragging undefined
 
         $element.draggable jQuery.extend {}, dragOptions, value
         $element.attr "aria-grabbed", false
 
     update: () ->
-        jQuery("body").toggleClass "ui-drag-in-progress", currentlyDraggingViewModel.currentlyDragging() isnt undefined
+        jQuery("body").toggleClass "ui-drag-in-progress", draggableModel.currentlyDragging() isnt undefined
 
 ko.bindingHandlers.dropTarget =
     init: (element, valueAccessor, allBindingsAccessor, viewModel) ->
@@ -59,24 +58,24 @@ ko.bindingHandlers.dropTarget =
             hoverClass: 'ui-hovered-drop-target'
 
             accept: () ->
-                if currentlyDraggingViewModel.currentlyDragging()?
-                    canAccept.call viewModel, currentlyDraggingViewModel.currentlyDragging()
+                if draggableModel.currentlyDragging()?
+                    canAccept.call viewModel, draggableModel.currentlyDragging()
                 else
                     false
 
             over: () ->
-                canAcceptDrop = canAccept.call viewModel, currentlyDraggingViewModel.currentlyDragging()
+                canAcceptDrop = canAccept.call viewModel, draggableModel.currentlyDragging()
 
-                currentlyDraggingViewModel.canDrop canAcceptDrop
-                currentlyDraggingViewModel.dropTarget viewModel
+                draggableModel.canDrop canAcceptDrop
+                draggableModel.dropTarget viewModel
 
             out: () ->
-                currentlyDraggingViewModel.canDrop false
-                currentlyDraggingViewModel.dropTarget undefined
+                draggableModel.canDrop false
+                draggableModel.dropTarget undefined
 
             drop: () ->
                 _.defer ->
-                    handler.call viewModel, currentlyDraggingViewModel.currentlyDragging()
+                    handler.call viewModel, draggableModel.currentlyDragging()
 
         $element.droppable jQuery.extend {}, dropOptions, value
 
@@ -86,8 +85,8 @@ ko.bindingHandlers.dropTarget =
         canAccept = ko.utils.unwrapObservable value.canAccept
         dropEffect = ko.utils.unwrapObservable (value.dropEffect || "move")
 
-        if currentlyDraggingViewModel.currentlyDragging()?
-            canAccept = canAccept.call viewModel, currentlyDraggingViewModel.currentlyDragging()
+        if draggableModel.currentlyDragging()?
+            canAccept = canAccept.call viewModel, draggableModel.currentlyDragging()
             $element.toggleClass "ui-valid-drop-target", canAccept
             $element.toggleClass "ui-invalid-drop-target", !canAccept
 

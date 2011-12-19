@@ -25,6 +25,7 @@
 # in a URL after the /File/ prefix, such as '/File/root/pictures/myPicture.png', where
 # filePath would be 'root/pictures/myPicture.png'.
 class Route
+    @current = undefined
     paramRegex = /{(\*?)(\w+)}/g
 
     # Constructs a new route, with a name and route definition.
@@ -42,7 +43,34 @@ class Route
 
         @incomingMatcher = new RegExp "^/?#{routeDefinitionAsRegex}/?$"
 
-    match: (incoming) ->
+        bo.bus.subscribe "navigateToRoute:#{@name}", (options = {}) =>
+            @navigateTo options.parameters || {}, options.canVeto
+
+        bo.bus.subscribe 'urlChanged', (data) =>
+            if Route.current isnt @
+                if (args = @_match data.url) isnt undefined
+                    bo.bus.publish "routeNavigated:#{@name}", { url: (@_create args), route: @, parameters: args } 
+        
+        bo.bus.publish "routeCreated:#{@name}", @
+
+    # Navigates to this route, creating the full URL that this route and the passed parameters
+    # represent and raising messages that other parts of the application can respond to, such
+    # as the history manager (browser's history) or a `region manager`.
+    #
+    # When first called a 'routeNavigating' message will be published, allowing subscribers
+    # a chance to veto the navigation by returning `false`. This veto behaviour can be overriden
+    # by passing `false` as the second parameter, `canVeto`. When `canVeto` is `false` the event
+    # will still be raised, but will not stop the second message, `routeNavigated` from being
+    # published.
+    navigateTo: (args = {}, canVeto = true) ->
+        url = @_create args
+
+        if Route.current isnt @
+            if (bo.bus.publish "routeNavigating:#{@name}", { url: url, route: @, canVeto: canVeto }) or !canVeto
+                Route.current = @
+                bo.bus.publish "routeNavigated:#{@name}", { url: url, route: @, parameters: args }        
+
+    _match: (incoming) ->
         bo.arg.ensureString incoming, 'incoming'
 
         matches = incoming.match @incomingMatcher
@@ -52,9 +80,8 @@ class Route
             matchedParams[name] = matches[index + 1] for name, index in @paramNames
             matchedParams
 
-    create: (args = {}) ->
-        if @_allParametersPresent args
-        
+    _create: (args = {}) ->
+        if @_allParametersPresent args        
             @definition.replace paramRegex, (_, mode, name) =>
                 args[name]
 
@@ -64,66 +91,13 @@ class Route
     toString: ->
         "#{@name}: #{@definition}"
 
-# A RouteTable is responsible for managing a set of routes, with only one RouteTable
-# instance being available in a single application.
-#
-# A RouteTable will maintain a list of registered routes in the order in which they
-# were registered, meaning when creating or matching against routes it is important
-# more general routes appear after specific routes, as is the case in the 
-# ASP.NET Routing engine.
-class RouteTable
-    constructor: ->
-        @routes = {}
-
-    # Removes all routes from this routing table.
-    clear: ->
-        @routes = {}
-
-    # Gets the route with the given name from this table, returning undefined
-    # if no such route exists.
-    getRoute: (name) ->
-        bo.arg.ensureString name, 'name'
-
-        @routes[name]
-        
-    add: (routeOrName, routeDefinition) ->
-        bo.arg.ensureDefined routeOrName, 'routeOrName'
-
-        if routeOrName instanceof Route
-            @routes[routeOrName.name] = routeOrName
-        else
-            @add new Route routeOrName, routeDefinition
-
-    match: (url) ->
-        bo.arg.ensureString url, 'url'
-
-        for own name, route of @routes
-            matchedParameters = route.match url 
-                                   
-            if matchedParameters
-                return {
-                    route: route
-                    parameters: matchedParameters
-                }
-    
-    create: (name, parameters) ->
-        bo.arg.ensureString name, 'name'
-        
-        if not @routes[name]
-            throw "Cannot find the route '#{name}'."
-
-        @routes[name].create parameters
-
-class HistoryJsRouter
-    constructor: (@historyjs, @routeTable) ->
+class HistoryManager
+    constructor: () ->
+        @historyjs = window.History
         @persistedQueryParameters = {}
         @transientQueryParameters = {}
 
-        @currentRoute = ko.observable()
-
-        jQuery(window).bind 'statechange', => 
-            if not @navigating
-                @_handleExternalChange()
+        @currentRouteUrl = ''
 
     # Sets a query string paramater, making it a navigatable feature such that
     # the back button will load the URL before this query string parameter
@@ -139,64 +113,44 @@ class HistoryJsRouter
         @transientQueryParameters[name] = value if not isPersisted
         
         @historyjs.pushState null, null, @_generateUrl @_getNormalisedHash()
-
-    # Navigates to a named route with parameters.
-    #
-    # Navigation to a named route will replace the current URL with the generated
-    # route's URL, whilst maintaining the current query string (if one exists).
-    navigateTo: (routeName, parameters = {}, checkPreconditions = true) ->
-        route = @routeTable.getRoute routeName
-        
-        if not route
-            throw "Cannot find the route '#{routeName}'."
-
-        routeUrl = route.create parameters
-
-        if routeUrl		    
-            eventParams = { route: route, parameters: parameters }
-
-            if not checkPreconditions or (@_raiseRouteNavigatingEvent eventParams)
-                @navigating = true
-
-                @transientQueryParameters = {}
-                
-                @historyjs.pushState null, null, @_generateUrl routeUrl
-                @_raiseRouteNavigatedEvent eventParams
-                
-                @navigating = false
             
-    # Initialises this router which involves looking at the current URL and
-    # determining the currently selected route, raising a RouteNavigatedTo event to indicate
-    # a 'change'.
+    # Initialises this router, registering the necessary events to provide URL updating based
+    # on the current route (see `routeNavigated` message), in addition to publishing the initial
+    # `urlChanged` message to start an application based on the current URL.
     #
     # This method should be called after all routes have been registered and event handlers
     # subscribed so when it is called those subscribers can react accordingly to the initial route.
     initialise: ->
+        bo.bus.subscribe 'routeNavigated', (d) =>
+            @_updateFromRouteUrl d.url
+
+        jQuery(window).bind 'statechange', => 
+            @_handleExternalChange()
+
         @_handleExternalChange()
+          
+    _updateFromRouteUrl: (routeUrl) ->
+        @navigating = true
 
-    _handleExternalChange: ->
-        routeNavigatedTo = @routeTable.match @_getNormalisedHash()
+        @currentRouteUrl = routeUrl
+        @transientQueryParameters = {}
+        
+        @historyjs.pushState null, null, @_generateUrl()
 
-        if routeNavigatedTo
-            @_raiseRouteNavigatedEvent { route: routeNavigatedTo.route, parameters: routeNavigatedTo.parameters }   
-        else
-            bo.bus.publish "unknownUrlNavigatedTo", { url: @historyjs.getState().url } 
-            
+        @navigating = false
+
     # Given a 'route URL' will generate the full URL that should be pushed as the new state, including
     # any current query string paramaters.
-    _generateUrl: (routeUrl) ->
+    _generateUrl: () ->
         queryString = new bo.QueryString()
         queryString.setAll @transientQueryParameters
         queryString.setAll @persistedQueryParameters
 
-        routeUrl + queryString.toString()  
-            
-    _raiseRouteNavigatedEvent: (routeData) ->    
-        @currentRoute routeData.route
-        bo.bus.publish "routeNavigatedTo:#{routeData.route.name}", routeData
+        @currentRouteUrl + queryString.toString() 
 
-    _raiseRouteNavigatingEvent: (routeData) ->    
-        bo.bus.publish "routeNavigatingTo:#{routeData.route.name}", routeData
+    _handleExternalChange: ->
+        if not @navigating
+            bo.bus.publish 'urlChanged', { url: @_getNormalisedHash() }
 
     # Gets a normalised hash value, a string that can be used to determine what route is
     # currently being accessed. This will strip any leading periods and remove the query string,
@@ -206,11 +160,21 @@ class HistoryJsRouter
         currentHash = currentHash.substring(1) if currentHash.startsWith('.')
         currentHash = currentHash.replace bo.query.current().toString(), ''
 
-routeTableInstance = new RouteTable()
-routerInstance = new HistoryJsRouter(window.History, routeTableInstance)
-
 bo.routing =
-    Route: Route
-    
-    routes: routeTableInstance
-    router: routerInstance
+    Route: Route    
+    manager: new HistoryManager()
+
+ko.bindingHandlers.navigateTo =
+    init: (element, valueAccessor, allBindingsAccessor) ->
+        value = valueAccessor()
+
+        routeName = value.name || value
+        parameters = value.parameters || {}
+
+        jQuery(element).click (event) ->
+            bo.bus.publish "navigateToRoute:#{routeName}", 
+                parameters: parameters
+                canVeto: allBindingsAccessor().alwaysNavigate != true
+
+            event.preventDefault()
+            false
