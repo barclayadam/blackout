@@ -4,8 +4,9 @@ browserTagCaseIndependentHtml = (html) ->
 beforeEach ->
     window.sinonSandbox = sinon.sandbox.create sinon.getConfig { injectInto: this }
 
-    bo.routing.routes.clear()
     bo.bus.clearAll()
+
+    publishSpy = window.sinonSandbox.spy bo.bus, "publish"
 
     @respondWithTemplate = (path, body) ->
         @server.respondWith "GET", path, [200, { "Content-Type": "text/html" }, body]
@@ -28,6 +29,15 @@ beforeEach ->
 
         toBeAnEmptyArray: ->
             @actual.length is 0
+
+        toHaveBeenPublished: ->
+            publishSpy.calledWith @actual
+
+        toHaveBeenPublishedWith: (args) ->
+            publishSpy.calledWith @actual, args
+
+        toHaveNotBeenPublished: ->
+            not (publishSpy.calledWith @actual)
 
     @fixture = jQuery('<div id="fixture" />').appendTo('body')
 
@@ -77,9 +87,6 @@ beforeEach ->
 
         toHaveValue: (value) ->
             @actual.val() is value
-
-        toHaveData: (key, expectedValue) ->
-            hasProperty @actual.data(key), expectedValue
 
         toBeDisabled: (selector) ->
             @actual.is ":disabled"

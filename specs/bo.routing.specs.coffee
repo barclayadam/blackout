@@ -1,6 +1,3 @@
-#reference '../../js/blackout/bo.bus.coffee'
-#reference '../../js/blackout/bo.routing.coffee'
-
 describe 'Routing:', ->
     describe 'A route', ->
         describe 'with no definition', ->
@@ -8,228 +5,232 @@ describe 'Routing:', ->
                 creator = -> new bo.routing.Route '/My URL'
                 expect(creator).toThrow "Argument 'definition' must be a string. 'undefined' was passed."
 
-        describe 'with no arguments', ->
-            route = new bo.routing.Route 'Home', '/'
-
+        describe 'when constructed', ->
             it 'should have a name property', ->
+                # Act
+                route = new bo.routing.Route 'Home', '/'
+
+                # Assert
                 expect(route.name).toEqual 'Home'
 
             it 'should have a definition property', ->
+                # Act
+                route = new bo.routing.Route 'Home', '/'
+
+                # Assert
                 expect(route.definition).toEqual '/'
 
-            it 'should match against definition URL with empty object as matched params', ->
-                expect(route.match '/').toEqual {}
+        describe 'when navigateToRoute message published', ->
+            it 'should raise a route navigating event with generated URL and itself as data', ->
+                # Arrange
+                homeRoute = new bo.routing.Route 'Home', '/'
 
-            it 'should have an empty paramNames array', ->
-                expect(route.paramNames.length).toBe 0
-        
-            it 'should match no other URL', ->
-                expect(route.match '/Something').toBeUndefined()
+                # Act
+                bo.bus.publish 'navigateToRoute:Home'
 
-            it 'should construct URL regardless of arguments passed in', ->
-                expect(route.create()).toEqual '/'
-                expect(route.create({ key: 'value' })).toEqual '/'
-    
-        describe 'with single argument', -> 
-            route = new bo.routing.Route 'Home', '/{controller}'
+                # Assert
+                expect('routeNavigating:Home').toHaveBeenPublishedWith { url: '/', route: homeRoute, canVeto: true }
 
-            it 'should match against URL with no trailing slash', ->
-                expect(route.match '/Something').toEqual { controller: 'Something' }
+        describe 'when a route is navigated to directly', ->
+            it 'should raise a route navigating event with generated URL and itself as data', ->
+                # Arrange
+                homeRoute = new bo.routing.Route 'Home', '/'
 
-            it 'should match against URL with trailing slash', ->
-                expect(route.match '/Something/').toEqual { controller: 'Something' }
+                # Act
+                homeRoute.navigateTo()
 
-            it 'should match against URL without preceeding slash', ->
-                expect(route.match 'Something/').toEqual { controller: 'Something' }
+                # Assert
+                expect('routeNavigating:Home').toHaveBeenPublishedWith { url: '/', route: homeRoute, canVeto: true }
 
-            it 'should have a paramNames array containing parameter', ->
-                expect(route.paramNames).toContain 'controller'
+            it 'should not raise a route navigated event twice for the same route', ->
+                # Arrange
+                homeRoute = new bo.routing.Route 'Home', '/'
+                navigateSubscriber = @spy()
 
-            it 'should not construct URL when no arguments passed in', ->
-                expect(route.create()).toBeUndefined()
+                bo.bus.subscribe 'routeNavigating:Home', navigateSubscriber
 
-            it 'should construct URL when named argument passed in', ->
-                expect(route.create({ controller: 'MyController' })).toEqual '/MyController'
-    
-        describe 'with route without preceding slash', -> 
-            route = new bo.routing.Route 'Home', '{controller}'
+                # Act
+                homeRoute.navigateTo()
+                homeRoute.navigateTo()
 
-            it 'should match against URL with trailing slash', ->
-                expect(route.match '/Something/').toEqual { controller: 'Something' }
+                # Assert
+                expect(navigateSubscriber).toHaveBeenCalledOnce()
 
-            it 'should match against URL without preceeding slash', ->
-                expect(route.match 'Something/').toEqual { controller: 'Something' }
-    
-        describe 'with multiple arguments', -> 
-            route = new bo.routing.Route 'Home', '/{controller}/{action}'
+            it 'should raise a route navigated event with generated URL and itself as data if routeNavigating publish is true', ->
+                # Arrange
+                homeRoute = new bo.routing.Route 'Home', '/'
+                navigateSubscriber = @spy()
 
-            it 'matches against URL with no trailing slash', ->
-                expect(route.match '/Something/Else').toEqual { controller: 'Something', action: 'Else' }
+                bo.bus.subscribe 'routeNavigated:Home', navigateSubscriber
 
-            it 'matches against URL with trailing slash', ->            
-                expect(route.match '/Something/Else/').toEqual { controller: 'Something', action: 'Else' }
+                # Act
+                homeRoute.navigateTo()
 
-            it 'has a paramNames array containing parameters', ->
-                expect(route.paramNames).toContain 'controller'
-                expect(route.paramNames).toContain 'action'
+                # Assert
+                expect(navigateSubscriber).toHaveBeenCalledWith
+                    url: '/'
+                    route: homeRoute
+                    parameters: {}
 
-            it 'does not construct URL when no arguments passed in', ->
-                expect(route.create()).toBeUndefined()
+            it 'should not raise a route navigated event if routeNavigating publish is false', ->
+                # Arrange
+                homeRoute = new bo.routing.Route 'Home', '/'
+                navigateSubscriber = @spy()
+                routeNavigatingFalseReturner = @spy -> false
 
-            it 'does not construct URL when too few arguments passed in', ->
-                expect(route.create({ controller: 'MyController' })).toBeUndefined()
+                bo.bus.subscribe 'routeNavigating', routeNavigatingFalseReturner
+                bo.bus.subscribe 'routeNavigated', navigateSubscriber
 
-            it 'constructs URL when named argument passed in', ->
-                expect(route.create({ controller: 'MyController', action: 'MyAction' })).toEqual '/MyController/MyAction'
-    
-        describe 'with splat parameter', -> 
-            route = new bo.routing.Route 'Home', '/File/{*filePath}'
+                # Act
+                homeRoute.navigateTo()
 
-            it 'matches against URL with forward slashes within splat parameter', ->
-                expect(route.match '/File/root/pictures/myPicture.png').toEqual { filePath: 'root/pictures/myPicture.png' }
+                # Assert
+                expect(navigateSubscriber).toHaveNotBeenCalled()
 
-            it 'has a paramNames array containing parameter', ->
-                expect(route.paramNames).toContain 'filePath'
+            it 'should allow route navigation vetoing to be turned off', ->
+                # Arrange
+                homeRoute = new bo.routing.Route 'Home', '/'
+                navigateSubscriber = @spy()
+                routeNavigatingFalseReturner = @spy -> false
 
-            it 'does not construct URL when no arguments passed in', ->
-                expect(route.create()).toBeUndefined()
+                bo.bus.subscribe 'routeNavigating', routeNavigatingFalseReturner
+                bo.bus.subscribe 'routeNavigated', navigateSubscriber
+
+                # Act
+                homeRoute.navigateTo {}, false
+
+                # Assert
+                expect(navigateSubscriber).toHaveBeenCalledOnce()
+
+            it 'should indicate to routeNavigating subscribers their ability to veto', ->
+                # Arrange
+                homeRoute = new bo.routing.Route 'Home', '/'
+                navigateSubscriber = @spy()
+                routeNavigatingFalseReturner = @spy -> false
+
+                bo.bus.subscribe 'routeNavigating', navigateSubscriber
+
+                # Act
+                homeRoute.navigateTo {}, false
+
+                # Assert
+                expect(navigateSubscriber).toHaveBeenCalledWith { url: '/', route: homeRoute, canVeto: false }
+
+        describe 'when a urlChanged message is published', ->
+            it 'should publish a routeNavigated event if URL matches definition with no parameters', ->
+                # Arrange
+                homeRoute = new bo.routing.Route 'Controllers', '/Home'
+                navigateSubscriber = @spy()
+
+                bo.bus.subscribe 'routeNavigated', navigateSubscriber
+
+                # Act
+                bo.bus.publish 'urlChanged', '/Home'
+
+                # Assert
+                expect(navigateSubscriber).toHaveBeenCalledWith 
+                    url: '/Home', 
+                    route: homeRoute
+                    parameters: { }
+
+            it 'should publish a routeNavigated event if URL matches definition with single parameter', ->
+                # Arrange
+                controllerRoute = new bo.routing.Route 'Controllers', '/{controller}'
+                navigateSubscriber = @spy()
+
+                bo.bus.subscribe 'routeNavigated', navigateSubscriber
+
+                # Act
+                bo.bus.publish 'urlChanged', '/AController'
+
+                # Assert
+                expect(navigateSubscriber).toHaveBeenCalledWith 
+                    url: '/AController', 
+                    route: controllerRoute
+                    parameters: { controller: 'AController' }
+
+            it 'should publish a routeNavigated event with fixed URL when no preceeding slash', ->
+                # Arrange
+                controllerRoute = new bo.routing.Route 'Controllers', '/{controller}'
+
+                # Act
+                bo.bus.publish 'urlChanged', 'AController'
+
+                # Assert
+                expect('routeNavigated:Controllers').toHaveBeenPublishedWith 
+                    url: '/AController', 
+                    route: controllerRoute
+                    parameters: { controller: 'AController' }
+
+            it 'should publish a routeNavigated event with fixed URL when following forward slash', ->
+                # Arrange
+                controllerRoute = new bo.routing.Route 'Controllers', '/{controller}'
+
+                # Act
+                bo.bus.publish 'urlChanged', 'AController/'
+
+                # Assert
+                expect('routeNavigated:Controllers').toHaveBeenPublishedWith 
+                    url: '/AController', 
+                    route: controllerRoute
+                    parameters: { controller: 'AController' }
+
+            it 'should publish a routeNavigated event if URL matches definition with multiple parameters', ->
+                # Arrange
+                controllerRoute = new bo.routing.Route 'Controllers', '/{controller}/{action}'
+
+                # Act
+                bo.bus.publish 'urlChanged', '/AController/SomeAction'
+
+                # Assert
+                expect('routeNavigated:Controllers').toHaveBeenPublishedWith 
+                    url: '/AController/SomeAction', 
+                    route: controllerRoute
+                    parameters: { action: 'SomeAction', controller: 'AController' }
+
+            it 'should publish a routeNavigated event if URL matches definition with splat parameter', ->
+                # Arrange
+                fileRoute = new bo.routing.Route 'File', '/File/{*filePath}'
+
+                # Act
+                bo.bus.publish 'urlChanged', '/File/A/Long/File/Path/Name.png'
+
+                # Assert
+                expect('routeNavigated:File').toHaveBeenPublishedWith 
+                    url: '/File/A/Long/File/Path/Name.png', 
+                    route: fileRoute
+                    parameters: { filePath: 'A/Long/File/Path/Name.png' }
+
+            it 'should not publish a routeNavigated event if URL does not match definition', ->
+                # Arrange
+                homeRoute = new bo.routing.Route 'Controllers', '/Home'
+
+                # Act
+                bo.bus.publish 'urlChanged', '/Contact Us'
+
+                # Assert
+                expect('routeNavigated').toHaveNotBeenPublished()
                 
-            it 'constructs URL when named argument passed in', ->
-                expect(route.create({ filePath: 'root/pictures/myPicture.png' })).toEqual '/File/root/pictures/myPicture.png'
+    describe 'Routing Manager', ->
+        bo.routing.manager.initialise()
 
-    describe 'RouteTable', ->
-        beforeEach ->
-            bo.routing.routes.clear()
-
-        describe 'with no routes', ->
-            it 'does not match any URL', ->
-                expect(bo.routing.routes.match ('/')).toBeUndefined()
-            
-            it 'throws an exception when constructing a URL', ->
-                creator = -> bo.routing.routes.create ('Home')
-                expect(creator).toThrow "Cannot find the route 'Home'."
-
-        describe 'with single route without parameters created explicity', ->
-            beforeEach ->
-                bo.routing.routes.add new bo.routing.Route 'Home', '/'
-
-            it 'matches a URL that conforms to route', ->
-                matchedRoute = bo.routing.routes.match '/'
-
-                expect(matchedRoute.route.name).toEqual 'Home'
-                expect(matchedRoute.parameters).toEqual {}
-            
-            it 'returns route definition when constructing named route', ->
-                expect(bo.routing.routes.create 'Home').toEqual '/'
-
-        describe 'with single route without parameters created implicitly', ->
-            beforeEach ->
-                bo.routing.routes.add 'Home', '/MyUrl'
-
-            it 'matches a URL that conforms to route', ->
-                matchedRoute = bo.routing.routes.match '/MyUrl'
-
-                expect(matchedRoute.route.name).toEqual 'Home'
-                expect(matchedRoute.parameters).toEqual {}
-            
-            it 'returns route definition when constructing named route', ->
-                expect(bo.routing.routes.create 'Home').toEqual '/MyUrl'
-
-        describe 'with single route with a parameter', ->
-            beforeEach ->
-                bo.routing.routes.add 'Home', '/{controller}'
-
-            it 'will match single URL if incoming URL matches definition', ->
-                matchedRoute = bo.routing.routes.match '/MyController'
-
-                expect(matchedRoute.route.name).toEqual 'Home'
-                expect(matchedRoute.parameters).toEqual {controller: 'MyController' }
-                            
-            it 'returns route definition when constructing named route with correct parameters', ->
-                expect(bo.routing.routes.create 'Home', { controller: 'AController' } ).toEqual '/AController'
-
-        describe 'with multiple routes with general route defined first', ->
-            beforeEach ->
-                bo.routing.routes.add 'Default', '/{controller}'
-                bo.routing.routes.add 'Contact Us', '/Contact Us'
-
-            it 'matches in the order added', ->
-                matchedRoute = bo.routing.routes.match '/MyController'
-                expect(matchedRoute.route.name).toEqual 'Default'
-                expect(matchedRoute.parameters).toEqual {controller: 'MyController' }
-                
-                matchedRoute = bo.routing.routes.match '/Contact Us'
-                expect(matchedRoute.route.name).toEqual 'Default'
-                expect(matchedRoute.parameters).toEqual {controller: 'Contact Us' }
-            
-            it 'returns route definition when constructing named route with correct parameters', ->
-                expect(bo.routing.routes.create 'Default', { controller: 'AController' } ).toEqual '/AController'
-                expect(bo.routing.routes.create 'Contact Us' ).toEqual '/Contact Us'
-
-        describe 'with multiple routes with specific route defined first', ->
-            beforeEach ->
-                bo.routing.routes.add 'Contact Us', '/Contact Us'
-                bo.routing.routes.add 'Default', '/{controller}'
-
-            it 'matches in the order added', ->
-                matchedRoute = bo.routing.routes.match '/MyController'
-                expect(matchedRoute.route.name).toEqual 'Default'
-                expect(matchedRoute.parameters).toEqual {controller: 'MyController' }
-                
-                matchedRoute = bo.routing.routes.match '/Contact Us'
-                expect(matchedRoute.route.name).toEqual 'Contact Us'
-                expect(matchedRoute.parameters).toEqual { }
-            
-            it 'returns route definition when constructing named route with correct parameters', ->
-                expect(bo.routing.routes.create 'Default', { controller: 'AController' } ).toEqual '/AController'
-                expect(bo.routing.routes.create 'Contact Us' ).toEqual '/Contact Us'
-                
-    describe 'Router', ->
         describe 'When statechange window event is triggered', ->
-            it 'raises UnknownUrlNavigatedTo event when hash does not corresponds to a route', ->
+            it 'raises urlChanged event with current hash', ->
                 # Arrange
-                @stub window.History, 'getState', -> { hash: '/No Route URL', url: '/No Route URL' }
-                spy = @spy bo.bus, 'publish'
+                @stub window.History, 'getState', -> { hash: '/My Navigated URL' }
 
                 # Act
-                $(window).trigger 'statechange'
+                jQuery(window).trigger 'statechange'
 
                 # Assert
-                expect(spy).toHaveBeenCalledWith "unknownUrlNavigatedTo", { url: '/No Route URL' }  
+                expect('urlChanged').toHaveBeenPublishedWith { url: '/My Navigated URL' }  
 
-            it 'sets currentRoute observable to navigated to route', ->
+            it 'raises urlChanged event with current hash having period prefix removed', ->
                 # Arrange
-                bo.routing.routes.add 'Home', '/'
-                @stub window.History, 'getState', -> { hash: '/' }
+                @stub window.History, 'getState', -> { hash: './My Navigated URL' }
 
                 # Act
-                $(window).trigger 'statechange'
+                jQuery(window).trigger 'statechange'
 
                 # Assert
-                expect(bo.routing.router.currentRoute().name).toEqual 'Home'
-
-            it 'raises RouteNavigatedTo event when current has corresponds to known route', ->
-                # Arrange
-                bo.routing.routes.add 'Home', '/'
-
-                @stub window.History, 'getState', -> { hash: '/' }
-                spy = @spy bo.bus, 'publish'
-
-                # Act
-                $(window).trigger 'statechange'
-
-                # Assert
-                expect(spy).toHaveBeenCalledWith "routeNavigatedTo:Home"
-
-            it 'raises RouteNavigatedTo event when current hash corresponds to known route, prefixed with a period', ->
-                # Arrange
-                bo.routing.routes.add 'Home', '/'
-
-                @stub window.History, 'getState', -> { hash: './' }
-                spy = @spy bo.bus, 'publish'
-
-                # Act
-                $(window).trigger 'statechange'
-
-                # Assert
-                expect(spy).toHaveBeenCalledWith "routeNavigatedTo:Home"
+                expect('urlChanged').toHaveBeenPublishedWith { url: '/My Navigated URL' }

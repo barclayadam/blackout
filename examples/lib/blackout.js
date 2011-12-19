@@ -5,7 +5,7 @@
    (c) Adam Barclay
   */
 
-  var HistoryJsRouter, Menu, MenuItem, Route, RouteTable, SitemapNode, TreeNode, TreeViewModel, createErrorKey, currentPartsValueAccessor, currentValueBinding, currentlyDraggingViewModel, emptyValue, getType, getValidationFailureMessage, handlers, hasValue, originalEnableBindingHandler, routeTableInstance, routerInstance, simpleHandler, subscribers, token, validateValue;
+  var HistoryManager, Menu, MenuItem, Route, SitemapNode, TreeNode, TreeViewModel, createErrorKey, currentPartsValueAccessor, currentValueBinding, draggableModel, emptyValue, getType, getValidationFailureMessage, handlers, hasValue, originalEnableBindingHandler, simpleHandler, subscribers, token, validateValue;
   var __slice = Array.prototype.slice, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
   window.bo = {};
@@ -160,6 +160,7 @@
       var args, canContinue, e, eventName, events, indexOfSeparator, subscriber, t, _i, _len, _ref;
       eventName = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
       bo.arg.ensureString(eventName, 'eventName');
+      console.log("Publishing " + eventName + ".");
       indexOfSeparator = -1;
       events = [eventName];
       while (eventName = eventName.substring(0, eventName.lastIndexOf(':'))) {
@@ -686,20 +687,6 @@
     }
   };
 
-  ko.bindingHandlers.navigateTo = {
-    init: function(element, valueAccessor, allBindingsAccessor) {
-      var parameters, routeName, value;
-      value = valueAccessor();
-      routeName = value.name || value;
-      parameters = value.parameters || {};
-      return $(element).click(function(event) {
-        bo.routing.router.navigateTo(routeName, parameters, allBindingsAccessor().alwaysNavigate !== true);
-        event.preventDefault();
-        return false;
-      });
-    }
-  };
-
   ko.bindingHandlers.fadeVisible = {
     init: function(element, valueAccessor) {
       var value;
@@ -901,7 +888,7 @@
     }
   };
 
-  currentlyDraggingViewModel = {
+  draggableModel = {
     currentlyDragging: ko.observable(),
     canDrop: ko.observable(),
     dropTarget: ko.observable()
@@ -918,7 +905,7 @@
           var helper;
           helper = jQuery('<div id="custom-draggable-helper" />');
           _.defer(function() {
-            return ko.renderTemplate(value.template, currentlyDraggingViewModel, {}, helper[0], "replaceChildren");
+            return ko.renderTemplate(value.template, draggableModel, {}, helper[0], "replaceChildren");
           });
           return helper;
         };
@@ -931,15 +918,15 @@
         zIndex: 200000,
         distance: 10,
         start: function(e, ui) {
-          currentlyDraggingViewModel.canDrop(false);
-          currentlyDraggingViewModel.dropTarget(void 0);
-          currentlyDraggingViewModel.currentlyDragging(node);
+          draggableModel.canDrop(false);
+          draggableModel.dropTarget(void 0);
+          draggableModel.currentlyDragging(node);
           return $element.attr("aria-grabbed", true);
         },
         stop: function() {
           $element.attr("aria-grabbed", false);
           return _.defer(function() {
-            return currentlyDraggingViewModel.currentlyDragging(void 0);
+            return draggableModel.currentlyDragging(void 0);
           });
         }
       };
@@ -947,7 +934,7 @@
       return $element.attr("aria-grabbed", false);
     },
     update: function() {
-      return jQuery("body").toggleClass("ui-drag-in-progress", currentlyDraggingViewModel.currentlyDragging() !== void 0);
+      return jQuery("body").toggleClass("ui-drag-in-progress", draggableModel.currentlyDragging() !== void 0);
     }
   };
 
@@ -963,25 +950,25 @@
         tolerance: 'pointer',
         hoverClass: 'ui-hovered-drop-target',
         accept: function() {
-          if (currentlyDraggingViewModel.currentlyDragging() != null) {
-            return canAccept.call(viewModel, currentlyDraggingViewModel.currentlyDragging());
+          if (draggableModel.currentlyDragging() != null) {
+            return canAccept.call(viewModel, draggableModel.currentlyDragging());
           } else {
             return false;
           }
         },
         over: function() {
           var canAcceptDrop;
-          canAcceptDrop = canAccept.call(viewModel, currentlyDraggingViewModel.currentlyDragging());
-          currentlyDraggingViewModel.canDrop(canAcceptDrop);
-          return currentlyDraggingViewModel.dropTarget(viewModel);
+          canAcceptDrop = canAccept.call(viewModel, draggableModel.currentlyDragging());
+          draggableModel.canDrop(canAcceptDrop);
+          return draggableModel.dropTarget(viewModel);
         },
         out: function() {
-          currentlyDraggingViewModel.canDrop(false);
-          return currentlyDraggingViewModel.dropTarget(void 0);
+          draggableModel.canDrop(false);
+          return draggableModel.dropTarget(void 0);
         },
         drop: function() {
           return _.defer(function() {
-            return handler.call(viewModel, currentlyDraggingViewModel.currentlyDragging());
+            return handler.call(viewModel, draggableModel.currentlyDragging());
           });
         }
       };
@@ -993,8 +980,8 @@
       value = valueAccessor() || {};
       canAccept = ko.utils.unwrapObservable(value.canAccept);
       dropEffect = ko.utils.unwrapObservable(value.dropEffect || "move");
-      if (currentlyDraggingViewModel.currentlyDragging() != null) {
-        canAccept = canAccept.call(viewModel, currentlyDraggingViewModel.currentlyDragging());
+      if (draggableModel.currentlyDragging() != null) {
+        canAccept = canAccept.call(viewModel, draggableModel.currentlyDragging());
         $element.toggleClass("ui-valid-drop-target", canAccept);
         $element.toggleClass("ui-invalid-drop-target", !canAccept);
         if (canAccept) {
@@ -1012,7 +999,6 @@
   SitemapNode = (function() {
 
     function SitemapNode(sitemap, name, definition) {
-      var part, _i, _len, _ref;
       var _this = this;
       this.name = name;
       this.definition = definition;
@@ -1021,15 +1007,15 @@
       bo.arg.ensureDefined(definition, "definition");
       this.parent = null;
       this.children = ko.observableArray([]);
+      this.isCurrent = ko.computed(function() {
+        return sitemap.currentNode() === _this;
+      });
       if (definition.url) {
-        bo.routing.routes.add(name, definition.url);
-        if (definition.parts) {
-          _ref = definition.parts;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            part = _ref[_i];
-            sitemap.regionManager.register(name, part);
-          }
-        }
+        new bo.routing.Route(name, definition.url);
+        bo.bus.subscribe("routeNavigated:" + name, function() {
+          sitemap.currentNode(_this);
+          return sitemap.regionManager.activate(_this.definition.parts);
+        });
       }
       this.hasRoute = definition.url != null;
       if (definition.isInNavigation != null) {
@@ -1041,14 +1027,6 @@
       } else {
         this.isVisible = ko.observable(true);
       }
-      this.isCurrent = ko.computed(function() {
-        var currentRoute;
-        currentRoute = bo.routing.router.currentRoute();
-        return (currentRoute != null ? currentRoute.name : void 0) === _this.name;
-      });
-      this.isCurrent.subscribe(function(isCurrent) {
-        if (isCurrent) return sitemap.currentNode(_this);
-      });
       this.isActive = ko.computed(function() {
         return _this.isCurrent() || _.any(_this.children(), function(c) {
           return c.isActive();
@@ -1105,7 +1083,7 @@
       node = new SitemapNode(this, name, definition);
       for (subName in definition) {
         subDefinition = definition[subName];
-        if ((jQuery.inArray(subName, bo.Sitemap.knownPropertyNames)) === -1) {
+        if (!(_(bo.Sitemap.knownPropertyNames).contains(subName))) {
           node.addChild(this._createNode(subName, subDefinition));
         }
       }
@@ -1118,6 +1096,8 @@
 
   Route = (function() {
     var paramRegex;
+
+    Route.current = void 0;
 
     paramRegex = /{(\*?)(\w+)}/g;
 
@@ -1141,9 +1121,47 @@
         routeDefinitionAsRegex = routeDefinitionAsRegex.substring(1);
       }
       this.incomingMatcher = new RegExp("^/?" + routeDefinitionAsRegex + "/?$");
+      bo.bus.subscribe("navigateToRoute:" + this.name, function(options) {
+        if (options == null) options = {};
+        return _this.navigateTo(options.parameters || {}, options.canVeto);
+      });
+      bo.bus.subscribe('urlChanged', function(data) {
+        var args;
+        if (Route.current !== _this) {
+          if ((args = _this._match(data.url)) !== void 0) {
+            return bo.bus.publish("routeNavigated:" + _this.name, {
+              url: _this._create(args),
+              route: _this,
+              parameters: args
+            });
+          }
+        }
+      });
+      bo.bus.publish("routeCreated:" + this.name, this);
     }
 
-    Route.prototype.match = function(incoming) {
+    Route.prototype.navigateTo = function(args, canVeto) {
+      var url;
+      if (args == null) args = {};
+      if (canVeto == null) canVeto = true;
+      url = this._create(args);
+      if (Route.current !== this) {
+        if ((bo.bus.publish("routeNavigating:" + this.name, {
+          url: url,
+          route: this,
+          canVeto: canVeto
+        })) || !canVeto) {
+          Route.current = this;
+          return bo.bus.publish("routeNavigated:" + this.name, {
+            url: url,
+            route: this,
+            parameters: args
+          });
+        }
+      }
+    };
+
+    Route.prototype._match = function(incoming) {
       var index, matchedParams, matches, name, _len, _ref;
       bo.arg.ensureString(incoming, 'incoming');
       matches = incoming.match(this.incomingMatcher);
@@ -1158,7 +1176,7 @@
       }
     };
 
-    Route.prototype.create = function(args) {
+    Route.prototype._create = function(args) {
       var _this = this;
       if (args == null) args = {};
       if (this._allParametersPresent(args)) {
@@ -1182,155 +1200,88 @@
 
   })();
 
-  RouteTable = (function() {
+  HistoryManager = (function() {
 
-    function RouteTable() {
-      this.routes = {};
-    }
-
-    RouteTable.prototype.clear = function() {
-      return this.routes = {};
-    };
-
-    RouteTable.prototype.getRoute = function(name) {
-      bo.arg.ensureString(name, 'name');
-      return this.routes[name];
-    };
-
-    RouteTable.prototype.add = function(routeOrName, routeDefinition) {
-      bo.arg.ensureDefined(routeOrName, 'routeOrName');
-      if (routeOrName instanceof Route) {
-        return this.routes[routeOrName.name] = routeOrName;
-      } else {
-        return this.add(new Route(routeOrName, routeDefinition));
-      }
-    };
-
-    RouteTable.prototype.match = function(url) {
-      var matchedParameters, name, route, _ref;
-      bo.arg.ensureString(url, 'url');
-      _ref = this.routes;
-      for (name in _ref) {
-        if (!__hasProp.call(_ref, name)) continue;
-        route = _ref[name];
-        matchedParameters = route.match(url);
-        if (matchedParameters) {
-          return {
-            route: route,
-            parameters: matchedParameters
-          };
-        }
-      }
-    };
-
-    RouteTable.prototype.create = function(name, parameters) {
-      bo.arg.ensureString(name, 'name');
-      if (!this.routes[name]) throw "Cannot find the route '" + name + "'.";
-      return this.routes[name].create(parameters);
-    };
-
-    return RouteTable;
-
-  })();
-
-  HistoryJsRouter = (function() {
-
-    function HistoryJsRouter(historyjs, routeTable) {
-      var _this = this;
-      this.historyjs = historyjs;
-      this.routeTable = routeTable;
+    function HistoryManager() {
+      this.historyjs = window.History;
       this.persistedQueryParameters = {};
       this.transientQueryParameters = {};
-      this.currentRoute = ko.observable();
-      jQuery(window).bind('statechange', function() {
-        if (!_this.navigating) return _this._handleExternalChange();
-      });
+      this.currentRouteUrl = '';
     }
 
-    HistoryJsRouter.prototype.setQueryParameter = function(name, value, isPersisted) {
+    HistoryManager.prototype.setQueryParameter = function(name, value, isPersisted) {
       if (isPersisted == null) isPersisted = false;
       if (isPersisted) this.persistedQueryParameters[name] = value;
       if (!isPersisted) this.transientQueryParameters[name] = value;
       return this.historyjs.pushState(null, null, this._generateUrl(this._getNormalisedHash()));
     };
 
-    HistoryJsRouter.prototype.navigateTo = function(routeName, parameters, checkPreconditions) {
-      var eventParams, route, routeUrl;
-      if (parameters == null) parameters = {};
-      if (checkPreconditions == null) checkPreconditions = true;
-      route = this.routeTable.getRoute(routeName);
-      if (!route) throw "Cannot find the route '" + routeName + "'.";
-      routeUrl = route.create(parameters);
-      if (routeUrl) {
-        eventParams = {
-          route: route,
-          parameters: parameters
-        };
-        if (!checkPreconditions || (this._raiseRouteNavigatingEvent(eventParams))) {
-          this.navigating = true;
-          this.transientQueryParameters = {};
-          this.historyjs.pushState(null, null, this._generateUrl(routeUrl));
-          this._raiseRouteNavigatedEvent(eventParams);
-          return this.navigating = false;
-        }
-      }
-    };
-
-    HistoryJsRouter.prototype.initialise = function() {
+    HistoryManager.prototype.initialise = function() {
+      var _this = this;
+      bo.bus.subscribe('routeNavigated', function(d) {
+        return _this._updateFromRouteUrl(d.url);
+      });
+      jQuery(window).bind('statechange', function() {
+        return _this._handleExternalChange();
+      });
       return this._handleExternalChange();
     };
 
-    HistoryJsRouter.prototype._handleExternalChange = function() {
-      var routeNavigatedTo;
-      routeNavigatedTo = this.routeTable.match(this._getNormalisedHash());
-      if (routeNavigatedTo) {
-        return this._raiseRouteNavigatedEvent({
-          route: routeNavigatedTo.route,
-          parameters: routeNavigatedTo.parameters
-        });
-      } else {
-        return bo.bus.publish("unknownUrlNavigatedTo", {
-          url: this.historyjs.getState().url
-        });
-      }
+    HistoryManager.prototype._updateFromRouteUrl = function(routeUrl) {
+      this.navigating = true;
+      this.currentRouteUrl = routeUrl;
+      this.transientQueryParameters = {};
+      this.historyjs.pushState(null, null, this._generateUrl());
+      return this.navigating = false;
     };
 
-    HistoryJsRouter.prototype._generateUrl = function(routeUrl) {
+    HistoryManager.prototype._generateUrl = function() {
       var queryString;
       queryString = new bo.QueryString();
       queryString.setAll(this.transientQueryParameters);
       queryString.setAll(this.persistedQueryParameters);
-      return routeUrl + queryString.toString();
+      return this.currentRouteUrl + queryString.toString();
     };
 
-    HistoryJsRouter.prototype._raiseRouteNavigatedEvent = function(routeData) {
-      this.currentRoute(routeData.route);
-      return bo.bus.publish("routeNavigatedTo:" + routeData.route.name, routeData);
+    HistoryManager.prototype._handleExternalChange = function() {
+      if (!this.navigating) {
+        return bo.bus.publish('urlChanged', {
+          url: this._getNormalisedHash()
+        });
+      }
     };
 
-    HistoryJsRouter.prototype._raiseRouteNavigatingEvent = function(routeData) {
-      return bo.bus.publish("routeNavigatingTo:" + routeData.route.name, routeData);
-    };
-
-    HistoryJsRouter.prototype._getNormalisedHash = function() {
+    HistoryManager.prototype._getNormalisedHash = function() {
       var currentHash;
       currentHash = this.historyjs.getState().hash;
       if (currentHash.startsWith('.')) currentHash = currentHash.substring(1);
       return currentHash = currentHash.replace(bo.query.current().toString(), '');
     };
 
-    return HistoryJsRouter;
+    return HistoryManager;
 
   })();
 
-  routeTableInstance = new RouteTable();
-
-  routerInstance = new HistoryJsRouter(window.History, routeTableInstance);
-
   bo.routing = {
     Route: Route,
-    routes: routeTableInstance,
-    router: routerInstance
+    manager: new HistoryManager()
+  };
+
+  ko.bindingHandlers.navigateTo = {
+    init: function(element, valueAccessor, allBindingsAccessor) {
+      var parameters, routeName, value;
+      value = valueAccessor();
+      routeName = value.name || value;
+      parameters = value.parameters || {};
+      return jQuery(element).click(function(event) {
+        bo.bus.publish("navigateToRoute:" + routeName, {
+          parameters: parameters,
+          canVeto: allBindingsAccessor().alwaysNavigate !== true
+        });
+        event.preventDefault();
+        return false;
+      });
+    }
   };
 
   bo.Part = (function() {
@@ -1427,36 +1378,12 @@
 
     function RegionManager() {
       var _this = this;
-      this.isRegionManager = true;
-      this.routeNameToParts = {};
-      this.currentRoute = null;
-      this.currentParameters = null;
       this.currentParts = ko.observable({});
       this.isLoading = ko.observable(false);
-      bo.bus.subscribe("routeNavigatedTo", function(data) {
-        return _this._handleRouteNavigatedTo(data);
-      });
-      bo.bus.subscribe("routeNavigatingTo", function(data) {
-        return _this.canDeactivate();
-      });
       bo.bus.subscribe("reactivateParts", function() {
         return _this.reactivateParts();
       });
     }
-
-    RegionManager.prototype.partsForRoute = function(routeName) {
-      return this.routeNameToParts[routeName];
-    };
-
-    RegionManager.prototype.register = function(routeName, part) {
-      bo.arg.ensureDefined(routeName, 'routeName');
-      bo.arg.ensureDefined(part, 'part');
-      if ((bo.routing.routes.getRoute(routeName)) === void 0) {
-        throw "Cannot find route with name '" + routeName + "'";
-      }
-      if (!this.routeNameToParts[routeName]) this.routeNameToParts[routeName] = [];
-      return this.routeNameToParts[routeName].push(part);
-    };
 
     RegionManager.prototype.reactivateParts = function() {
       var part, region, _ref, _results;
@@ -1486,31 +1413,31 @@
       }
     };
 
-    RegionManager.prototype._handleRouteNavigatedTo = function(data) {
-      var currentPartsToSet, part, partPromises, partsRegisteredForRoute, _i, _len, _ref;
+    RegionManager.prototype.activate = function(parts, parameters) {
+      var currentPartsToSet, part, partPromises, _i, _len;
       var _this = this;
-      if ((_ref = data.parameters) == null) data.parameters = {};
-      if (this._isRouteDifferent(data.route)) {
-        partsRegisteredForRoute = this.partsForRoute(data.route.name);
-        if (!partsRegisteredForRoute) {
-          return console.log("Could not find any parts registered against the route '" + data.route.name + "'");
-        } else {
-          this.isLoading(true);
-          this._deactivateAll();
-          partPromises = [];
-          currentPartsToSet = {};
-          for (_i = 0, _len = partsRegisteredForRoute.length; _i < _len; _i++) {
-            part = partsRegisteredForRoute[_i];
-            partPromises = partPromises.concat(part.activate(data.parameters));
-            currentPartsToSet[part.region] = part;
-          }
-          return jQuery.when.apply(this, partPromises).done(function() {
-            _this.currentParts(currentPartsToSet);
-            _this.currentRoute = data.route.name;
-            _this.currentParameters = data.parameters;
-            return _this.isLoading(false);
-          });
+      if (parameters == null) parameters = {};
+      if (this.canDeactivate()) {
+        bo.bus.publish("partsActivating", {
+          parts: parts
+        });
+        this.isLoading(true);
+        this._deactivateAll();
+        partPromises = [];
+        currentPartsToSet = {};
+        for (_i = 0, _len = parts.length; _i < _len; _i++) {
+          part = parts[_i];
+          partPromises = partPromises.concat(part.activate(parameters));
+          currentPartsToSet[part.region] = part;
         }
+        return jQuery.when.apply(this, partPromises).done(function() {
+          _this.currentParts(currentPartsToSet);
+          _this.currentParameters = parameters;
+          _this.isLoading(false);
+          return bo.bus.publish("partsActivated", {
+            parts: parts
+          });
+        });
       }
     };
 
@@ -1523,10 +1450,6 @@
         _results.push(part.deactivate());
       }
       return _results;
-    };
-
-    RegionManager.prototype._isRouteDifferent = function(route) {
-      return !this.currentRoute || this.currentRoute !== route.name;
     };
 
     return RegionManager;

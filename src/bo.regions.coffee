@@ -6,30 +6,30 @@ class bo.RegionManager
     @reactivateEvent: "reactivateParts"
 
     constructor: () ->
-        @isRegionManager = true
+        #@isRegionManager = true
 
-        @routeNameToParts = {}
+        #@routeNameToParts = {}
 
-        @currentRoute = null
-        @currentParameters = null
+        #@currentRoute = null
+        #@currentParameters = null
         @currentParts = ko.observable {}
         @isLoading = ko.observable false
 
-        bo.bus.subscribe "routeNavigatedTo", (data) => @_handleRouteNavigatedTo data
-        bo.bus.subscribe "routeNavigatingTo", (data) => @canDeactivate()
+        #bo.bus.subscribe "routeNavigatedTo", (data) => @_handleRouteNavigatedTo data
+        #bo.bus.subscribe "routeNavigatingTo", (data) => @canDeactivate()
         bo.bus.subscribe "reactivateParts", () => @reactivateParts()
 
-    partsForRoute: (routeName) ->
-        @routeNameToParts[routeName]
+    #partsForRoute: (routeName) ->
+    #    @routeNameToParts[routeName]
 
-    register: (routeName, part) ->
-        bo.arg.ensureDefined routeName, 'routeName'
-        bo.arg.ensureDefined part, 'part'
+    #register: (routeName, part) ->
+    #    bo.arg.ensureDefined routeName, 'routeName'
+    #    bo.arg.ensureDefined part, 'part'
 
-        throw "Cannot find route with name '#{routeName}'" if (bo.routing.routes.getRoute routeName) is undefined
+    #    throw "Cannot find route with name '#{routeName}'" if (bo.routing.routes.getRoute routeName) is undefined
 
-        @routeNameToParts[routeName] = [] if not @routeNameToParts[routeName]
-        @routeNameToParts[routeName].push part
+    #    @routeNameToParts[routeName] = [] if not @routeNameToParts[routeName]
+    #    @routeNameToParts[routeName].push part
 
     reactivateParts: () ->
         part.activate @currentParameters for region, part of @currentParts()
@@ -45,36 +45,29 @@ class bo.RegionManager
         else
             true
 
-    _handleRouteNavigatedTo: (data) ->
-        data.parameters ?= {}
+    activate: (parts, parameters = {}) ->
+        if @canDeactivate()
+            bo.bus.publish "partsActivating", { parts: parts }
+            
+            @isLoading true
+            @_deactivateAll()
 
-        if @_isRouteDifferent data.route
-            partsRegisteredForRoute = @partsForRoute data.route.name
+            partPromises = []
+            currentPartsToSet = {}
 
-            if not partsRegisteredForRoute
-                console.log "Could not find any parts registered against the route '#{data.route.name}'"
-            else
-                @isLoading true
-                @_deactivateAll()
+            for part in parts
+                partPromises = partPromises.concat part.activate parameters
+                currentPartsToSet[part.region] = part
 
-                partPromises = []
-                currentPartsToSet = {}
+            jQuery.when.apply(@, partPromises).done =>
+                @currentParts currentPartsToSet
+                @currentParameters = parameters
+                @isLoading false
 
-                for part in partsRegisteredForRoute
-                    partPromises = partPromises.concat part.activate data.parameters
-                    currentPartsToSet[part.region] = part
-
-                jQuery.when.apply(@, partPromises).done =>
-                    @currentParts currentPartsToSet
-                    @currentRoute = data.route.name
-                    @currentParameters = data.parameters
-                    @isLoading false
+                bo.bus.publish "partsActivated", { parts: parts }
 
     _deactivateAll: ->
         part.deactivate() for region, part of @currentParts()
-
-    _isRouteDifferent: (route) ->
-        !@currentRoute or @currentRoute isnt route.name
 
 currentPartsValueAccessor = (regionManager) ->
     -> { 'ifnot': _.isEmpty(regionManager.currentParts()), 'templateEngine': ko.nativeTemplateEngine.instance, 'data': regionManager }

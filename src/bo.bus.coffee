@@ -48,6 +48,8 @@ bo.bus =
     publish: (eventName, args...) ->
         bo.arg.ensureString eventName, 'eventName'
 
+        console.log "Publishing #{eventName}."
+
         indexOfSeparator = -1
         events = [eventName]
 
