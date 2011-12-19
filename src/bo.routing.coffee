@@ -27,8 +27,7 @@
 class Route
     paramRegex = /{(\*?)(\w+)}/g
 
-    # Constructs a new route, with either an explicit name and route definition, or only
-    # a route definition which is used as the name of the route.
+    # Constructs a new route, with a name and route definition.
     constructor: (@name, @definition) ->
         bo.arg.ensureString name, 'name'
         bo.arg.ensureString definition, 'definition'
@@ -39,7 +38,9 @@ class Route
             @paramNames.push name
             if mode is '*' then '(.*)' else '([^/]*)'
 
-        @incomingMatcher = new RegExp "^#{routeDefinitionAsRegex}/?$"
+        routeDefinitionAsRegex = routeDefinitionAsRegex.substring 1 if routeDefinitionAsRegex[0] is '/'
+
+        @incomingMatcher = new RegExp "^/?#{routeDefinitionAsRegex}/?$"
 
     match: (incoming) ->
         bo.arg.ensureString incoming, 'incoming'
@@ -58,7 +59,7 @@ class Route
                 args[name]
 
     _allParametersPresent: (args) ->
-        (true for p in @paramNames when args[p] is undefined).length is 0
+        _.all(@paramNames, (p) -> args[p]?)
 
     toString: ->
         "#{@name}: #{@definition}"
@@ -68,7 +69,7 @@ class Route
 #
 # A RouteTable will maintain a list of registered routes in the order in which they
 # were registered, meaning when creating or matching against routes it is important
-# more general routes appear below specific routes, as is the case in the 
+# more general routes appear after specific routes, as is the case in the 
 # ASP.NET Routing engine.
 class RouteTable
     constructor: ->
@@ -122,7 +123,7 @@ class HistoryJsRouter
 
         jQuery(window).bind 'statechange', => 
             if not @navigating
-                @_raiseExternalChange()
+                @_handleExternalChange()
 
     # Sets a query string paramater, making it a navigatable feature such that
     # the back button will load the URL before this query string parameter
@@ -171,15 +172,15 @@ class HistoryJsRouter
     # This method should be called after all routes have been registered and event handlers
     # subscribed so when it is called those subscribers can react accordingly to the initial route.
     initialise: ->
-        @_raiseExternalChange()
+        @_handleExternalChange()
 
-    _raiseExternalChange: ->
+    _handleExternalChange: ->
         routeNavigatedTo = @routeTable.match @_getNormalisedHash()
 
         if routeNavigatedTo
             @_raiseRouteNavigatedEvent { route: routeNavigatedTo.route, parameters: routeNavigatedTo.parameters }   
         else
-            bo.bus.publish bo.routing.UnknownUrlNavigatedToEvent, { url: @historyjs.getState().url } 
+            bo.bus.publish "unknownUrlNavigatedTo", { url: @historyjs.getState().url } 
             
     # Given a 'route URL' will generate the full URL that should be pushed as the new state, including
     # any current query string paramaters.
@@ -192,10 +193,10 @@ class HistoryJsRouter
             
     _raiseRouteNavigatedEvent: (routeData) ->    
         @currentRoute routeData.route
-        bo.bus.publish bo.routing.RouteNavigatedToEvent, routeData
+        bo.bus.publish "routeNavigatedTo:#{routeData.route.name}", routeData
 
     _raiseRouteNavigatingEvent: (routeData) ->    
-        bo.bus.publish bo.routing.RouteNavigatingToEvent, routeData
+        bo.bus.publish "routeNavigatingTo:#{routeData.route.name}", routeData
 
     # Gets a normalised hash value, a string that can be used to determine what route is
     # currently being accessed. This will strip any leading periods and remove the query string,
@@ -211,9 +212,5 @@ routerInstance = new HistoryJsRouter(window.History, routeTableInstance)
 bo.routing =
     Route: Route
     
-    RouteNavigatingToEvent: 'RouteNavigatingTo'
-    RouteNavigatedToEvent: 'RouteNavigatedTo'
-    UnknownUrlNavigatedToEvent: 'UnknownUrlNavigatedTo'
-
     routes: routeTableInstance
     router: routerInstance

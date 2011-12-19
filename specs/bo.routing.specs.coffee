@@ -2,51 +2,63 @@
 #reference '../../js/blackout/bo.routing.coffee'
 
 describe 'Routing:', ->
-    describe 'Route', ->
+    describe 'A route', ->
         describe 'with no definition', ->
-            it 'throws an exception', ->
+            it 'should throw an exception on creation', ->
                 creator = -> new bo.routing.Route '/My URL'
                 expect(creator).toThrow "Argument 'definition' must be a string. 'undefined' was passed."
 
         describe 'with no arguments', ->
             route = new bo.routing.Route 'Home', '/'
 
-            it 'has a name property', ->
+            it 'should have a name property', ->
                 expect(route.name).toEqual 'Home'
 
-            it 'has a definition property', ->
+            it 'should have a definition property', ->
                 expect(route.definition).toEqual '/'
 
-            it 'matches against definition URL with empty object as matched params', ->
+            it 'should match against definition URL with empty object as matched params', ->
                 expect(route.match '/').toEqual {}
 
-            it 'has an empty paramNames array', ->
+            it 'should have an empty paramNames array', ->
                 expect(route.paramNames.length).toBe 0
         
-            it 'matches no other URL', ->
+            it 'should match no other URL', ->
                 expect(route.match '/Something').toBeUndefined()
 
-            it 'constructs URL regardless of arguments passed in', ->
+            it 'should construct URL regardless of arguments passed in', ->
                 expect(route.create()).toEqual '/'
                 expect(route.create({ key: 'value' })).toEqual '/'
     
         describe 'with single argument', -> 
             route = new bo.routing.Route 'Home', '/{controller}'
 
-            it 'matches against URL with no trailing slash', ->
+            it 'should match against URL with no trailing slash', ->
                 expect(route.match '/Something').toEqual { controller: 'Something' }
 
-            it 'matches against URL with trailing slash', ->
+            it 'should match against URL with trailing slash', ->
                 expect(route.match '/Something/').toEqual { controller: 'Something' }
 
-            it 'has a paramNames array containing parameter', ->
+            it 'should match against URL without preceeding slash', ->
+                expect(route.match 'Something/').toEqual { controller: 'Something' }
+
+            it 'should have a paramNames array containing parameter', ->
                 expect(route.paramNames).toContain 'controller'
 
-            it 'does not construct URL when no arguments passed in', ->
+            it 'should not construct URL when no arguments passed in', ->
                 expect(route.create()).toBeUndefined()
 
-            it 'constructs URL when named argument passed in', ->
+            it 'should construct URL when named argument passed in', ->
                 expect(route.create({ controller: 'MyController' })).toEqual '/MyController'
+    
+        describe 'with route without preceding slash', -> 
+            route = new bo.routing.Route 'Home', '{controller}'
+
+            it 'should match against URL with trailing slash', ->
+                expect(route.match '/Something/').toEqual { controller: 'Something' }
+
+            it 'should match against URL without preceeding slash', ->
+                expect(route.match 'Something/').toEqual { controller: 'Something' }
     
         describe 'with multiple arguments', -> 
             route = new bo.routing.Route 'Home', '/{controller}/{action}'
@@ -183,7 +195,7 @@ describe 'Routing:', ->
                 $(window).trigger 'statechange'
 
                 # Assert
-                expect(spy).toHaveBeenCalledWith bo.routing.UnknownUrlNavigatedToEvent,  { url: '/No Route URL' }  
+                expect(spy).toHaveBeenCalledWith "unknownUrlNavigatedTo", { url: '/No Route URL' }  
 
             it 'sets currentRoute observable to navigated to route', ->
                 # Arrange
@@ -207,7 +219,7 @@ describe 'Routing:', ->
                 $(window).trigger 'statechange'
 
                 # Assert
-                expect(spy).toHaveBeenCalledWith bo.routing.RouteNavigatedToEvent
+                expect(spy).toHaveBeenCalledWith "routeNavigatedTo:Home"
 
             it 'raises RouteNavigatedTo event when current hash corresponds to known route, prefixed with a period', ->
                 # Arrange
@@ -220,4 +232,4 @@ describe 'Routing:', ->
                 $(window).trigger 'statechange'
 
                 # Assert
-                expect(spy).toHaveBeenCalledWith bo.routing.RouteNavigatedToEvent
+                expect(spy).toHaveBeenCalledWith "routeNavigatedTo:Home"
