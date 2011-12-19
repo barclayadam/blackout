@@ -27,7 +27,7 @@ class bo.QueryString
     set: (key, value) ->
         @values[key] = value
 
-    # Given an object will copy aldl key <-> value pairs into this
+    # Given an object will copy all key <-> value pairs into this
     # query string.
     setAll: (values) ->
         @set key, value for own key, value of values when value?

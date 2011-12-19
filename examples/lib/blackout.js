@@ -150,25 +150,31 @@
       if (subscribers[eventName] === void 0) subscribers[eventName] = {};
       token = ++token;
       subscribers[eventName][token] = func;
-      return [eventName, token];
+      return {
+        unsubscribe: function() {
+          return delete subscribers[eventName][token];
+        }
+      };
     },
     publish: function() {
-      var args, canContinue, eventName, subscriber, t, _ref;
+      var args, canContinue, e, eventName, events, indexOfSeparator, subscriber, t, _i, _len, _ref;
       eventName = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
       bo.arg.ensureString(eventName, 'eventName');
-      _ref = subscribers[eventName] || {};
-      for (t in _ref) {
-        subscriber = _ref[t];
-        canContinue = subscriber.apply(this, args);
-        if (canContinue === false) return false;
+      indexOfSeparator = -1;
+      events = [eventName];
+      while (eventName = eventName.substring(0, eventName.lastIndexOf(':'))) {
+        events.push(eventName);
+      }
+      for (_i = 0, _len = events.length; _i < _len; _i++) {
+        e = events[_i];
+        _ref = subscribers[e] || {};
+        for (t in _ref) {
+          subscriber = _ref[t];
+          canContinue = subscriber.apply(this, args);
+          if (canContinue === false) return false;
+        }
       }
       return true;
-    },
-    unsubscribe: function(token) {
-      var subscriptionList;
-      bo.arg.ensureDefined(token, 'token');
-      subscriptionList = subscribers[token[0]];
-      return delete subscriptionList[token[1]];
     }
   };
 
@@ -1021,7 +1027,7 @@
           _ref = definition.parts;
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             part = _ref[_i];
-            sitemap.RegionManager.register(name, part);
+            sitemap.regionManager.register(name, part);
           }
         }
       }
@@ -1073,11 +1079,11 @@
 
     Sitemap.knownPropertyNames = ['url', 'parts', 'isInNavigation'];
 
-    function Sitemap(RegionManager, pages) {
+    function Sitemap(regionManager, pages) {
       var pageDefinition, pageName;
       var _this = this;
-      this.RegionManager = RegionManager;
-      bo.arg.ensureDefined(RegionManager, "RegionManager");
+      this.regionManager = regionManager;
+      bo.arg.ensureDefined(regionManager, "regionManager");
       bo.arg.ensureDefined(pages, "pages");
       this.currentNode = ko.observable();
       this.nodes = [];
@@ -1131,7 +1137,10 @@
           return '([^/]*)';
         }
       });
-      this.incomingMatcher = new RegExp("^" + routeDefinitionAsRegex + "/?$");
+      if (routeDefinitionAsRegex[0] === '/') {
+        routeDefinitionAsRegex = routeDefinitionAsRegex.substring(1);
+      }
+      this.incomingMatcher = new RegExp("^/?" + routeDefinitionAsRegex + "/?$");
     }
 
     Route.prototype.match = function(incoming) {
@@ -1160,17 +1169,9 @@
     };
 
     Route.prototype._allParametersPresent = function(args) {
-      var p;
-      return ((function() {
-        var _i, _len, _ref, _results;
-        _ref = this.paramNames;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          p = _ref[_i];
-          if (args[p] === void 0) _results.push(true);
-        }
-        return _results;
-      }).call(this)).length === 0;
+      return _.all(this.paramNames, function(p) {
+        return args[p] != null;
+      });
     };
 
     Route.prototype.toString = function() {
@@ -1242,7 +1243,7 @@
       this.transientQueryParameters = {};
       this.currentRoute = ko.observable();
       jQuery(window).bind('statechange', function() {
-        if (!_this.navigating) return _this._raiseExternalChange();
+        if (!_this.navigating) return _this._handleExternalChange();
       });
     }
 
@@ -1276,10 +1277,10 @@
     };
 
     HistoryJsRouter.prototype.initialise = function() {
-      return this._raiseExternalChange();
+      return this._handleExternalChange();
     };
 
-    HistoryJsRouter.prototype._raiseExternalChange = function() {
+    HistoryJsRouter.prototype._handleExternalChange = function() {
       var routeNavigatedTo;
       routeNavigatedTo = this.routeTable.match(this._getNormalisedHash());
       if (routeNavigatedTo) {
@@ -1288,7 +1289,7 @@
           parameters: routeNavigatedTo.parameters
         });
       } else {
-        return bo.bus.publish(bo.routing.UnknownUrlNavigatedToEvent, {
+        return bo.bus.publish("unknownUrlNavigatedTo", {
           url: this.historyjs.getState().url
         });
       }
@@ -1304,11 +1305,11 @@
 
     HistoryJsRouter.prototype._raiseRouteNavigatedEvent = function(routeData) {
       this.currentRoute(routeData.route);
-      return bo.bus.publish(bo.routing.RouteNavigatedToEvent, routeData);
+      return bo.bus.publish("routeNavigatedTo:" + routeData.route.name, routeData);
     };
 
     HistoryJsRouter.prototype._raiseRouteNavigatingEvent = function(routeData) {
-      return bo.bus.publish(bo.routing.RouteNavigatingToEvent, routeData);
+      return bo.bus.publish("routeNavigatingTo:" + routeData.route.name, routeData);
     };
 
     HistoryJsRouter.prototype._getNormalisedHash = function() {
@@ -1328,9 +1329,6 @@
 
   bo.routing = {
     Route: Route,
-    RouteNavigatingToEvent: 'RouteNavigatingTo',
-    RouteNavigatedToEvent: 'RouteNavigatedTo',
-    UnknownUrlNavigatedToEvent: 'UnknownUrlNavigatedTo',
     routes: routeTableInstance,
     router: routerInstance
   };
@@ -1425,7 +1423,7 @@
 
   bo.RegionManager = (function() {
 
-    RegionManager.reactivateEvent = "RegionManager.reactivateParts";
+    RegionManager.reactivateEvent = "reactivateParts";
 
     function RegionManager() {
       var _this = this;
@@ -1435,13 +1433,13 @@
       this.currentParameters = null;
       this.currentParts = ko.observable({});
       this.isLoading = ko.observable(false);
-      bo.bus.subscribe(bo.routing.RouteNavigatedToEvent, function(data) {
+      bo.bus.subscribe("routeNavigatedTo", function(data) {
         return _this._handleRouteNavigatedTo(data);
       });
-      bo.bus.subscribe(bo.routing.RouteNavigatingToEvent, function(data) {
+      bo.bus.subscribe("routeNavigatingTo", function(data) {
         return _this.canDeactivate();
       });
-      bo.bus.subscribe(RegionManager.reactivateEvent, function() {
+      bo.bus.subscribe("reactivateParts", function() {
         return _this.reactivateParts();
       });
     }
@@ -1472,19 +1470,12 @@
     };
 
     RegionManager.prototype.canDeactivate = function(options) {
-      var dirtyCount, part, region;
+      var hasDirtyPart;
       if (options == null) options = {};
-      dirtyCount = ((function() {
-        var _ref, _results;
-        _ref = this.currentParts();
-        _results = [];
-        for (region in _ref) {
-          part = _ref[region];
-          if (!part.canDeactivate()) _results.push(true);
-        }
-        return _results;
-      }).call(this)).length;
-      if (dirtyCount > 0) {
+      hasDirtyPart = _.any(this.currentParts(), function(part) {
+        return !part.canDeactivate();
+      });
+      if (hasDirtyPart > 0) {
         if (options.showConfirmation === false) {
           return false;
         } else {
