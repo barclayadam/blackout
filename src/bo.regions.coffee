@@ -3,7 +3,7 @@
 # to support navigation throughout the application by using the routing mechanism
 # to load parts of the application.
 class bo.RegionManager
-    @reactivateEvent: "RegionManager.reactivateParts"
+    @reactivateEvent: "reactivateParts"
 
     constructor: () ->
         @isRegionManager = true
@@ -15,9 +15,9 @@ class bo.RegionManager
         @currentParts = ko.observable {}
         @isLoading = ko.observable false
 
-        bo.bus.subscribe bo.routing.RouteNavigatedToEvent, (data) => @_handleRouteNavigatedTo data
-        bo.bus.subscribe bo.routing.RouteNavigatingToEvent, (data) => @canDeactivate()
-        bo.bus.subscribe RegionManager.reactivateEvent, () => @reactivateParts()
+        bo.bus.subscribe "routeNavigatedTo", (data) => @_handleRouteNavigatedTo data
+        bo.bus.subscribe "routeNavigatingTo", (data) => @canDeactivate()
+        bo.bus.subscribe "reactivateParts", () => @reactivateParts()
 
     partsForRoute: (routeName) ->
         @routeNameToParts[routeName]
@@ -35,9 +35,9 @@ class bo.RegionManager
         part.activate @currentParameters for region, part of @currentParts()
 
     canDeactivate: (options = {}) ->
-        dirtyCount = (true for region, part of @currentParts() when !part.canDeactivate()).length
+        hasDirtyPart = _.any(@currentParts(), (part) -> !part.canDeactivate())
 
-        if dirtyCount > 0
+        if hasDirtyPart > 0
             if options.showConfirmation is false
                 false
             else

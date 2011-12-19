@@ -21,7 +21,7 @@ describe 'RegionManager:', ->
             @manager = new bo.RegionManager()
 
         it 'does not change the current page', ->
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: (new bo.routing.Route 'Unknown', '/Somewhere'), parameters: {} }
+            bo.bus.publish "routeNavigatedTo", { route: (new bo.routing.Route 'Unknown', '/Somewhere'), parameters: {} }
             expect(@manager.currentParts()).toEqual {}
 
     describe 'Route changed event for single registered part, when no current parts', ->
@@ -39,21 +39,21 @@ describe 'RegionManager:', ->
             @stub homePart, "activate", ->
                 bo.utils.resolvedPromise()
 
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' }}
             expect(@manager.currentParts()['main']).toEqual homePart
 
         it 'activates the registered part', ->
             activateSpy = @spy homePart, 'activate'
 
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' }}
 
             expect(activateSpy).toHaveBeenCalled()
 
         it 'does not activate parts again when same route navigated to', ->
             activateSpy = @spy homePart, 'activate'
 
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' }}
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' }}
 
             expect(activateSpy).toHaveBeenCalledOnce()
 
@@ -65,7 +65,7 @@ describe 'RegionManager:', ->
                 [deferred.promise()]
 
             # Act
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' }}
             expect(@manager.currentParts()).toEqual {}
             deferred.resolve()
 
@@ -79,7 +79,7 @@ describe 'RegionManager:', ->
             activateStub = @stub homePart, 'activate', -> [deferred.promise()]
 
             # Act
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' }}
 
             # Assert
             expect(@manager.isLoading()).toBe true
@@ -91,7 +91,7 @@ describe 'RegionManager:', ->
             activateStub = @stub homePart, 'activate', -> [deferred.promise()]
 
             # Act
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' }}
             deferred.resolve()
 
             # Assert
@@ -109,7 +109,7 @@ describe 'RegionManager:', ->
             @manager.register 'Home', helpPart
 
         it 'should add the registered parts to the currentParts array', ->
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' }}
             expect(@manager.currentParts()['main']).toBe homePart
             expect(@manager.currentParts()['help']).toBe helpPart
 
@@ -117,7 +117,7 @@ describe 'RegionManager:', ->
             homePartActivateSpy = @spy homePart, 'activate'
             helpPartActivateSpy = @spy helpPart, 'activate'
 
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' }}
 
             expect(homePartActivateSpy).toHaveBeenCalled()
             expect(helpPartActivateSpy).toHaveBeenCalled()
@@ -131,7 +131,7 @@ describe 'RegionManager:', ->
             @stub helpPart, 'activate', -> deferred2.promise()
 
             # Act
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' }}
             expect(@manager.currentParts()).toEqual {}
             deferred1.resolve()
             expect(@manager.currentParts()).toEqual {}
@@ -150,7 +150,7 @@ describe 'RegionManager:', ->
             @stub helpPart, 'activate', -> deferred2.promise()
 
             # Act
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' }}
 
             # Assert
             expect(@manager.isLoading()).toBe true
@@ -164,7 +164,7 @@ describe 'RegionManager:', ->
             @stub helpPart, 'activate', -> deferred2.promise()
 
             # Act
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' }}
             deferred1.resolve()
             expect(@manager.isLoading()).toBe true
             deferred2.resolve()
@@ -187,29 +187,29 @@ describe 'RegionManager:', ->
             @manager.register 'Home', homePart
             @manager.register 'Contact Us', contactUsPart
 
-        it 'returns true as subscriber to bo.routing.RouteNavigatingToEvent if no current part is dirty', ->
+        it 'returns true as subscriber to "routeNavigatingTo" if no current part is dirty', ->
             # Arrange
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' }}
             expect(@manager.currentParts()['main']).toBe homePart
 
             # Act
-            canChange = bo.bus.publish bo.routing.RouteNavigatingToEvent, { route: { name: 'Contact Us' }}
+            canChange = bo.bus.publish "routeNavigatingTo", { route: { name: 'Contact Us' }}
 
             # Assert
             expect(canChange).toEqual true
 
-        it 'returns result of confirm as subscriber to bo.routing.RouteNavigatingToEvent if any current part returns true from isDirty', ->
+        it 'returns result of confirm as subscriber to "routeNavigatingTo" if any current part returns true from isDirty', ->
             # Arrange
             expectedCanChange = true
             @stub window, "confirm", -> expectedCanChange
 
             homePart.viewModel.isDirty = true
 
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' }}
             expect(@manager.currentParts()['main']).toBe homePart
 
             # Act
-            canChange = bo.bus.publish bo.routing.RouteNavigatingToEvent, { route: { name: 'Contact Us' }}
+            canChange = bo.bus.publish "routeNavigatingTo", { route: { name: 'Contact Us' }}
 
             # Assert
             expect(canChange).toEqual expectedCanChange
@@ -219,22 +219,22 @@ describe 'RegionManager:', ->
             deactivateSpy = @spy homePart, "deactivate"
 
             # Arrange
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' }}
             expect(@manager.currentParts()['main']).toBe homePart
 
             # Act
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Contact Us' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Contact Us' }}
 
             # Assert
             expect(deactivateSpy).toHaveBeenCalled()
 
         it 'changes if no current part is dirty', ->
             # Arrange
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' }}
             expect(@manager.currentParts()['main']).toBe homePart
 
             # Act
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Contact Us' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Contact Us' }}
 
             # Assert
             expect(@manager.currentParts()['main']).toBe contactUsPart
@@ -243,11 +243,11 @@ describe 'RegionManager:', ->
             contactUsActivateSpy = @spy contactUsPart, "activate"
 
             # Arrange
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' }}
             expect(@manager.currentParts()['main']).toBe homePart
 
             # Act
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Contact Us' }}
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Contact Us' }}
 
             # Assert
             expect(contactUsActivateSpy).toHaveBeenCalled()
@@ -267,7 +267,7 @@ describe 'RegionManager:', ->
         it 'reactivates all current parts with current route parameters', ->
             # Arrange
             contactUsActivateSpy = @spy contactUsPart, 'activate'
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Contact Us' }, parameters: { id: 6 } }
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Contact Us' }, parameters: { id: 6 } }
 
             expect(contactUsActivateSpy).toHaveBeenCalled()
 
@@ -337,7 +337,7 @@ describe 'RegionManager Binding Handler', ->
             ko.applyBindings({ regionManager: @manager }, @fixture[0])
 
             # Act
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' } }
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' } }
 
             # Assert
             expect(managerDiv).toHaveHtml anonymousTemplate
@@ -355,7 +355,7 @@ describe 'RegionManager Binding Handler', ->
             ko.applyBindings({ regionManager: @manager }, @fixture[0])
 
             # Act
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' } }
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' } }
 
             # Assert
             expect(boundViewModel).toEqual @manager
@@ -372,7 +372,7 @@ describe 'RegionManager Binding Handler', ->
             ko.applyBindings({ regionManager: @manager }, @fixture[0])
 
             # Act
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' } }
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' } }
 
             # Assert
             expect(initSpy).toHaveBeenCalledOnce()
@@ -389,8 +389,8 @@ describe 'RegionManager Binding Handler', ->
             ko.applyBindings({ regionManager: @manager }, @fixture[0])
 
             # Act
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' } }
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Contact Us' } }
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' } }
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Contact Us' } }
 
             # Assert
             expect(initSpy.callCount).toBe 2
@@ -404,7 +404,7 @@ describe 'RegionManager Binding Handler', ->
             ko.applyBindings({ regionManager: @manager }, @fixture[0])
 
             # Act
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' } }
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' } }
 
             # Assert
             expect(@manager.isLoading()).toBe true
@@ -421,7 +421,7 @@ describe 'RegionManager Binding Handler', ->
             ko.applyBindings({ regionManager: @manager }, @fixture[0])
 
             # Act
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' } }
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' } }
             expect(managerDiv).toHaveClass 'is-loading'
             deferred.resolve()
 
@@ -455,7 +455,7 @@ describe 'Region Binding Handler', ->
             ko.applyBindings({ regionManager: @manager }, @fixture[0])
 
             # Act
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' } }
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' } }
 
             # Assert
             expect(managerDiv).toBeEmpty()
@@ -481,7 +481,7 @@ describe 'Region Binding Handler', ->
             ko.applyBindings({ regionManager: @manager }, @fixture[0])
 
             # Act
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' } }
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' } }
 
             # Assert
             expect(managerDiv.find("#regionManagerContainer")).toHaveHtml """<div data-bind="region: 'main'">#{homePartTemplate}</div>"""
@@ -503,7 +503,7 @@ describe 'Region Binding Handler', ->
             ko.applyBindings({ regionManager: @manager }, @fixture[0])
 
             # Act
-            bo.bus.publish bo.routing.RouteNavigatedToEvent, { route: { name: 'Home' } }
+            bo.bus.publish "routeNavigatedTo", { route: { name: 'Home' } }
 
             # Assert
             expect(boundViewModel).toBe @homePartViewModel
