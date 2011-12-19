@@ -16,9 +16,10 @@ bo.bus =
     # Subscribes the given function to the specified eventName, being executed
     # if the exact same named event is raised.
     #
-    # The return result from this function is a 'token', a piece of data
-    # that can be passed to the bo.bus.unsubscribe function to stop receiving
-    # events from the bus.
+    # The return result from this function is a subscription, an object that
+    # has a single 'unsubscribe' method that, if called, will dispose of the
+    # subscription to the named event meaning no further events will be published
+    # to the give function.
     subscribe: (eventName, func) ->
         bo.arg.ensureString eventName, 'eventName'
         bo.arg.ensureFunction func, 'func'
@@ -28,7 +29,10 @@ bo.bus =
         token = ++token
         subscribers[eventName][token] = func
 
-        [eventName, token]
+        {
+            unsubscribe: ->
+                delete subscribers[eventName][token]
+        }
 
     # Publishes the given named event to any subscribed listeners, passing 
     # any arguments on to each subscriber as arguments to the subscription call
@@ -44,21 +48,16 @@ bo.bus =
     publish: (eventName, args...) ->
         bo.arg.ensureString eventName, 'eventName'
 
-        for t, subscriber of (subscribers[eventName] || {})
-            canContinue = subscriber.apply @, args
+        indexOfSeparator = -1
+        events = [eventName]
 
-            if canContinue is false
-                return false
+        events.push eventName while eventName = eventName.substring 0, (eventName.lastIndexOf ':')
+
+        for e in events
+            for t, subscriber of (subscribers[e] || {})
+                canContinue = subscriber.apply @, args
+
+                if canContinue is false
+                    return false
             
-        true             
-
-    # Removes the subscription represented by the specified token, which is
-    # the value returned when registering a subscriber using the bo.bus.subscribe
-    # method.
-    unsubscribe: (token) ->
-        # token[0] == eventName
-        # token[1] == token (an integer)
-        bo.arg.ensureDefined token, 'token'
-
-        subscriptionList = subscribers[token[0]]
-        delete subscriptionList[token[1]]
+        true
