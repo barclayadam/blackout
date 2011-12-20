@@ -119,16 +119,13 @@ describe 'Routing:', ->
         describe 'when a urlChanged message is published', ->
             it 'should publish a routeNavigated event if URL matches definition with no parameters', ->
                 # Arrange
-                homeRoute = new bo.routing.Route 'Controllers', '/Home'
-                navigateSubscriber = @spy()
-
-                bo.bus.subscribe 'routeNavigated', navigateSubscriber
+                homeRoute = new bo.routing.Route 'Home', '/Home'
 
                 # Act
-                bo.bus.publish 'urlChanged', '/Home'
+                bo.bus.publish 'urlChanged', { url: '/Home' }
 
                 # Assert
-                expect(navigateSubscriber).toHaveBeenCalledWith 
+                expect('routeNavigated:Home').toHaveBeenPublishedWith 
                     url: '/Home', 
                     route: homeRoute
                     parameters: { }
@@ -136,15 +133,12 @@ describe 'Routing:', ->
             it 'should publish a routeNavigated event if URL matches definition with single parameter', ->
                 # Arrange
                 controllerRoute = new bo.routing.Route 'Controllers', '/{controller}'
-                navigateSubscriber = @spy()
-
-                bo.bus.subscribe 'routeNavigated', navigateSubscriber
 
                 # Act
-                bo.bus.publish 'urlChanged', '/AController'
+                bo.bus.publish 'urlChanged', { url: '/AController' }
 
                 # Assert
-                expect(navigateSubscriber).toHaveBeenCalledWith 
+                expect('routeNavigated:Controllers').toHaveBeenPublishedWith 
                     url: '/AController', 
                     route: controllerRoute
                     parameters: { controller: 'AController' }
@@ -154,7 +148,7 @@ describe 'Routing:', ->
                 controllerRoute = new bo.routing.Route 'Controllers', '/{controller}'
 
                 # Act
-                bo.bus.publish 'urlChanged', 'AController'
+                bo.bus.publish 'urlChanged', { url: 'AController' }
 
                 # Assert
                 expect('routeNavigated:Controllers').toHaveBeenPublishedWith 
@@ -167,7 +161,7 @@ describe 'Routing:', ->
                 controllerRoute = new bo.routing.Route 'Controllers', '/{controller}'
 
                 # Act
-                bo.bus.publish 'urlChanged', 'AController/'
+                bo.bus.publish 'urlChanged', { url: 'AController/' }
 
                 # Assert
                 expect('routeNavigated:Controllers').toHaveBeenPublishedWith 
@@ -180,7 +174,7 @@ describe 'Routing:', ->
                 controllerRoute = new bo.routing.Route 'Controllers', '/{controller}/{action}'
 
                 # Act
-                bo.bus.publish 'urlChanged', '/AController/SomeAction'
+                bo.bus.publish 'urlChanged', { url: '/AController/SomeAction' }
 
                 # Assert
                 expect('routeNavigated:Controllers').toHaveBeenPublishedWith 
@@ -193,7 +187,7 @@ describe 'Routing:', ->
                 fileRoute = new bo.routing.Route 'File', '/File/{*filePath}'
 
                 # Act
-                bo.bus.publish 'urlChanged', '/File/A/Long/File/Path/Name.png'
+                bo.bus.publish 'urlChanged', { url: '/File/A/Long/File/Path/Name.png' }
 
                 # Assert
                 expect('routeNavigated:File').toHaveBeenPublishedWith 
@@ -206,7 +200,7 @@ describe 'Routing:', ->
                 homeRoute = new bo.routing.Route 'Controllers', '/Home'
 
                 # Act
-                bo.bus.publish 'urlChanged', '/Contact Us'
+                bo.bus.publish 'urlChanged', { url: '/Contact Us' }
 
                 # Assert
                 expect('routeNavigated').toHaveNotBeenPublished()

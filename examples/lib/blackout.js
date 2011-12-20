@@ -888,114 +888,6 @@
     }
   };
 
-  draggableModel = {
-    currentlyDragging: ko.observable(),
-    canDrop: ko.observable(),
-    dropTarget: ko.observable()
-  };
-
-  ko.bindingHandlers.draggable = {
-    init: function(element, valueAccessor, allBindingsAccessor, viewModel) {
-      var $element, dragOptions, node, value;
-      $element = jQuery(element);
-      node = viewModel;
-      value = ko.utils.unwrapObservable(valueAccessor() || {});
-      if (value.template) {
-        value.helper = function() {
-          var helper;
-          helper = jQuery('<div id="custom-draggable-helper" />');
-          _.defer(function() {
-            return ko.renderTemplate(value.template, draggableModel, {}, helper[0], "replaceChildren");
-          });
-          return helper;
-        };
-      }
-      dragOptions = {
-        revert: 'invalid',
-        revertDuration: 250,
-        appendTo: 'body',
-        helper: 'clone',
-        zIndex: 200000,
-        distance: 10,
-        start: function(e, ui) {
-          draggableModel.canDrop(false);
-          draggableModel.dropTarget(void 0);
-          draggableModel.currentlyDragging(node);
-          return $element.attr("aria-grabbed", true);
-        },
-        stop: function() {
-          $element.attr("aria-grabbed", false);
-          return _.defer(function() {
-            return draggableModel.currentlyDragging(void 0);
-          });
-        }
-      };
-      $element.draggable(jQuery.extend({}, dragOptions, value));
-      return $element.attr("aria-grabbed", false);
-    },
-    update: function() {
-      return jQuery("body").toggleClass("ui-drag-in-progress", draggableModel.currentlyDragging() !== void 0);
-    }
-  };
-
-  ko.bindingHandlers.dropTarget = {
-    init: function(element, valueAccessor, allBindingsAccessor, viewModel) {
-      var $element, canAccept, dropOptions, handler, value;
-      $element = jQuery(element);
-      value = valueAccessor() || {};
-      canAccept = ko.utils.unwrapObservable(value.canAccept);
-      handler = ko.utils.unwrapObservable(value.onDropComplete);
-      dropOptions = {
-        greedy: true,
-        tolerance: 'pointer',
-        hoverClass: 'ui-hovered-drop-target',
-        accept: function() {
-          if (draggableModel.currentlyDragging() != null) {
-            return canAccept.call(viewModel, draggableModel.currentlyDragging());
-          } else {
-            return false;
-          }
-        },
-        over: function() {
-          var canAcceptDrop;
-          canAcceptDrop = canAccept.call(viewModel, draggableModel.currentlyDragging());
-          draggableModel.canDrop(canAcceptDrop);
-          return draggableModel.dropTarget(viewModel);
-        },
-        out: function() {
-          draggableModel.canDrop(false);
-          return draggableModel.dropTarget(void 0);
-        },
-        drop: function() {
-          return _.defer(function() {
-            return handler.call(viewModel, draggableModel.currentlyDragging());
-          });
-        }
-      };
-      return $element.droppable(jQuery.extend({}, dropOptions, value));
-    },
-    update: function(element, valueAccessor, allBindingsAccessor, viewModel) {
-      var $element, canAccept, dropEffect, value;
-      $element = jQuery(element);
-      value = valueAccessor() || {};
-      canAccept = ko.utils.unwrapObservable(value.canAccept);
-      dropEffect = ko.utils.unwrapObservable(value.dropEffect || "move");
-      if (draggableModel.currentlyDragging() != null) {
-        canAccept = canAccept.call(viewModel, draggableModel.currentlyDragging());
-        $element.toggleClass("ui-valid-drop-target", canAccept);
-        $element.toggleClass("ui-invalid-drop-target", !canAccept);
-        if (canAccept) {
-          return $element.attr("aria-dropeffect", dropEffect);
-        } else {
-          return $element.attr("aria-dropeffect", "none");
-        }
-      } else {
-        $element.removeClass("ui-valid-drop-target");
-        return $element.removeClass("ui-invalid-drop-target");
-      }
-    }
-  };
-
   SitemapNode = (function() {
 
     function SitemapNode(sitemap, name, definition) {
@@ -1633,6 +1525,114 @@
 
     })();
     return viewModel;
+  };
+
+  draggableModel = {
+    currentlyDragging: ko.observable(),
+    canDrop: ko.observable(),
+    dropTarget: ko.observable()
+  };
+
+  ko.bindingHandlers.draggable = {
+    init: function(element, valueAccessor, allBindingsAccessor, viewModel) {
+      var $element, dragOptions, node, value;
+      $element = jQuery(element);
+      node = viewModel;
+      value = ko.utils.unwrapObservable(valueAccessor() || {});
+      if (value.template) {
+        value.helper = function() {
+          var helper;
+          helper = jQuery('<div id="custom-draggable-helper" />');
+          _.defer(function() {
+            return ko.renderTemplate(value.template, draggableModel, {}, helper[0], "replaceChildren");
+          });
+          return helper;
+        };
+      }
+      dragOptions = {
+        revert: 'invalid',
+        revertDuration: 250,
+        appendTo: 'body',
+        helper: 'clone',
+        zIndex: 200000,
+        distance: 10,
+        start: function(e, ui) {
+          draggableModel.canDrop(false);
+          draggableModel.dropTarget(void 0);
+          draggableModel.currentlyDragging(node);
+          return $element.attr("aria-grabbed", true);
+        },
+        stop: function() {
+          $element.attr("aria-grabbed", false);
+          return _.defer(function() {
+            return draggableModel.currentlyDragging(void 0);
+          });
+        }
+      };
+      $element.draggable(jQuery.extend({}, dragOptions, value));
+      return $element.attr("aria-grabbed", false);
+    },
+    update: function() {
+      return jQuery("body").toggleClass("ui-drag-in-progress", draggableModel.currentlyDragging() !== void 0);
+    }
+  };
+
+  ko.bindingHandlers.dropTarget = {
+    init: function(element, valueAccessor, allBindingsAccessor, viewModel) {
+      var $element, canAccept, dropOptions, handler, value;
+      $element = jQuery(element);
+      value = valueAccessor() || {};
+      canAccept = ko.utils.unwrapObservable(value.canAccept);
+      handler = ko.utils.unwrapObservable(value.onDropComplete);
+      dropOptions = {
+        greedy: true,
+        tolerance: 'pointer',
+        hoverClass: 'ui-hovered-drop-target',
+        accept: function() {
+          if (draggableModel.currentlyDragging() != null) {
+            return canAccept.call(viewModel, draggableModel.currentlyDragging());
+          } else {
+            return false;
+          }
+        },
+        over: function() {
+          var canAcceptDrop;
+          canAcceptDrop = canAccept.call(viewModel, draggableModel.currentlyDragging());
+          draggableModel.canDrop(canAcceptDrop);
+          return draggableModel.dropTarget(viewModel);
+        },
+        out: function() {
+          draggableModel.canDrop(false);
+          return draggableModel.dropTarget(void 0);
+        },
+        drop: function() {
+          return _.defer(function() {
+            return handler.call(viewModel, draggableModel.currentlyDragging());
+          });
+        }
+      };
+      return $element.droppable(jQuery.extend({}, dropOptions, value));
+    },
+    update: function(element, valueAccessor, allBindingsAccessor, viewModel) {
+      var $element, canAccept, dropEffect, value;
+      $element = jQuery(element);
+      value = valueAccessor() || {};
+      canAccept = ko.utils.unwrapObservable(value.canAccept);
+      dropEffect = ko.utils.unwrapObservable(value.dropEffect || "move");
+      if (draggableModel.currentlyDragging() != null) {
+        canAccept = canAccept.call(viewModel, draggableModel.currentlyDragging());
+        $element.toggleClass("ui-valid-drop-target", canAccept);
+        $element.toggleClass("ui-invalid-drop-target", !canAccept);
+        if (canAccept) {
+          return $element.attr("aria-dropeffect", dropEffect);
+        } else {
+          return $element.attr("aria-dropeffect", "none");
+        }
+      } else {
+        $element.removeClass("ui-valid-drop-target");
+        return $element.removeClass("ui-invalid-drop-target");
+      }
+    }
   };
 
   ko.bindingHandlers.button = {
