@@ -6,30 +6,10 @@ class bo.RegionManager
     @reactivateEvent: "reactivateParts"
 
     constructor: () ->
-        #@isRegionManager = true
-
-        #@routeNameToParts = {}
-
-        #@currentRoute = null
-        #@currentParameters = null
         @currentParts = ko.observable {}
         @isLoading = ko.observable false
 
-        #bo.bus.subscribe "routeNavigatedTo", (data) => @_handleRouteNavigatedTo data
-        #bo.bus.subscribe "routeNavigatingTo", (data) => @canDeactivate()
         bo.bus.subscribe "reactivateParts", () => @reactivateParts()
-
-    #partsForRoute: (routeName) ->
-    #    @routeNameToParts[routeName]
-
-    #register: (routeName, part) ->
-    #    bo.arg.ensureDefined routeName, 'routeName'
-    #    bo.arg.ensureDefined part, 'part'
-
-    #    throw "Cannot find route with name '#{routeName}'" if (bo.routing.routes.getRoute routeName) is undefined
-
-    #    @routeNameToParts[routeName] = [] if not @routeNameToParts[routeName]
-    #    @routeNameToParts[routeName].push part
 
     reactivateParts: () ->
         part.activate @currentParameters for region, part of @currentParts()
