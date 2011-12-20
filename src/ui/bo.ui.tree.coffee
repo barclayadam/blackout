@@ -1,3 +1,4 @@
+# reference "bo.utils.coffee"
 # reference "bo.coffee"
 
 window.bo.ui = window.bo.ui || {}
