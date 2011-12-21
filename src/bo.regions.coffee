@@ -55,13 +55,12 @@ currentPartsValueAccessor = (regionManager) ->
 ko.bindingHandlers.regionManager =
     init: (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) ->
         regionManager = ko.utils.unwrapObservable valueAccessor()
-        $element = jQuery(element)
 
         valueAccessor = currentPartsValueAccessor regionManager
         ko.bindingHandlers.template.init element, valueAccessor , allBindingsAccessor, regionManager, bindingContext
 
         regionManager.isLoading.subscribe (isLoading) ->
-            $element.toggleClass 'is-loading', isLoading
+            ko.utils.toggleDomNodeCssClass element, 'is-loading', isLoading
 
     update: (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) ->
         regionManager = ko.utils.unwrapObservable valueAccessor()

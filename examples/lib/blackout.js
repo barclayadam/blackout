@@ -5,7 +5,7 @@
    (c) Adam Barclay
   */
 
-  var HistoryManager, Menu, MenuItem, Route, SitemapNode, TreeNode, TreeViewModel, createErrorKey, currentPartsValueAccessor, currentValueBinding, draggableModel, emptyValue, getType, getValidationFailureMessage, handlers, hasValue, originalEnableBindingHandler, simpleHandler, subscribers, token, validateValue;
+  var HistoryManager, Menu, MenuItem, Route, SitemapNode, TreeNode, TreeViewModel, createErrorKey, currentEnableBindingUpdate, currentPartsValueAccessor, currentValueBinding, draggableModel, emptyValue, getType, getValidationFailureMessage, handlers, hasValue, originalEnableBindingHandler, simpleHandler, subscribers, token, validateValue;
   var __slice = Array.prototype.slice, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
   window.bo = {};
@@ -1357,13 +1357,12 @@
 
   ko.bindingHandlers.regionManager = {
     init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-      var $element, regionManager;
+      var regionManager;
       regionManager = ko.utils.unwrapObservable(valueAccessor());
-      $element = jQuery(element);
       valueAccessor = currentPartsValueAccessor(regionManager);
       ko.bindingHandlers.template.init(element, valueAccessor, allBindingsAccessor, regionManager, bindingContext);
       return regionManager.isLoading.subscribe(function(isLoading) {
-        return $element.toggleClass('is-loading', isLoading);
+        return ko.utils.toggleDomNodeCssClass(element, 'is-loading', isLoading);
       });
     },
     update: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
@@ -1634,35 +1633,6 @@
     }
   };
 
-  ko.bindingHandlers.button = {
-    init: function(element, valueAccessor, allBindingsAccessor, viewModel) {
-      var value;
-      jQuery(element).button();
-      value = ko.utils.unwrapObservable(valueAccessor());
-      if (!(value === true)) {
-        value.event = 'click';
-        return ko.bindingHandlers.command.init.apply(this, arguments);
-      }
-    },
-    update: function(element, valueAccessor, allBindingsAccessor, viewModel) {
-      var options;
-      options = valueAccessor();
-      if (ko.bindingHandlers.command.shouldExecute(options.enable, viewModel)) {
-        return jQuery(element).button("enable");
-      } else {
-        return jQuery(element).button("disable");
-      }
-    }
-  };
-
-  ko.bindingHandlers.datepicker = {
-    init: function(element) {
-      return jQuery(element).datepicker({
-        dateFormat: 'yy/mm/dd'
-      });
-    }
-  };
-
   ko.bindingHandlers.indeterminateCheckbox = {
     init: function(element, valueAccessor) {
       var $element;
@@ -1685,6 +1655,39 @@
         originalInput.prop("indeterminate", false);
         return originalInput.prop("checked", value);
       }
+    }
+  };
+
+  currentEnableBindingUpdate = ko.bindingHandlers.enable.update;
+
+  ko.bindingHandlers.enable.update = function(element, valueAccessor) {
+    currentEnableBindingUpdate(element, valueAccessor);
+    return ko.utils.toggleDomNodeCssClass(element, 'disabled', !ko.utils.unwrapObservable(valueAccessor()));
+  };
+
+  ko.bindingHandlers.button = {
+    init: function(element, valueAccessor) {
+      var $element, value;
+      value = ko.utils.unwrapObservable(valueAccessor());
+      $element = jQuery(element);
+      jQuery("<span></span>").html($element.text()).appendTo($element.empty());
+      value.event = 'click';
+      return ko.bindingHandlers.command.init.apply(this, arguments);
+    },
+    update: function(element, valueAccessor, allBindingsAccessor, viewModel) {
+      var options, shouldExecute;
+      options = valueAccessor();
+      shouldExecute = ko.bindingHandlers.command.shouldExecute(options.enable, viewModel);
+      ko.utils.toggleDomNodeCssClass(element, 'disabled', !shouldExecute);
+      return element.disabled = shouldExecute ? '' : 'disabled';
+    }
+  };
+
+  ko.bindingHandlers.datepicker = {
+    init: function(element) {
+      return jQuery(element).datepicker({
+        dateFormat: 'yy/mm/dd'
+      });
     }
   };
 
