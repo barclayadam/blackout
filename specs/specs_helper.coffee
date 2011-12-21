@@ -8,6 +8,12 @@ beforeEach ->
 
     publishSpy = window.sinonSandbox.spy bo.bus, "publish"
 
+    @setHtmlFixture = (html) =>
+        jQuery(html).appendTo(@fixture)
+
+    @applyBindingsToHtmlFixture = (viewModel) =>
+        ko.applyBindings viewModel, @fixture[0]
+
     @respondWithTemplate = (path, body) ->
         @server.respondWith "GET", path, [200, { "Content-Type": "text/html" }, body]
 

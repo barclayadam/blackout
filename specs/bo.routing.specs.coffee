@@ -228,3 +228,70 @@ describe 'Routing:', ->
 
                 # Assert
                 expect('urlChanged').toHaveBeenPublishedWith { url: '/My Navigated URL' }
+            
+    describe 'navigateTo binding handler', ->
+        it 'should publish a navigateToRoute message when clicked', ->
+            # Arrange
+            navigateLink = @setHtmlFixture("""<a href='#' data-bind="navigateTo: 'Home'">Home</a>""")
+
+            @applyBindingsToHtmlFixture { }
+
+            # Act
+            navigateLink.click()
+
+            # Assert
+            expect("navigateToRoute:Home").toHaveBeenPublishedWith
+                parameters: {}
+                canVeto: true
+
+        it 'should not publish a navigateToRoute message when clicked if enabled binding handler evaluates to false', ->
+            # Arrange
+            navigateLink = @setHtmlFixture("""<a href='#' data-bind="navigateTo: 'Home', enabled: false">Home</a>""")
+
+            @applyBindingsToHtmlFixture { }
+
+            # Act
+            navigateLink.click()
+
+            # Assert
+            expect("navigateToRoute:Home").toHaveNotBeenPublished()
+
+        it 'should not publish a navigateToRoute message when clicked if disabled binding handler evaluates to true', ->
+            # Arrange
+            navigateLink = @setHtmlFixture("""<a href='#' data-bind="navigateTo: 'Home', disabled: true">Home</a>""")
+
+            @applyBindingsToHtmlFixture { }
+
+            # Act
+            navigateLink.click()
+
+            # Assert
+            expect("navigateToRoute:Home").toHaveNotBeenPublished()
+
+        it 'should publish a navigateToRoute message with canVeto set from canVeto binding value', ->
+            # Arrange
+            navigateLink = @setHtmlFixture("""<a href='#' data-bind="navigateTo: 'Home', canVeto: false">Home</a>""")
+
+            @applyBindingsToHtmlFixture { }
+
+            # Act
+            navigateLink.click()
+
+            # Assert
+            expect("navigateToRoute:Home").toHaveBeenPublishedWith
+                canVeto: false
+                parameters: {}
+
+        it 'should publish a navigateToRoute message with parameters set from parameters binding value', ->
+            # Arrange
+            navigateLink = @setHtmlFixture("""<a href='#' data-bind="navigateTo: 'Home', parameters: { id : 6 }">Home</a>""")
+
+            @applyBindingsToHtmlFixture { }
+
+            # Act
+            navigateLink.click()
+
+            # Assert
+            expect("navigateToRoute:Home").toHaveBeenPublishedWith
+                canVeto: true
+                parameters: { id : 6 }

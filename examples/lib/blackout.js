@@ -1161,17 +1161,22 @@
 
   ko.bindingHandlers.navigateTo = {
     init: function(element, valueAccessor, allBindingsAccessor) {
-      var parameters, routeName, value;
-      value = valueAccessor();
-      routeName = value.name || value;
-      parameters = value.parameters || {};
+      var parameters, routeName;
+      routeName = valueAccessor();
+      parameters = allBindingsAccessor().parameters || {};
       return jQuery(element).click(function(event) {
-        bo.bus.publish("navigateToRoute:" + routeName, {
-          parameters: parameters,
-          canVeto: allBindingsAccessor().alwaysNavigate !== true
-        });
-        event.preventDefault();
-        return false;
+        var disabledBinding, enabledBinding, isEnabled, _ref;
+        enabledBinding = allBindingsAccessor().enabled;
+        disabledBinding = allBindingsAccessor().disabled;
+        isEnabled = ko.utils.unwrapObservable((enabledBinding != null ? enabledBinding : true) && !ko.utils.unwrapObservable(disabledBinding != null ? disabledBinding : false));
+        if (isEnabled) {
+          bo.bus.publish("navigateToRoute:" + routeName, {
+            parameters: parameters,
+            canVeto: (_ref = allBindingsAccessor().canVeto) != null ? _ref : true
+          });
+          event.preventDefault();
+          return false;
+        }
       });
     }
   };

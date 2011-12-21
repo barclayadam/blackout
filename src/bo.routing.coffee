@@ -166,15 +166,20 @@ bo.routing =
 
 ko.bindingHandlers.navigateTo =
     init: (element, valueAccessor, allBindingsAccessor) ->
-        value = valueAccessor()
-
-        routeName = value.name || value
-        parameters = value.parameters || {}
+        routeName = valueAccessor()
+        parameters = allBindingsAccessor().parameters || {}
 
         jQuery(element).click (event) ->
-            bo.bus.publish "navigateToRoute:#{routeName}", 
-                parameters: parameters
-                canVeto: allBindingsAccessor().alwaysNavigate != true
+            enabledBinding = allBindingsAccessor().enabled
+            disabledBinding = allBindingsAccessor().disabled
 
-            event.preventDefault()
-            false
+            isEnabled = ko.utils.unwrapObservable (enabledBinding ? true) and
+                       !ko.utils.unwrapObservable (disabledBinding ? false)
+
+            if isEnabled
+                bo.bus.publish "navigateToRoute:#{routeName}", 
+                    parameters: parameters
+                    canVeto: allBindingsAccessor().canVeto ? true
+
+                event.preventDefault()
+                false
