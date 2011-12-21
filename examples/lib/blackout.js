@@ -1540,10 +1540,12 @@
 
   ko.bindingHandlers.draggable = {
     init: function(element, valueAccessor, allBindingsAccessor, viewModel) {
-      var $element, dragOptions, node, value;
+      var $element, dragOptions, value, _ref;
       $element = jQuery(element);
-      node = viewModel;
-      value = ko.utils.unwrapObservable(valueAccessor() || {});
+      value = ko.utils.unwrapObservable(valueAccessor());
+      if (value === false || ((_ref = value.enabled) != null ? _ref : true) === false) {
+        return;
+      }
       if (value.template) {
         value.helper = function() {
           var helper;
@@ -1564,7 +1566,7 @@
         start: function(e, ui) {
           draggableModel.canDrop(false);
           draggableModel.dropTarget(void 0);
-          draggableModel.currentlyDragging(node);
+          draggableModel.currentlyDragging(viewModel);
           return $element.attr("aria-grabbed", true);
         },
         stop: function() {
@@ -1578,7 +1580,7 @@
       return $element.attr("aria-grabbed", false);
     },
     update: function() {
-      return jQuery("body").toggleClass("ui-drag-in-progress", draggableModel.currentlyDragging() !== void 0);
+      return jQuery("body").toggleClass("ui-drag-in-progress", draggableModel.currentlyDragging() != null);
     }
   };
 

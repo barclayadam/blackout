@@ -6,8 +6,10 @@ draggableModel =
 ko.bindingHandlers.draggable =
     init: (element, valueAccessor, allBindingsAccessor, viewModel) ->
         $element = jQuery element
-        node = viewModel
-        value = ko.utils.unwrapObservable(valueAccessor() || {})
+        value = ko.utils.unwrapObservable(valueAccessor())
+
+        if value is false or (value.enabled ? true) is false
+            return
 
         if value.template
             value.helper = ->
@@ -29,7 +31,7 @@ ko.bindingHandlers.draggable =
             start: (e, ui) ->
                 draggableModel.canDrop false
                 draggableModel.dropTarget undefined
-                draggableModel.currentlyDragging node
+                draggableModel.currentlyDragging viewModel
 
                 $element.attr "aria-grabbed", true
 
@@ -43,7 +45,7 @@ ko.bindingHandlers.draggable =
         $element.attr "aria-grabbed", false
 
     update: () ->
-        jQuery("body").toggleClass "ui-drag-in-progress", draggableModel.currentlyDragging() isnt undefined
+        jQuery("body").toggleClass "ui-drag-in-progress", draggableModel.currentlyDragging()?
 
 ko.bindingHandlers.dropTarget =
     init: (element, valueAccessor, allBindingsAccessor, viewModel) ->
