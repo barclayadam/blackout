@@ -46,7 +46,7 @@ class bo.Part
     activate: (parameters) ->
         bo.arg.ensureDefined parameters, 'parameters'
 
-        @_initialiseViewModel()
+        @_activateViewModel()
         
         loadPromises = [@_loadTemplate()]
         showPromises = @_show parameters || []
@@ -56,14 +56,6 @@ class bo.Part
             @viewModel.reset() if @viewModel.reset
 
         loadPromises.concat(showPromises)
-
-        ###
-            contentContainer = document.getElementById @region
-
-            if contentContainer?
-                contentContainer.innerHTML = @templateHtml
-                ko.applyBindings @viewModel, contentContainer
-         ###
 
     # A function that will be executed on activation of this part, used to
     # set-up this part with the specified parameters (as taken from the URL).
@@ -85,10 +77,11 @@ class bo.Part
 
         bo.utils.resolvedPromise()
 
-    _initialiseViewModel: ->
+    _activateViewModel: ->
         if @viewModelTemplate
             @viewModel = new @viewModelTemplate() || {}
-            @viewModel.initialise() if @viewModel.initialise
         else
-            @viewModel.initialise() if @viewModel.initialise
-            @_initialiseViewModel = ->
+            # Should only call this once if 'static' view model.
+            @_activateViewModel = ->
+        
+        @viewModel.initialise() if @viewModel.initialise
