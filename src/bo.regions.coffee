@@ -83,4 +83,4 @@ ko.bindingHandlers.region =
         if part?
             ko.renderTemplate part.templateName, part.viewModel, {}, element, "replaceChildren"
         else
-            jQuery(element).remove()
+            ko.removeNode element
