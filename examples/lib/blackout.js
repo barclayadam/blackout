@@ -580,7 +580,7 @@
       contentType: "application/json; charset=utf-8"
     });
     ajaxPromise.done(function() {
-      return bo.bus.publish('QueryExecuted', {
+      return bo.bus.publish("queryExecuted:" + queryName, {
         name: queryName,
         options: options
       });
@@ -624,7 +624,7 @@
       contentType: "application/json; charset=utf-8"
     });
     ajaxPromise.done(function() {
-      return bo.bus.publish('CommandExecuted', {
+      return bo.bus.publish("commandExecuted:" + commandName, {
         name: commandName,
         options: commandProperties
       });
@@ -1217,7 +1217,7 @@
       var loadPromises, showPromises;
       var _this = this;
       bo.arg.ensureDefined(parameters, 'parameters');
-      this._initialiseViewModel();
+      this._activateViewModel();
       loadPromises = [this._loadTemplate()];
       showPromises = this._show(parameters || []);
       if (!_.isArray(showPromises)) showPromises = [showPromises];
@@ -1225,13 +1225,6 @@
         if (_this.viewModel.reset) return _this.viewModel.reset();
       });
       return loadPromises.concat(showPromises);
-      /*
-                  contentContainer = document.getElementById @region
-      
-                  if contentContainer?
-                      contentContainer.innerHTML = @templateHtml
-                      ko.applyBindings @viewModel, contentContainer
-      */
     };
 
     Part.prototype._show = function(parameters) {
@@ -1255,14 +1248,13 @@
       return bo.utils.resolvedPromise();
     };
 
-    Part.prototype._initialiseViewModel = function() {
+    Part.prototype._activateViewModel = function() {
       if (this.viewModelTemplate) {
         this.viewModel = new this.viewModelTemplate() || {};
-        if (this.viewModel.initialise) return this.viewModel.initialise();
       } else {
-        if (this.viewModel.initialise) this.viewModel.initialise();
-        return this._initialiseViewModel = function() {};
+        this._activateViewModel = function() {};
       }
+      if (this.viewModel.initialise) return this.viewModel.initialise();
     };
 
     return Part;
@@ -1399,7 +1391,7 @@
       if (part != null) {
         return ko.renderTemplate(part.templateName, part.viewModel, {}, element, "replaceChildren");
       } else {
-        return jQuery(element).remove();
+        return ko.removeNode(element);
       }
     }
   };
