@@ -904,9 +904,10 @@
       });
       if (definition.url) {
         new bo.routing.Route(name, definition.url);
-        bo.bus.subscribe("routeNavigated:" + name, function() {
+        bo.bus.subscribe("routeNavigated:" + name, function(data) {
+          if (data == null) data = {};
           sitemap.currentNode(_this);
-          return sitemap.regionManager.activate(_this.definition.parts);
+          return sitemap.regionManager.activate(_this.definition.parts, data.parameters);
         });
       }
       this.hasRoute = definition.url != null;

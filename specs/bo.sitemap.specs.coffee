@@ -131,16 +131,20 @@ describe 'Sitemap', ->
         it 'should activate registered parts when navigating to route', ->
             # Arrange
             homeParts = [new bo.Part 'My Shiny Part']
-            sitemap = new bo.Sitemap new bo.RegionManager(),
+            parameters = { id: 567 }
+            regionManager = new bo.RegionManager()
+            sitemap = new bo.Sitemap regionManager,
                 'Home':
                     url: '/'
                     parts: homeParts
 
+            activateSpy = @spy regionManager, "activate"
+
             # Act
-            bo.bus.publish 'routeNavigated:Home'
+            bo.bus.publish 'routeNavigated:Home', { parameters: parameters}
 
             # Assert
-            expect("partsActivating").toHaveBeenPublishedWith { parts: homeParts }
+            expect(activateSpy).toHaveBeenCalledWith homeParts, parameters
 
         it 'should set currentNode to be the sitemap node defined with route when navigating to route', ->
             # Arrange

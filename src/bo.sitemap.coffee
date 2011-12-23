@@ -16,9 +16,9 @@ class SitemapNode
         if definition.url
             new bo.routing.Route name, definition.url
 
-            bo.bus.subscribe "routeNavigated:#{name}", =>
+            bo.bus.subscribe "routeNavigated:#{name}", (data = {}) =>
                 sitemap.currentNode @
-                sitemap.regionManager.activate @definition.parts
+                sitemap.regionManager.activate @definition.parts, data.parameters
 
         @hasRoute = definition.url?
 
