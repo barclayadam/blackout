@@ -12,7 +12,7 @@ src\bo.parts.coffee
 src\bo.regions.coffee
 src\bo.viewmodel.coffee
 src\ui\bo.ui.draganddrop.coffee
-src\ui\bo.ui.controls.coffee  
+src\ui\bo.ui.indeterminateCheckbox.coffee  
 src\ui\bo.ui.enable.coffee   
 src\ui\bo.ui.button.coffee   
 src\ui\bo.ui.datepicker.coffee      
