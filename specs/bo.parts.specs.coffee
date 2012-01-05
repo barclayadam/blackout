@@ -44,17 +44,39 @@ describe 'Parts:', ->
     describe 'When activating a part', ->   
         it 'should call the reset function of the viewModel', ->
             # Arrange
-            @respondWithTemplate 'Home', '<div id="test" />'
-
             resetSpy = @spy()
             homePage = new bo.Part 'Home', { viewModel: { isDirty: true, reset: resetSpy } }
 
             # Act
-            homePage.activate {}            
-            @server.respond()
+            homePage.activate {}   
 
             # Assert
             expect(resetSpy).toHaveBeenCalledOnce()
+
+        it 'should publish a namespaced partActivating message', ->
+            # Arrange
+            homePage = new bo.Part 'Home', { viewModel: {} }
+
+            # Act
+            homePage.activate {}   
+
+            # Assert
+            expect('partActivating:Home').toHaveBeenPublished()
+
+        it 'should publish a namespaced partActivated message when all promises resolved', ->
+            # Arrange
+            @respondWithTemplate 'HomeTmpl', '<div id="test" />'
+
+            homePage = new bo.Part 'Home', { viewModel: {}, templatePath: 'HomeTmpl' }
+
+            promises = homePage.activate {}    
+            expect('partActivated:Home').toHaveNotBeenPublished()
+
+            # Act                    
+            @server.respond()
+
+            # Assert
+            expect('partActivated:Home').toHaveBeenPublished()
 
         it 'should return an array', ->
             # Arrange

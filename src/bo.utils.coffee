@@ -39,7 +39,20 @@ window.bo.utils =
             o.subscribe (newValue) ->
                 masterObservable newValue
 
+    # Creates a new resolved promise, useful when either returning or passing
+    # arguments that should be a promise for clients but no work is required, therefore
+    # a resolved promise should be used.
     resolvedPromise: () ->
         deferred = new jQuery.Deferred()
         deferred.resolve()
         deferred
+
+    # Given the 'allBindingsAccessor' parameter of a binding handler will
+    # determine whether or not the element is enabled, based on both the enabled
+    # and disabled binding handlers that exist.
+    isElementEnabled: (allBindingsAccessor) ->        
+        enabledBinding = allBindingsAccessor().enabled
+        disabledBinding = allBindingsAccessor().disabled
+
+        ko.utils.unwrapObservable (enabledBinding ? true) and
+            !ko.utils.unwrapObservable (disabledBinding ? false)

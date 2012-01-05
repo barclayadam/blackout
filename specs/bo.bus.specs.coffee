@@ -153,9 +153,9 @@ describe 'Bus', ->
             # Arrange
             expect(spy).toHaveBeenCalled()
 
-        it 'should not publish to the global bus', ->
+        it 'should publish to the global bus', ->
             # Act
             @viewModel.doPublish()
 
             # Arrange
-            expect('myEvent').toHaveNotBeenPublished()
+            expect('myEvent').toHaveBeenPublished() # To 'global' bus

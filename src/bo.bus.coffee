@@ -7,9 +7,16 @@
 #           tokenId1: func2
 #       ...
 class bo.Bus
-    constructor: ->
+    constructor: (@busOptions) ->
+        @_init()
+
+    _init: ->
+        @busOptions = { global: false, log: true } if not @busOptions?
+
         @_subscribers = {}
         @_currentToken = 0
+
+        @_init = ->
 
     clearAll: ->
         @_subscribers = {}
@@ -24,6 +31,8 @@ class bo.Bus
     subscribe: (eventName, func) ->
         bo.arg.ensureString eventName, 'eventName'
         bo.arg.ensureFunction func, 'func'
+
+        @_init()
 
         @_subscribers[eventName] = {} if @_subscribers[eventName] is undefined
 
@@ -51,7 +60,13 @@ class bo.Bus
     publish: (eventName, args...) ->
         bo.arg.ensureString eventName, 'eventName'
 
-        console.log "Publishing #{eventName}."
+        @_init()
+
+        if @busOptions.log is true
+            console.log "Publishing #{eventName}."
+
+        if @busOptions.global is false
+            bo.bus.publish eventName, args
 
         indexOfSeparator = -1
         events = [eventName]
@@ -67,4 +82,4 @@ class bo.Bus
             
         true
 
-bo.bus = new bo.Bus()
+bo.bus = new bo.Bus { global: true, log: true }

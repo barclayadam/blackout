@@ -13,7 +13,7 @@
 # setting the necessary options in the constructor and overriding any other
 # method as necessary to support the required functionality of the 
 # part.
-class bo.Part
+class bo.Part extends bo.Bus
     @region: "main"
 
     constructor: (@name, @options = {}) ->
@@ -46,16 +46,23 @@ class bo.Part
     activate: (parameters) ->
         bo.arg.ensureDefined parameters, 'parameters'
 
+        @publish "partActivating:#{@name}"
+
         @_activateViewModel()
         
         loadPromises = [@_loadTemplate()]
         showPromises = @_show parameters || []
         showPromises = [showPromises] if not _.isArray showPromises
 
+        allPromises = _.compact loadPromises.concat showPromises
+
         jQuery.when.apply(@, showPromises).done =>
             @viewModel.reset() if @viewModel.reset
 
-        loadPromises.concat(showPromises)
+        jQuery.when.apply(@, allPromises).done =>
+            @publish "partActivated:#{@name}"
+
+        allPromises
 
     # A function that will be executed on activation of this part, used to
     # set-up this part with the specified parameters (as taken from the URL).

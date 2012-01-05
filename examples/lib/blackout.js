@@ -133,15 +133,33 @@
       deferred = new jQuery.Deferred();
       deferred.resolve();
       return deferred;
+    },
+    isElementEnabled: function(allBindingsAccessor) {
+      var disabledBinding, enabledBinding;
+      enabledBinding = allBindingsAccessor().enabled;
+      disabledBinding = allBindingsAccessor().disabled;
+      return ko.utils.unwrapObservable((enabledBinding != null ? enabledBinding : true) && !ko.utils.unwrapObservable(disabledBinding != null ? disabledBinding : false));
     }
   };
 
   bo.Bus = (function() {
 
-    function Bus() {
+    function Bus(busOptions) {
+      this.busOptions = busOptions;
+      this._init();
+    }
+
+    Bus.prototype._init = function() {
+      if (!(this.busOptions != null)) {
+        this.busOptions = {
+          global: false,
+          log: true
+        };
+      }
       this._subscribers = {};
       this._currentToken = 0;
-    }
+      return this._init = function() {};
+    };
 
     Bus.prototype.clearAll = function() {
       return this._subscribers = {};
@@ -152,6 +170,7 @@
       var _this = this;
       bo.arg.ensureString(eventName, 'eventName');
       bo.arg.ensureFunction(func, 'func');
+      this._init();
       if (this._subscribers[eventName] === void 0) {
         this._subscribers[eventName] = {};
       }
@@ -169,7 +188,11 @@
       var args, canContinue, e, eventName, events, indexOfSeparator, subscriber, t, _i, _len, _ref;
       eventName = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
       bo.arg.ensureString(eventName, 'eventName');
-      console.log("Publishing " + eventName + ".");
+      this._init();
+      if (this.busOptions.log === true) {
+        console.log("Publishing " + eventName + ".");
+      }
+      if (this.busOptions.global === false) bo.bus.publish(eventName, args);
       indexOfSeparator = -1;
       events = [eventName];
       while (eventName = eventName.substring(0, eventName.lastIndexOf(':'))) {
@@ -191,7 +214,10 @@
 
   })();
 
-  bo.bus = new bo.Bus();
+  bo.bus = new bo.Bus({
+    global: true,
+    log: true
+  });
 
   ko.extenders.publishable = function(target, eventName) {
     var result;
@@ -1160,11 +1186,8 @@
       routeName = valueAccessor();
       parameters = allBindingsAccessor().parameters || {};
       return jQuery(element).click(function(event) {
-        var disabledBinding, enabledBinding, isEnabled, _ref;
-        enabledBinding = allBindingsAccessor().enabled;
-        disabledBinding = allBindingsAccessor().disabled;
-        isEnabled = ko.utils.unwrapObservable((enabledBinding != null ? enabledBinding : true) && !ko.utils.unwrapObservable(disabledBinding != null ? disabledBinding : false));
-        if (isEnabled) {
+        var _ref;
+        if (bo.utils.isElementEnabled(allBindingsAccessor)) {
           bo.bus.publish("navigateToRoute:" + routeName, {
             parameters: parameters,
             canVeto: (_ref = allBindingsAccessor().canVeto) != null ? _ref : true
@@ -1177,6 +1200,8 @@
   };
 
   bo.Part = (function() {
+
+    __extends(Part, bo.Bus);
 
     Part.region = "main";
 
@@ -1209,17 +1234,22 @@
     Part.prototype.deactivate = function() {};
 
     Part.prototype.activate = function(parameters) {
-      var loadPromises, showPromises;
+      var allPromises, loadPromises, showPromises;
       var _this = this;
       bo.arg.ensureDefined(parameters, 'parameters');
+      this.publish("partActivating:" + this.name);
       this._activateViewModel();
       loadPromises = [this._loadTemplate()];
       showPromises = this._show(parameters || []);
       if (!_.isArray(showPromises)) showPromises = [showPromises];
+      allPromises = _.compact(loadPromises.concat(showPromises));
       jQuery.when.apply(this, showPromises).done(function() {
         if (_this.viewModel.reset) return _this.viewModel.reset();
       });
-      return loadPromises.concat(showPromises);
+      jQuery.when.apply(this, allPromises).done(function() {
+        return _this.publish("partActivated:" + _this.name);
+      });
+      return allPromises;
     };
 
     Part.prototype._show = function(parameters) {
