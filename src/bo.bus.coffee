@@ -6,12 +6,20 @@
 #           tokenId: func1
 #           tokenId1: func2
 #       ...
-subscribers = {}
-token = 0
+class bo.Bus
+    constructor: (@busOptions) ->
+        @_init()
 
-bo.bus = 
+    _init: ->
+        @busOptions = { global: false, log: true } if not @busOptions?
+
+        @_subscribers = {}
+        @_currentToken = 0
+
+        @_init = ->
+
     clearAll: ->
-        subscribers = {}
+        @_subscribers = {}
 
     # Subscribes the given function to the specified eventName, being executed
     # if the exact same named event is raised.
@@ -24,14 +32,18 @@ bo.bus =
         bo.arg.ensureString eventName, 'eventName'
         bo.arg.ensureFunction func, 'func'
 
-        subscribers[eventName] = {} if subscribers[eventName] is undefined
+        @_init()
 
-        token = ++token
-        subscribers[eventName][token] = func
+        @_subscribers[eventName] = {} if @_subscribers[eventName] is undefined
+
+        @_currentToken = ++@_currentToken
+        tokenToUse = @_currentToken
+
+        @_subscribers[eventName][tokenToUse] = func
 
         {
-            unsubscribe: ->
-                delete subscribers[eventName][token]
+            unsubscribe: =>
+                delete @_subscribers[eventName][tokenToUse]
         }
 
     # Publishes the given named event to any subscribed listeners, passing 
@@ -48,7 +60,13 @@ bo.bus =
     publish: (eventName, args...) ->
         bo.arg.ensureString eventName, 'eventName'
 
-        console.log "Publishing #{eventName}."
+        @_init()
+
+        if @busOptions.log is true
+            console.log "Publishing #{eventName}."
+
+        if @busOptions.global is false
+            bo.bus.publish eventName, args
 
         indexOfSeparator = -1
         events = [eventName]
@@ -56,10 +74,12 @@ bo.bus =
         events.push eventName while eventName = eventName.substring 0, (eventName.lastIndexOf ':')
 
         for e in events
-            for t, subscriber of (subscribers[e] || {})
+            for t, subscriber of (@_subscribers[e] || {})
                 canContinue = subscriber.apply @, args
 
                 if canContinue is false
                     return false
             
         true
+
+bo.bus = new bo.Bus { global: true, log: true }

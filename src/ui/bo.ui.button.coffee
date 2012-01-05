@@ -14,5 +14,4 @@ ko.bindingHandlers.button =
         options = valueAccessor()
         shouldExecute = ko.bindingHandlers.command.shouldExecute options.enable, viewModel
         
-        ko.utils.toggleDomNodeCssClass element, 'disabled', !shouldExecute
         element.disabled = if shouldExecute then '' else 'disabled'

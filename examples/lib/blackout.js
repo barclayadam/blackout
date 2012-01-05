@@ -5,7 +5,7 @@
    (c) Adam Barclay
   */
 
-  var HistoryManager, Menu, MenuItem, Route, SitemapNode, TreeNode, TreeViewModel, createErrorKey, currentEnableBindingUpdate, currentPartsValueAccessor, currentValueBinding, draggableModel, emptyValue, getType, getValidationFailureMessage, handlers, hasValue, originalEnableBindingHandler, simpleHandler, subscribers, token, validateValue;
+  var HistoryManager, Menu, MenuItem, Route, SitemapNode, TreeNode, TreeViewModel, createErrorKey, currentEnableBindingUpdate, currentPartsValueAccessor, currentValueBinding, draggableModel, emptyValue, getType, getValidationFailureMessage, handlers, hasValue, simpleHandler, validateValue;
   var __slice = Array.prototype.slice, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
   window.bo = {};
@@ -133,34 +133,66 @@
       deferred = new jQuery.Deferred();
       deferred.resolve();
       return deferred;
+    },
+    isElementEnabled: function(allBindingsAccessor) {
+      var disabledBinding, enabledBinding;
+      enabledBinding = allBindingsAccessor().enabled;
+      disabledBinding = allBindingsAccessor().disabled;
+      return ko.utils.unwrapObservable((enabledBinding != null ? enabledBinding : true) && !ko.utils.unwrapObservable(disabledBinding != null ? disabledBinding : false));
     }
   };
 
-  subscribers = {};
+  bo.Bus = (function() {
 
-  token = 0;
+    function Bus(busOptions) {
+      this.busOptions = busOptions;
+      this._init();
+    }
 
-  bo.bus = {
-    clearAll: function() {
-      return subscribers = {};
-    },
-    subscribe: function(eventName, func) {
+    Bus.prototype._init = function() {
+      if (!(this.busOptions != null)) {
+        this.busOptions = {
+          global: false,
+          log: true
+        };
+      }
+      this._subscribers = {};
+      this._currentToken = 0;
+      return this._init = function() {};
+    };
+
+    Bus.prototype.clearAll = function() {
+      return this._subscribers = {};
+    };
+
+    Bus.prototype.subscribe = function(eventName, func) {
+      var tokenToUse;
+      var _this = this;
       bo.arg.ensureString(eventName, 'eventName');
       bo.arg.ensureFunction(func, 'func');
-      if (subscribers[eventName] === void 0) subscribers[eventName] = {};
-      token = ++token;
-      subscribers[eventName][token] = func;
+      this._init();
+      if (this._subscribers[eventName] === void 0) {
+        this._subscribers[eventName] = {};
+      }
+      this._currentToken = ++this._currentToken;
+      tokenToUse = this._currentToken;
+      this._subscribers[eventName][tokenToUse] = func;
       return {
         unsubscribe: function() {
-          return delete subscribers[eventName][token];
+          return delete _this._subscribers[eventName][tokenToUse];
         }
       };
-    },
-    publish: function() {
+    };
+
+    Bus.prototype.publish = function() {
       var args, canContinue, e, eventName, events, indexOfSeparator, subscriber, t, _i, _len, _ref;
       eventName = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
       bo.arg.ensureString(eventName, 'eventName');
-      console.log("Publishing " + eventName + ".");
+      this._init();
+      if (this.busOptions.log === true) {
+        console.log("Publishing " + eventName + ".");
+      }
+      if (this.busOptions.global === false) bo.bus.publish(eventName, args);
       indexOfSeparator = -1;
       events = [eventName];
       while (eventName = eventName.substring(0, eventName.lastIndexOf(':'))) {
@@ -168,7 +200,7 @@
       }
       for (_i = 0, _len = events.length; _i < _len; _i++) {
         e = events[_i];
-        _ref = subscribers[e] || {};
+        _ref = this._subscribers[e] || {};
         for (t in _ref) {
           subscriber = _ref[t];
           canContinue = subscriber.apply(this, args);
@@ -176,8 +208,16 @@
         }
       }
       return true;
-    }
-  };
+    };
+
+    return Bus;
+
+  })();
+
+  bo.bus = new bo.Bus({
+    global: true,
+    log: true
+  });
 
   ko.extenders.publishable = function(target, eventName) {
     var result;
@@ -936,25 +976,6 @@
     }
   };
 
-  originalEnableBindingHandler = ko.bindingHandlers.enable;
-
-  ko.bindingHandlers.enable = {
-    init: function(element, valueAccessor, allBindings, viewModel) {
-      if (originalEnableBindingHandler.init != null) {
-        return originalEnableBindingHandler.init(element, valueAccessor, allBindings, viewModel);
-      }
-    },
-    update: function(element, valueAccessor, allBindings, viewModel) {
-      var $element, isEnabled;
-      if (originalEnableBindingHandler.update != null) {
-        originalEnableBindingHandler.update(element, valueAccessor, allBindings, viewModel);
-      }
-      isEnabled = ko.utils.unwrapObservable(valueAccessor());
-      $element = jQuery(element);
-      return $element.toggleClass("ui-state-disabled", !isEnabled);
-    }
-  };
-
   ko.bindingHandlers.command = {
     shouldExecute: function(enableOption, viewModel) {
       var enable;
@@ -1375,11 +1396,8 @@
       routeName = valueAccessor();
       parameters = allBindingsAccessor().parameters || {};
       return jQuery(element).click(function(event) {
-        var disabledBinding, enabledBinding, isEnabled, _ref;
-        enabledBinding = allBindingsAccessor().enabled;
-        disabledBinding = allBindingsAccessor().disabled;
-        isEnabled = ko.utils.unwrapObservable((enabledBinding != null ? enabledBinding : true) && !ko.utils.unwrapObservable(disabledBinding != null ? disabledBinding : false));
-        if (isEnabled) {
+        var _ref;
+        if (bo.utils.isElementEnabled(allBindingsAccessor)) {
           bo.bus.publish("navigateToRoute:" + routeName, {
             parameters: parameters,
             canVeto: (_ref = allBindingsAccessor().canVeto) != null ? _ref : true
@@ -1392,6 +1410,8 @@
   };
 
   bo.Part = (function() {
+
+    __extends(Part, bo.Bus);
 
     Part.region = "main";
 
@@ -1424,17 +1444,22 @@
     Part.prototype.deactivate = function() {};
 
     Part.prototype.activate = function(parameters) {
-      var loadPromises, showPromises;
+      var allPromises, loadPromises, showPromises;
       var _this = this;
       bo.arg.ensureDefined(parameters, 'parameters');
+      this.publish("partActivating:" + this.name);
       this._activateViewModel();
       loadPromises = [this._loadTemplate()];
       showPromises = this._show(parameters || []);
       if (!_.isArray(showPromises)) showPromises = [showPromises];
+      allPromises = _.compact(loadPromises.concat(showPromises));
       jQuery.when.apply(this, showPromises).done(function() {
         if (_this.viewModel.reset) return _this.viewModel.reset();
       });
-      return loadPromises.concat(showPromises);
+      jQuery.when.apply(this, allPromises).done(function() {
+        return _this.publish("partActivated:" + _this.name);
+      });
+      return allPromises;
     };
 
     Part.prototype._show = function(parameters) {
@@ -1733,146 +1758,19 @@
     return viewModel;
   };
 
-  draggableModel = {
-    currentlyDragging: ko.observable(),
-    canDrop: ko.observable(),
-    dropTarget: ko.observable()
-  };
+  bo.utils.addTemplate('breadcrumbTemplate', '<ul class="bo-breadcrumb" data-bind="foreach: breadcrumb">\n    <li>\n        <!-- ko ifnot: hasRoute -->\n            <span class="current" data-bind="text: name"></span>\n        <!-- /ko -->\n\n        <!-- ko if: hasRoute -->\n            <a href="#" data-bind="navigateTo: name, text: name"></a>\n        <!-- /ko -->\n    </li>\n</ul>');
 
-  ko.bindingHandlers.draggable = {
-    init: function(element, valueAccessor, allBindingsAccessor, viewModel) {
-      var $element, dragOptions, value, _ref;
-      $element = jQuery(element);
-      value = ko.utils.unwrapObservable(valueAccessor());
-      if (value === false || ((_ref = value.enabled) != null ? _ref : true) === false) {
-        return;
+  ko.bindingHandlers.breadcrumb = {
+    'init': function(element, valueAccessor) {
+      var sitemap;
+      sitemap = ko.utils.unwrapObservable(valueAccessor());
+      if (sitemap) {
+        ko.renderTemplate("breadcrumbTemplate", sitemap, {}, element, "replaceNode");
       }
-      if (value.template) {
-        value.helper = function() {
-          var helper;
-          helper = jQuery('<div id="custom-draggable-helper" />');
-          _.defer(function() {
-            return ko.renderTemplate(value.template, draggableModel, {}, helper[0], "replaceChildren");
-          });
-          return helper;
-        };
-      }
-      dragOptions = {
-        revert: 'invalid',
-        revertDuration: 250,
-        appendTo: 'body',
-        helper: 'clone',
-        zIndex: 200000,
-        distance: 10,
-        start: function(e, ui) {
-          draggableModel.canDrop(false);
-          draggableModel.dropTarget(void 0);
-          draggableModel.currentlyDragging(viewModel);
-          return $element.attr("aria-grabbed", true);
-        },
-        stop: function() {
-          $element.attr("aria-grabbed", false);
-          return _.defer(function() {
-            return draggableModel.currentlyDragging(void 0);
-          });
-        }
+      return {
+        "controlsDescendantBindings": true
       };
-      $element.draggable(jQuery.extend({}, dragOptions, value));
-      return $element.attr("aria-grabbed", false);
-    },
-    update: function() {
-      return jQuery("body").toggleClass("ui-drag-in-progress", draggableModel.currentlyDragging() != null);
     }
-  };
-
-  ko.bindingHandlers.dropTarget = {
-    init: function(element, valueAccessor, allBindingsAccessor, viewModel) {
-      var $element, canAccept, dropOptions, handler, value;
-      $element = jQuery(element);
-      value = valueAccessor() || {};
-      canAccept = ko.utils.unwrapObservable(value.canAccept);
-      handler = ko.utils.unwrapObservable(value.onDropComplete);
-      dropOptions = {
-        greedy: true,
-        tolerance: 'pointer',
-        hoverClass: 'ui-hovered-drop-target',
-        accept: function() {
-          if (draggableModel.currentlyDragging() != null) {
-            return canAccept.call(viewModel, draggableModel.currentlyDragging());
-          } else {
-            return false;
-          }
-        },
-        over: function() {
-          var canAcceptDrop;
-          canAcceptDrop = canAccept.call(viewModel, draggableModel.currentlyDragging());
-          draggableModel.canDrop(canAcceptDrop);
-          return draggableModel.dropTarget(viewModel);
-        },
-        out: function() {
-          draggableModel.canDrop(false);
-          return draggableModel.dropTarget(void 0);
-        },
-        drop: function() {
-          return _.defer(function() {
-            return handler.call(viewModel, draggableModel.currentlyDragging());
-          });
-        }
-      };
-      return $element.droppable(jQuery.extend({}, dropOptions, value));
-    },
-    update: function(element, valueAccessor, allBindingsAccessor, viewModel) {
-      var $element, canAccept, dropEffect, value;
-      $element = jQuery(element);
-      value = valueAccessor() || {};
-      canAccept = ko.utils.unwrapObservable(value.canAccept);
-      dropEffect = ko.utils.unwrapObservable(value.dropEffect || "move");
-      if (draggableModel.currentlyDragging() != null) {
-        canAccept = canAccept.call(viewModel, draggableModel.currentlyDragging());
-        $element.toggleClass("ui-valid-drop-target", canAccept);
-        $element.toggleClass("ui-invalid-drop-target", !canAccept);
-        if (canAccept) {
-          return $element.attr("aria-dropeffect", dropEffect);
-        } else {
-          return $element.attr("aria-dropeffect", "none");
-        }
-      } else {
-        $element.removeClass("ui-valid-drop-target");
-        return $element.removeClass("ui-invalid-drop-target");
-      }
-    }
-  };
-
-  ko.bindingHandlers.indeterminateCheckbox = {
-    init: function(element, valueAccessor) {
-      var $element;
-      $element = jQuery(element);
-      return $element.click(function() {
-        if ((ko.utils.unwrapObservable(valueAccessor())) === "mixed") {
-          return valueAccessor()(true);
-        } else {
-          return valueAccessor()($element.is(":checked"));
-        }
-      });
-    },
-    update: function(element, valueAccessor) {
-      var originalInput, value;
-      value = ko.utils.unwrapObservable(valueAccessor());
-      originalInput = jQuery(element);
-      if (value === "mixed") {
-        return originalInput.prop("indeterminate", true);
-      } else {
-        originalInput.prop("indeterminate", false);
-        return originalInput.prop("checked", value);
-      }
-    }
-  };
-
-  currentEnableBindingUpdate = ko.bindingHandlers.enable.update;
-
-  ko.bindingHandlers.enable.update = function(element, valueAccessor) {
-    currentEnableBindingUpdate(element, valueAccessor);
-    return ko.utils.toggleDomNodeCssClass(element, 'disabled', !ko.utils.unwrapObservable(valueAccessor()));
   };
 
   ko.bindingHandlers.button = {
@@ -1888,31 +1786,7 @@
       var options, shouldExecute;
       options = valueAccessor();
       shouldExecute = ko.bindingHandlers.command.shouldExecute(options.enable, viewModel);
-      ko.utils.toggleDomNodeCssClass(element, 'disabled', !shouldExecute);
       return element.disabled = shouldExecute ? '' : 'disabled';
-    }
-  };
-
-  ko.bindingHandlers.datepicker = {
-    init: function(element) {
-      return jQuery(element).datepicker({
-        dateFormat: 'yy/mm/dd'
-      });
-    }
-  };
-
-  bo.utils.addTemplate('breadcrumbTemplate', '<ul class="bo-breadcrumb" data-bind="foreach: breadcrumb">\n    <li>\n        <!-- ko ifnot: hasRoute -->\n            <span class="current" data-bind="text: name"></span>\n        <!-- /ko -->\n\n        <!-- ko if: hasRoute -->\n            <a href="#" data-bind="navigateTo: name, text: name"></a>\n        <!-- /ko -->\n    </li>\n</ul>');
-
-  ko.bindingHandlers.breadcrumb = {
-    'init': function(element, valueAccessor) {
-      var sitemap;
-      sitemap = ko.utils.unwrapObservable(valueAccessor());
-      if (sitemap) {
-        ko.renderTemplate("breadcrumbTemplate", sitemap, {}, element, "replaceNode");
-      }
-      return {
-        "controlsDescendantBindings": true
-      };
     }
   };
 
@@ -2084,6 +1958,156 @@
     }
   };
 
+  ko.bindingHandlers.datepicker = {
+    init: function(element) {
+      return jQuery(element).datepicker({
+        dateFormat: 'yy/mm/dd'
+      });
+    }
+  };
+
+  draggableModel = {
+    currentlyDragging: ko.observable(),
+    canDrop: ko.observable(),
+    dropTarget: ko.observable()
+  };
+
+  ko.bindingHandlers.draggable = {
+    init: function(element, valueAccessor, allBindingsAccessor, viewModel) {
+      var $element, dragOptions, value, _ref;
+      $element = jQuery(element);
+      value = ko.utils.unwrapObservable(valueAccessor());
+      if (value === false || ((_ref = value.enabled) != null ? _ref : true) === false) {
+        return;
+      }
+      if (value.template) {
+        value.helper = function() {
+          var helper;
+          helper = jQuery('<div id="custom-draggable-helper" />');
+          _.defer(function() {
+            return ko.renderTemplate(value.template, draggableModel, {}, helper[0], "replaceChildren");
+          });
+          return helper;
+        };
+      }
+      dragOptions = {
+        revert: 'invalid',
+        revertDuration: 250,
+        appendTo: 'body',
+        helper: 'clone',
+        zIndex: 200000,
+        distance: 10,
+        start: function(e, ui) {
+          draggableModel.canDrop(false);
+          draggableModel.dropTarget(void 0);
+          draggableModel.currentlyDragging(viewModel);
+          return $element.attr("aria-grabbed", true);
+        },
+        stop: function() {
+          $element.attr("aria-grabbed", false);
+          return _.defer(function() {
+            return draggableModel.currentlyDragging(void 0);
+          });
+        }
+      };
+      $element.draggable(jQuery.extend({}, dragOptions, value));
+      return $element.attr("aria-grabbed", false);
+    },
+    update: function() {
+      return jQuery("body").toggleClass("ui-drag-in-progress", draggableModel.currentlyDragging() != null);
+    }
+  };
+
+  ko.bindingHandlers.dropTarget = {
+    init: function(element, valueAccessor, allBindingsAccessor, viewModel) {
+      var $element, canAccept, dropOptions, handler, value;
+      $element = jQuery(element);
+      value = valueAccessor() || {};
+      canAccept = ko.utils.unwrapObservable(value.canAccept);
+      handler = ko.utils.unwrapObservable(value.onDropComplete);
+      dropOptions = {
+        greedy: true,
+        tolerance: 'pointer',
+        hoverClass: 'ui-hovered-drop-target',
+        accept: function() {
+          if (draggableModel.currentlyDragging() != null) {
+            return canAccept.call(viewModel, draggableModel.currentlyDragging());
+          } else {
+            return false;
+          }
+        },
+        over: function() {
+          var canAcceptDrop;
+          canAcceptDrop = canAccept.call(viewModel, draggableModel.currentlyDragging());
+          draggableModel.canDrop(canAcceptDrop);
+          return draggableModel.dropTarget(viewModel);
+        },
+        out: function() {
+          draggableModel.canDrop(false);
+          return draggableModel.dropTarget(void 0);
+        },
+        drop: function() {
+          return _.defer(function() {
+            return handler.call(viewModel, draggableModel.currentlyDragging());
+          });
+        }
+      };
+      return $element.droppable(jQuery.extend({}, dropOptions, value));
+    },
+    update: function(element, valueAccessor, allBindingsAccessor, viewModel) {
+      var $element, canAccept, dropEffect, value;
+      $element = jQuery(element);
+      value = valueAccessor() || {};
+      canAccept = ko.utils.unwrapObservable(value.canAccept);
+      dropEffect = ko.utils.unwrapObservable(value.dropEffect || "move");
+      if (draggableModel.currentlyDragging() != null) {
+        canAccept = canAccept.call(viewModel, draggableModel.currentlyDragging());
+        $element.toggleClass("ui-valid-drop-target", canAccept);
+        $element.toggleClass("ui-invalid-drop-target", !canAccept);
+        if (canAccept) {
+          return $element.attr("aria-dropeffect", dropEffect);
+        } else {
+          return $element.attr("aria-dropeffect", "none");
+        }
+      } else {
+        $element.removeClass("ui-valid-drop-target");
+        return $element.removeClass("ui-invalid-drop-target");
+      }
+    }
+  };
+
+  currentEnableBindingUpdate = ko.bindingHandlers.enable.update;
+
+  ko.bindingHandlers.enable.update = function(element, valueAccessor) {
+    currentEnableBindingUpdate(element, valueAccessor);
+    return ko.utils.toggleDomNodeCssClass(element, 'disabled', !ko.utils.unwrapObservable(valueAccessor()));
+  };
+
+  ko.bindingHandlers.indeterminateCheckbox = {
+    init: function(element, valueAccessor) {
+      var $element;
+      $element = jQuery(element);
+      return $element.click(function() {
+        if ((ko.utils.unwrapObservable(valueAccessor())) === "mixed") {
+          return valueAccessor()(true);
+        } else {
+          return valueAccessor()($element.is(":checked"));
+        }
+      });
+    },
+    update: function(element, valueAccessor) {
+      var originalInput, value;
+      value = ko.utils.unwrapObservable(valueAccessor());
+      originalInput = jQuery(element);
+      if (value === "mixed") {
+        return originalInput.prop("indeterminate", true);
+      } else {
+        originalInput.prop("indeterminate", false);
+        return originalInput.prop("checked", value);
+      }
+    }
+  };
+
   bo.utils.addTemplate('navigationItem', '<li data-bind="css: { active: isActive, current: isCurrent, \'has-children\': hasChildren }, visible: isVisible">\n    <!-- ko if: hasRoute -->\n        <a href="#" data-bind="navigateTo: name, text: name"></a>\n    <!-- /ko -->\n    <!-- ko ifnot: hasRoute -->\n        <span data-bind="text: name"></span>\n    <!-- /ko -->\n    <ul class="bo-navigation-sub-item" data-bind="template: { name : \'navigationItem\', foreach: children }"></ul>\n</li>');
 
   bo.utils.addTemplate('navigationTemplate', '<ul class="bo-navigation" data-bind="template: { name : \'navigationItem\', foreach: nodes }"></ul>');
@@ -2210,6 +2234,58 @@
       var value;
       value = ko.utils.unwrapObservable(valueAccessor());
       return handlers[getType(value)](element, value);
+    }
+  };
+
+  ko.bindingHandlers.splitter = {
+    init: function(element, valueAccessor) {
+      var $left, $parent, $right, $splitter, leftMaxWidth, leftMinWidth, leftXBorderWidth, parentLeftBorder, parentOffset, parentWidth, rightMaxWidth, rightMinWidth, rightXBorderWidth, sliderLeftWall, sliderRightWall, splitterOuterWidth, splitterPosition;
+      $splitter = jQuery(element);
+      $parent = $splitter.parent();
+      $left = $splitter.prev();
+      $right = $splitter.next();
+      if ($left.length === 0 || $right.length === 0) return;
+      $splitter.addClass('splitter');
+      parentWidth = $parent.width();
+      splitterOuterWidth = $splitter.outerWidth();
+      rightXBorderWidth = $right.outerWidth() - $right.width();
+      leftXBorderWidth = $left.outerWidth() - $left.width();
+      leftMinWidth = parseInt($left.css('min-width'), 10);
+      rightMinWidth = parseInt($right.css('min-width'), 10);
+      leftMaxWidth = $parent.width() - (rightMinWidth + rightXBorderWidth + leftXBorderWidth + splitterOuterWidth);
+      rightMaxWidth = $parent.width() - (leftMinWidth + leftXBorderWidth + rightXBorderWidth + splitterOuterWidth);
+      $left.css({
+        left: 0,
+        top: 0,
+        bottom: 0,
+        position: 'absolute'
+      });
+      $right.css({
+        right: 0,
+        top: 0,
+        bottom: 0,
+        position: 'absolute'
+      });
+      splitterPosition = ko.observable($left.outerWidth());
+      ko.computed(function() {
+        var desiredLeftWidth, desiredRightWidth;
+        desiredLeftWidth = splitterPosition() - leftXBorderWidth;
+        desiredRightWidth = parentWidth - splitterPosition() - splitterOuterWidth - rightXBorderWidth;
+        $left.css('width', Math.min(leftMaxWidth, Math.max(leftMinWidth, desiredLeftWidth)));
+        $right.css('width', Math.min(rightMaxWidth, Math.max(rightMinWidth, desiredRightWidth)));
+        return $splitter.css('left', Math.min(leftMaxWidth + leftXBorderWidth, Math.max(leftMinWidth + leftXBorderWidth, splitterPosition())));
+      });
+      parentLeftBorder = parseInt($parent.css('border-left-width'), 10);
+      parentOffset = $parent.offset();
+      sliderLeftWall = parentOffset.left + leftMinWidth + leftXBorderWidth + parentLeftBorder;
+      sliderRightWall = parentOffset.left + parentWidth - rightXBorderWidth - parentLeftBorder - rightMinWidth - splitterOuterWidth;
+      return $splitter.draggable({
+        axis: "x",
+        containment: [sliderLeftWall, 0, sliderRightWall, 0],
+        drag: function(event, ui) {
+          return splitterPosition(ui.position.left);
+        }
+      });
     }
   };
 
@@ -2636,57 +2712,5 @@
   };
 
   bo.ui.Tree = TreeViewModel;
-
-  ko.bindingHandlers.splitter = {
-    init: function(element, valueAccessor) {
-      var $left, $parent, $right, $splitter, leftMaxWidth, leftMinWidth, leftXBorderWidth, parentLeftBorder, parentOffset, parentWidth, rightMaxWidth, rightMinWidth, rightXBorderWidth, sliderLeftWall, sliderRightWall, splitterOuterWidth, splitterPosition;
-      $splitter = jQuery(element);
-      $parent = $splitter.parent();
-      $left = $splitter.prev();
-      $right = $splitter.next();
-      if ($left.length === 0 || $right.length === 0) return;
-      $splitter.addClass('splitter');
-      parentWidth = $parent.width();
-      splitterOuterWidth = $splitter.outerWidth();
-      rightXBorderWidth = $right.outerWidth() - $right.width();
-      leftXBorderWidth = $left.outerWidth() - $left.width();
-      leftMinWidth = parseInt($left.css('min-width'), 10);
-      rightMinWidth = parseInt($right.css('min-width'), 10);
-      leftMaxWidth = $parent.width() - (rightMinWidth + rightXBorderWidth + leftXBorderWidth + splitterOuterWidth);
-      rightMaxWidth = $parent.width() - (leftMinWidth + leftXBorderWidth + rightXBorderWidth + splitterOuterWidth);
-      $left.css({
-        left: 0,
-        top: 0,
-        bottom: 0,
-        position: 'absolute'
-      });
-      $right.css({
-        right: 0,
-        top: 0,
-        bottom: 0,
-        position: 'absolute'
-      });
-      splitterPosition = ko.observable($left.outerWidth());
-      ko.computed(function() {
-        var desiredLeftWidth, desiredRightWidth;
-        desiredLeftWidth = splitterPosition() - leftXBorderWidth;
-        desiredRightWidth = parentWidth - splitterPosition() - splitterOuterWidth - rightXBorderWidth;
-        $left.css('width', Math.min(leftMaxWidth, Math.max(leftMinWidth, desiredLeftWidth)));
-        $right.css('width', Math.min(rightMaxWidth, Math.max(rightMinWidth, desiredRightWidth)));
-        return $splitter.css('left', Math.min(leftMaxWidth + leftXBorderWidth, Math.max(leftMinWidth + leftXBorderWidth, splitterPosition())));
-      });
-      parentLeftBorder = parseInt($parent.css('border-left-width'), 10);
-      parentOffset = $parent.offset();
-      sliderLeftWall = parentOffset.left + leftMinWidth + leftXBorderWidth + parentLeftBorder;
-      sliderRightWall = parentOffset.left + parentWidth - rightXBorderWidth - parentLeftBorder - rightMinWidth - splitterOuterWidth;
-      return $splitter.draggable({
-        axis: "x",
-        containment: [sliderLeftWall, 0, sliderRightWall, 0],
-        drag: function(event, ui) {
-          return splitterPosition(ui.position.left);
-        }
-      });
-    }
-  };
 
 }).call(this);

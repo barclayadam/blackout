@@ -1,131 +1,161 @@
-#reference "../../js/blackout/bo.bus.coffee"
+#reference "../../js/blackout/@bus.coffee"
 
 describe 'Bus', ->
-    it 'Allows subscribing to named event', ->
-        spy = @spy()
+    describe 'Given a new Bus', ->
+        beforeEach ->
+            @bus = new bo.Bus()
 
-        bo.bus.subscribe "myEvent", spy
-        bo.bus.publish "myEvent"
+        it 'Allows subscribing to named event', ->
+            spy = @spy()
 
-        expect(spy).toHaveBeenCalledOnce()
+            @bus.subscribe "myEvent", spy
+            @bus.publish "myEvent"
 
-    it 'Allows unsubscribing from named event using returned token', ->
-        spy = @spy()
+            expect(spy).toHaveBeenCalledOnce()
 
-        subscription = bo.bus.subscribe "myEvent", spy
-        subscription.unsubscribe()
+        it 'Allows unsubscribing from named event using returned token', ->
+            spy = @spy()
 
-        bo.bus.publish "myEvent"
+            subscription = @bus.subscribe "myEvent", spy
+            subscription.unsubscribe()
 
-        expect(spy.called).toBe false
+            @bus.publish "myEvent"
 
-    it 'Returns true when no subscribers return a value', ->
-        stub = @stub()
+            expect(spy.called).toBe false
 
-        bo.bus.subscribe "myEvent", stub
-        success = bo.bus.publish "myEvent"
+        it 'Returns true when no subscribers return a value', ->
+            stub = @stub()
 
-        expect(success).toBe true
+            @bus.subscribe "myEvent", stub
+            success = @bus.publish "myEvent"
 
-    it 'Returns false when subscriber returns false', ->
-        stub = @stub().returns false
+            expect(success).toBe true
 
-        bo.bus.subscribe "myEvent", stub
-        success = bo.bus.publish "myEvent"
+        it 'Returns false when subscriber returns false', ->
+            stub = @stub().returns false
 
-        expect(success).toBe false
+            @bus.subscribe "myEvent", stub
+            success = @bus.publish "myEvent"
 
-    it 'Stops executing subscribers if false returned by earlier subscriber', ->
-        falseyStub = @stub().returns false
-        secondSubscriptionSpy = @stub().returns true
+            expect(success).toBe false
 
-        bo.bus.subscribe "myEvent", falseyStub
-        bo.bus.subscribe "myEvent", secondSubscriptionSpy
-        success = bo.bus.publish "myEvent"
+        it 'Stops executing subscribers if false returned by earlier subscriber', ->
+            falseyStub = @stub().returns false
+            secondSubscriptionSpy = @stub().returns true
 
-        expect(success).toBe false
-        expect(falseyStub).toHaveBeenCalledOnce() 
-        expect(secondSubscriptionSpy.called).toBe false
+            @bus.subscribe "myEvent", falseyStub
+            @bus.subscribe "myEvent", secondSubscriptionSpy
+            success = @bus.publish "myEvent"
 
-    it 'Allows unsubscribing from named event using returned token with multiple subscribers to same event', ->
-        spy1 = @spy()
-        spy2 = @spy()
+            expect(success).toBe false
+            expect(falseyStub).toHaveBeenCalledOnce() 
+            expect(secondSubscriptionSpy.called).toBe false
 
-        bo.bus.subscribe "myEvent", spy1
-        subscription = bo.bus.subscribe "myEvent", spy2
-        subscription.unsubscribe()
+        it 'Allows unsubscribing from named event using returned token with multiple subscribers to same event', ->
+            spy1 = @spy()
+            spy2 = @spy()
 
-        bo.bus.publish "myEvent"
+            @bus.subscribe "myEvent", spy1
+            subscription = @bus.subscribe "myEvent", spy2
+            subscription.unsubscribe()
 
-        expect(spy1).toHaveBeenCalledOnce() 
-        expect(spy2.called).toBe false
-        
-    it 'Allows multiple subscribers to a named event', ->
-        spy1 = @spy()
-        spy2 = @spy()
+            @bus.publish "myEvent"
 
-        bo.bus.subscribe "myEvent", spy1
-        bo.bus.subscribe "myEvent", spy2
-        bo.bus.publish "myEvent"
+            expect(spy1).toHaveBeenCalledOnce() 
+            expect(spy2.called).toBe false
+            
+        it 'Allows multiple subscribers to a named event', ->
+            spy1 = @spy()
+            spy2 = @spy()
 
-        expect(spy1).toHaveBeenCalledOnce()        
-        expect(spy2).toHaveBeenCalledOnce()
-        
-    it 'Allows subscriptions to namespaced events', ->
-        spy1 = @spy()
+            @bus.subscribe "myEvent", spy1
+            @bus.subscribe "myEvent", spy2
+            @bus.publish "myEvent"
 
-        bo.bus.subscribe "myEvent:subNamespace", spy1
-        bo.bus.publish "myEvent:subNamespace"
+            expect(spy1).toHaveBeenCalledOnce()        
+            expect(spy2).toHaveBeenCalledOnce()
+            
+        it 'Allows subscriptions to namespaced events', ->
+            spy1 = @spy()
 
-        expect(spy1).toHaveBeenCalledOnce() 
-        
-    it 'Should publish a namespaced message to any root subscribers', ->
-        spy1 = @spy()
+            @bus.subscribe "myEvent:subNamespace", spy1
+            @bus.publish "myEvent:subNamespace"
 
-        bo.bus.subscribe "myEvent", spy1
-        bo.bus.publish "myEvent:subNamespace"
+            expect(spy1).toHaveBeenCalledOnce() 
+            
+        it 'Should publish a namespaced message to any root subscribers', ->
+            spy1 = @spy()
 
-        expect(spy1).toHaveBeenCalledOnce() 
-        
-    it 'Should publish a namespaced message to any root subscribers with nested namespaces', ->
-        spy1 = @spy()
+            @bus.subscribe "myEvent", spy1
+            @bus.publish "myEvent:subNamespace"
 
-        bo.bus.subscribe "myEvent", spy1
-        bo.bus.publish "myEvent:subNamespace:anotherSubNamespace"
+            expect(spy1).toHaveBeenCalledOnce() 
+            
+        it 'Should publish a namespaced message to any root subscribers with nested namespaces', ->
+            spy1 = @spy()
 
-        expect(spy1).toHaveBeenCalledOnce() 
-        
-    it 'Should publish a namespaced message to any parent subscribers with nested namespaces', ->
-        spy1 = @spy()
+            @bus.subscribe "myEvent", spy1
+            @bus.publish "myEvent:subNamespace:anotherSubNamespace"
 
-        bo.bus.subscribe "myEvent:subNamespace", spy1
-        bo.bus.publish "myEvent:subNamespace:anotherSubNamespace"
+            expect(spy1).toHaveBeenCalledOnce() 
+            
+        it 'Should publish a namespaced message to any parent subscribers with nested namespaces', ->
+            spy1 = @spy()
 
-        expect(spy1).toHaveBeenCalledOnce() 
-        
-    it 'Publishes only to subscribers with same event name', ->
-        spy1 = @spy()
-        spy2 = @spy()
+            @bus.subscribe "myEvent:subNamespace", spy1
+            @bus.publish "myEvent:subNamespace:anotherSubNamespace"
 
-        bo.bus.subscribe "myEvent", spy1
-        bo.bus.subscribe "myOtherEvent", spy2
-        bo.bus.publish "myEvent"
+            expect(spy1).toHaveBeenCalledOnce() 
+            
+        it 'Publishes only to subscribers with same event name', ->
+            spy1 = @spy()
+            spy2 = @spy()
 
-        expect(spy1).toHaveBeenCalledOnce() 
-        expect(spy2.called).toBe false
+            @bus.subscribe "myEvent", spy1
+            @bus.subscribe "myOtherEvent", spy2
+            @bus.publish "myEvent"
 
-    it 'Calls subscribers with single argument passed to publish', ->
-        spy = @spy()
+            expect(spy1).toHaveBeenCalledOnce() 
+            expect(spy2.called).toBe false
 
-        bo.bus.subscribe "myEvent", spy
-        bo.bus.publish "myEvent", "My Data"
+        it 'Calls subscribers with single argument passed to publish', ->
+            spy = @spy()
 
-        expect(spy).toHaveBeenCalledWith "My Data"
-        
-    it 'Calls subscribers with multiple arguments passed to publish', ->
-        spy = @spy()
+            @bus.subscribe "myEvent", spy
+            @bus.publish "myEvent", "My Data"
 
-        bo.bus.subscribe "myEvent", spy
-        bo.bus.publish "myEvent", "My Data", "My Other Data"
+            expect(spy).toHaveBeenCalledWith "My Data"
+            
+        it 'Calls subscribers with multiple arguments passed to publish', ->
+            spy = @spy()
 
-        expect(spy).toHaveBeenCalledWith "My Data", "My Other Data"
+            @bus.subscribe "myEvent", spy
+            @bus.publish "myEvent", "My Data", "My Other Data"
+
+            expect(spy).toHaveBeenCalledWith "My Data", "My Other Data"
+
+    describe 'Given a class inheriting from Bus', ->
+        class MyViewModel extends bo.Bus
+            doPublish: ->
+                @publish 'myEvent'
+
+        beforeEach ->
+            @viewModel = new MyViewModel()
+
+        it 'should publish to local listeners', ->
+            # Arrange
+            spy = @spy()
+            @viewModel.subscribe 'myEvent', spy
+
+            # Act
+            @viewModel.doPublish()
+
+            # Arrange
+            expect(spy).toHaveBeenCalled()
+
+        it 'should publish to the global bus', ->
+            # Act
+            @viewModel.doPublish()
+
+            # Arrange
+            expect('myEvent').toHaveBeenPublished() # To 'global' bus
