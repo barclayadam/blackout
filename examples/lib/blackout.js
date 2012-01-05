@@ -1546,7 +1546,6 @@
       var options, shouldExecute;
       options = valueAccessor();
       shouldExecute = ko.bindingHandlers.command.shouldExecute(options.enable, viewModel);
-      ko.utils.toggleDomNodeCssClass(element, 'disabled', !shouldExecute);
       return element.disabled = shouldExecute ? '' : 'disabled';
     }
   };
