@@ -6,12 +6,13 @@
 #           tokenId: func1
 #           tokenId1: func2
 #       ...
-subscribers = {}
-token = 0
+class bo.Bus
+    constructor: ->
+        @_subscribers = {}
+        @_currentToken = 0
 
-bo.bus = 
     clearAll: ->
-        subscribers = {}
+        @_subscribers = {}
 
     # Subscribes the given function to the specified eventName, being executed
     # if the exact same named event is raised.
@@ -24,14 +25,16 @@ bo.bus =
         bo.arg.ensureString eventName, 'eventName'
         bo.arg.ensureFunction func, 'func'
 
-        subscribers[eventName] = {} if subscribers[eventName] is undefined
+        @_subscribers[eventName] = {} if @_subscribers[eventName] is undefined
 
-        token = ++token
-        subscribers[eventName][token] = func
+        @_currentToken = ++@_currentToken
+        tokenToUse = @_currentToken
+
+        @_subscribers[eventName][tokenToUse] = func
 
         {
-            unsubscribe: ->
-                delete subscribers[eventName][token]
+            unsubscribe: =>
+                delete @_subscribers[eventName][tokenToUse]
         }
 
     # Publishes the given named event to any subscribed listeners, passing 
@@ -56,10 +59,12 @@ bo.bus =
         events.push eventName while eventName = eventName.substring 0, (eventName.lastIndexOf ':')
 
         for e in events
-            for t, subscriber of (subscribers[e] || {})
+            for t, subscriber of (@_subscribers[e] || {})
                 canContinue = subscriber.apply @, args
 
                 if canContinue is false
                     return false
             
         true
+
+bo.bus = new bo.Bus()

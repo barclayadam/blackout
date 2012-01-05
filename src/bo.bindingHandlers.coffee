@@ -54,20 +54,6 @@ ko.bindingHandlers.position =
 
         $element.position options
 
-originalEnableBindingHandler = ko.bindingHandlers.enable
-
-ko.bindingHandlers.enable =
-    init: (element, valueAccessor, allBindings, viewModel) ->
-        originalEnableBindingHandler.init element, valueAccessor, allBindings, viewModel if originalEnableBindingHandler.init?
-        
-    update: (element, valueAccessor, allBindings, viewModel) ->
-        originalEnableBindingHandler.update element, valueAccessor, allBindings, viewModel if originalEnableBindingHandler.update?
-
-        isEnabled = ko.utils.unwrapObservable valueAccessor()
-        $element = jQuery element
-
-        $element.toggleClass "ui-state-disabled", !isEnabled
-
 ko.bindingHandlers.command =
     shouldExecute: (enableOption, viewModel) ->
         enable = ko.utils.unwrapObservable enableOption

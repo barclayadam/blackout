@@ -5,7 +5,7 @@
    (c) Adam Barclay
   */
 
-  var HistoryManager, Menu, MenuItem, Route, SitemapNode, TreeNode, TreeViewModel, createErrorKey, currentEnableBindingUpdate, currentPartsValueAccessor, currentValueBinding, draggableModel, emptyValue, getType, getValidationFailureMessage, handlers, hasValue, originalEnableBindingHandler, simpleHandler, subscribers, token, validateValue;
+  var HistoryManager, Menu, MenuItem, Route, SitemapNode, TreeNode, TreeViewModel, createErrorKey, currentEnableBindingUpdate, currentPartsValueAccessor, currentValueBinding, draggableModel, emptyValue, getType, getValidationFailureMessage, handlers, hasValue, simpleHandler, validateValue;
   var __slice = Array.prototype.slice, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
   window.bo = {};
@@ -136,27 +136,36 @@
     }
   };
 
-  subscribers = {};
+  bo.Bus = (function() {
 
-  token = 0;
+    function Bus() {
+      this._subscribers = {};
+      this._currentToken = 0;
+    }
 
-  bo.bus = {
-    clearAll: function() {
-      return subscribers = {};
-    },
-    subscribe: function(eventName, func) {
+    Bus.prototype.clearAll = function() {
+      return this._subscribers = {};
+    };
+
+    Bus.prototype.subscribe = function(eventName, func) {
+      var tokenToUse;
+      var _this = this;
       bo.arg.ensureString(eventName, 'eventName');
       bo.arg.ensureFunction(func, 'func');
-      if (subscribers[eventName] === void 0) subscribers[eventName] = {};
-      token = ++token;
-      subscribers[eventName][token] = func;
+      if (this._subscribers[eventName] === void 0) {
+        this._subscribers[eventName] = {};
+      }
+      this._currentToken = ++this._currentToken;
+      tokenToUse = this._currentToken;
+      this._subscribers[eventName][tokenToUse] = func;
       return {
         unsubscribe: function() {
-          return delete subscribers[eventName][token];
+          return delete _this._subscribers[eventName][tokenToUse];
         }
       };
-    },
-    publish: function() {
+    };
+
+    Bus.prototype.publish = function() {
       var args, canContinue, e, eventName, events, indexOfSeparator, subscriber, t, _i, _len, _ref;
       eventName = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
       bo.arg.ensureString(eventName, 'eventName');
@@ -168,7 +177,7 @@
       }
       for (_i = 0, _len = events.length; _i < _len; _i++) {
         e = events[_i];
-        _ref = subscribers[e] || {};
+        _ref = this._subscribers[e] || {};
         for (t in _ref) {
           subscriber = _ref[t];
           canContinue = subscriber.apply(this, args);
@@ -176,8 +185,13 @@
         }
       }
       return true;
-    }
-  };
+    };
+
+    return Bus;
+
+  })();
+
+  bo.bus = new bo.Bus();
 
   ko.extenders.publishable = function(target, eventName) {
     var result;
@@ -724,25 +738,6 @@
         $element.width(ko.utils.unwrapObservable(value.width));
       }
       return $element.position(options);
-    }
-  };
-
-  originalEnableBindingHandler = ko.bindingHandlers.enable;
-
-  ko.bindingHandlers.enable = {
-    init: function(element, valueAccessor, allBindings, viewModel) {
-      if (originalEnableBindingHandler.init != null) {
-        return originalEnableBindingHandler.init(element, valueAccessor, allBindings, viewModel);
-      }
-    },
-    update: function(element, valueAccessor, allBindings, viewModel) {
-      var $element, isEnabled;
-      if (originalEnableBindingHandler.update != null) {
-        originalEnableBindingHandler.update(element, valueAccessor, allBindings, viewModel);
-      }
-      isEnabled = ko.utils.unwrapObservable(valueAccessor());
-      $element = jQuery(element);
-      return $element.toggleClass("ui-state-disabled", !isEnabled);
     }
   };
 
