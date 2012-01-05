@@ -445,6 +445,215 @@
     }
   };
 
+  bo.DataSource = (function() {
+
+    function DataSource(options) {
+      var _this = this;
+      this.options = options;
+      this.isLoading = ko.observable(false);
+      this._hasLoadedOnce = false;
+      this._serverPagingEnabled = this.options.serverPaging > 0;
+      this._clientPagingEnabled = this.options.clientPaging > 0;
+      this._loadedItems = ko.observableArray();
+      this.sorting = ko.observable();
+      this._sortFunction = ko.observable();
+      this.items = ko.computed(function() {
+        if (_this._sortFunction() != null) {
+          return _this._loadedItems().sort(_this._sortFunction());
+        } else {
+          return _this._loadedItems();
+        }
+      });
+      if (this.options.searchParameters != null) {
+        this.searchParameters = ko.computed(function() {
+          return ko.toJS(options.searchParameters);
+        });
+        this.searchParameters.subscribe(function() {
+          if (_this._hasLoadedOnce) return _this.load();
+        });
+      } else {
+        this.searchParameters = ko.observable({});
+      }
+      this._setupPaging();
+      this._setupInitialData();
+    }
+
+    DataSource.prototype.sort = function() {
+      if (!this._serverPagingEnabled) {
+        this._sortFunction(function(a, b) {
+          return (b < a) - (a < b);
+        });
+      }
+      return this.sorting('ascending');
+    };
+
+    DataSource.prototype.sortDescending = function() {
+      if (!this._serverPagingEnabled) {
+        this._sortFunction(function(a, b) {
+          return ((b < a) - (a < b)) * -1;
+        });
+      }
+      return this.sorting('descending');
+    };
+
+    DataSource.prototype.sortBy = function(propertyNames) {
+      var properties;
+      if (!this._serverPagingEnabled) {
+        properties = _(propertyNames.split(',')).map(function(p) {
+          var indexOfSpace;
+          indexOfSpace = p.indexOf(' ');
+          if (indexOfSpace > -1) {
+            return {
+              name: p.substring(0, indexOfSpace),
+              order: p.substring(indexOfSpace + 1)
+            };
+          } else {
+            return {
+              name: p,
+              order: 'ascending'
+            };
+          }
+        });
+        this._sortFunction(function(a, b) {
+          var p, _i, _len;
+          for (_i = 0, _len = properties.length; _i < _len; _i++) {
+            p = properties[_i];
+            if (a[p.name] > b[p.name]) {
+              if (p.order === 'ascending') {
+                return 1;
+              } else {
+                return -1;
+              }
+            }
+            if (a[p.name] < b[p.name]) {
+              if (p.order === 'ascending') {
+                return -1;
+              } else {
+                return 1;
+              }
+            }
+          }
+          return 0;
+        });
+      }
+      return this.sorting(propertyNames);
+    };
+
+    DataSource.prototype.load = function() {
+      this.pageNumber(1);
+      if (!this._serverPagingEnabled) return this._doLoad();
+    };
+
+    DataSource.prototype.goToNextPage = function() {
+      if (!this.isLastPage()) return this.pageNumber(this.pageNumber() + 1);
+    };
+
+    DataSource.prototype.goToPreviousPage = function() {
+      if (!this.isFirstPage()) return this.pageNumber(this.pageNumber() - 1);
+    };
+
+    DataSource.prototype._setupInitialData = function() {
+      if ((this.options.provider != null) && _.isArray(this.options.provider)) {
+        this._setData(this.options.provider);
+        return this.pageNumber(1);
+      }
+    };
+
+    DataSource.prototype._setupPaging = function() {
+      var _this = this;
+      this.serverPageLastRetrieved = -1;
+      this.clientPagesPerServerPage = this.options.serverPaging / (this.options.clientPaging || this.options.serverPaging);
+      this.pageSize = ko.observable();
+      this.pageNumber = ko.observable();
+      this.totalCount = ko.observable();
+      this.pageItems = ko.computed(function() {
+        var adjustedPageNumber, end, start;
+        if (_this._clientPagingEnabled && _this._serverPagingEnabled) {
+          adjustedPageNumber = _this.clientPagesPerServerPage - (_this.pageNumber() % _this.clientPagesPerServerPage);
+          start = (adjustedPageNumber - 1) * _this.pageSize();
+          end = start + _this.pageSize();
+          return _this.items().slice(start, end);
+        } else if (_this._clientPagingEnabled) {
+          start = (_this.pageNumber() - 1) * _this.pageSize();
+          end = start + _this.pageSize();
+          return _this.items().slice(start, end);
+        } else {
+          return _this.items();
+        }
+      });
+      this.pageCount = ko.computed(function() {
+        return Math.ceil(_this.totalCount() / _this.pageSize());
+      });
+      this.pages = ko.computed(function() {
+        if (_this.pageCount() > 0) {
+          return _(_.range(1, _this.pageCount() + 1)).map(function(p) {
+            return {
+              pageNumber: p,
+              isSelected: p === _this.pageNumber(),
+              select: function() {
+                return _this.pageNumber(p);
+              }
+            };
+          });
+        } else {
+          return [];
+        }
+      });
+      this.isFirstPage = ko.computed(function() {
+        return _this.pageNumber() === 1;
+      });
+      this.isLastPage = ko.computed(function() {
+        return _this.pageNumber() === _this.pageCount();
+      });
+      if (this.options.serverPaging) {
+        return this.pageNumber.subscribe(function() {
+          return _this._doLoad();
+        });
+      }
+    };
+
+    DataSource.prototype._doLoad = function() {
+      var loadOptions;
+      var _this = this;
+      if ((this.options.provider != null) && _.isArray(this.options.provider)) {
+        return;
+      }
+      loadOptions = this.searchParameters();
+      if (this._serverPagingEnabled) {
+        loadOptions.pageSize = this.options.serverPaging;
+        loadOptions.pageNumber = Math.round(this.pageNumber() / this.clientPagesPerServerPage);
+        if (loadOptions.pageNumber === this.serverPageLastRetrieved) return;
+      }
+      if (this.sorting() != null) loadOptions.sorting = this.sorting();
+      return this.options.provider(loadOptions, function(loadedData) {
+        _this._setData(loadedData);
+        return _this.serverPageLastRetrieved = loadOptions.pageNumber;
+      });
+    };
+
+    DataSource.prototype._setData = function(loadedData) {
+      var items;
+      items = [];
+      if (this.options.serverPaging) {
+        items = loadedData.items;
+        this.pageSize(this.options.clientPaging || this.options.serverPaging);
+        this.totalCount(loadedData.totalCount);
+      } else {
+        items = loadedData;
+        this.pageSize(this.options.clientPaging || loadedData.length);
+        this.totalCount(loadedData.length);
+      }
+      if (this.options.map != null) {
+        items = _(items).chain().map(this.options.map).compact().value();
+      }
+      this._loadedItems(items);
+      return this._hasLoadedOnce = true;
+    };
+
+    return DataSource;
+
+  })();
+
   bo.QueryString = (function() {
 
     QueryString.from = function(qs) {

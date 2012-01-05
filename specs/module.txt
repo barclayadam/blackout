@@ -1,5 +1,6 @@
 specs\specs_helper.coffee
 specs\bo.bus.specs.coffee
+specs\bo.dataSource.specs.coffee
 specs\bo.messaging.specs.coffee
 specs\bo.parts.specs.coffee
 specs\bo.regions.specs.coffee

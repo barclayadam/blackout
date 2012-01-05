@@ -3,6 +3,7 @@ src\bo.utils.coffee
 src\bo.bus.coffee
 src\bo.extenders.coffee
 src\bo.validation.coffee    
+src\bo.dataSource.coffee
 src\bo.query.coffee
 src\bo.messaging.coffee
 src\bo.bindingHandlers.coffee
