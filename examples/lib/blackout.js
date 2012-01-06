@@ -2076,11 +2076,39 @@
     }
   };
 
+  ko.bindingHandlers.indeterminateCheckbox = {
+    init: function(element, valueAccessor) {
+      var $element;
+      $element = jQuery(element);
+      return $element.click(function() {
+        if ((ko.utils.unwrapObservable(valueAccessor())) === "mixed") {
+          return valueAccessor()(true);
+        } else {
+          return valueAccessor()($element.is(":checked"));
+        }
+      });
+    },
+    update: function(element, valueAccessor) {
+      var originalInput, value;
+      value = ko.utils.unwrapObservable(valueAccessor());
+      originalInput = jQuery(element);
+      if (value === "mixed") {
+        return originalInput.prop("indeterminate", true);
+      } else {
+        originalInput.prop("indeterminate", false);
+        return originalInput.prop("checked", value);
+      }
+    }
+  };
+
   currentEnableBindingUpdate = ko.bindingHandlers.enable.update;
 
   ko.bindingHandlers.enable.update = function(element, valueAccessor) {
+    var isEnabled;
     currentEnableBindingUpdate(element, valueAccessor);
-    return ko.utils.toggleDomNodeCssClass(element, 'disabled', !ko.utils.unwrapObservable(valueAccessor()));
+    isEnabled = ko.utils.unwrapObservable(valueAccessor());
+    ko.utils.toggleDomNodeCssClass(element, 'disabled', !isEnabled);
+    return element.setAttribute('aria-disabled', isEnabled ? 'false' : 'true');
   };
 
   ko.bindingHandlers.indeterminateCheckbox = {

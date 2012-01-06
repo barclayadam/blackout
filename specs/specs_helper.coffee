@@ -76,7 +76,8 @@ beforeEach ->
             @actual.size() > 0
 
         toHaveAttr: (attributeName, expectedAttributeValue) ->
-            hasProperty @actual.attr(attributeName), expectedAttributeValue
+            @message = -> "Expected #{@actual.selector} to have attribute '#{attributeName}' with value '#{expectedAttributeValue}', was '#{@actual.attr(attributeName)}'."
+            @actual.attr(attributeName) is expectedAttributeValue
 
         toHaveId: (id) ->
             @actual.attr("id") is id

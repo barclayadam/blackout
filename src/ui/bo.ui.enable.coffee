@@ -6,4 +6,7 @@ currentEnableBindingUpdate = ko.bindingHandlers.enable.update
 ko.bindingHandlers.enable.update = (element, valueAccessor) ->
     currentEnableBindingUpdate element, valueAccessor
 
-    ko.utils.toggleDomNodeCssClass element, 'disabled', !ko.utils.unwrapObservable valueAccessor()
+    isEnabled = ko.utils.unwrapObservable valueAccessor()
+
+    ko.utils.toggleDomNodeCssClass element, 'disabled', !isEnabled
+    element.setAttribute 'aria-disabled', if isEnabled then 'false' else 'true'

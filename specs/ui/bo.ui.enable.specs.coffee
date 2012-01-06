@@ -34,6 +34,20 @@ describe "enable binding handler", ->
 
         # Assert
         expect(element).toHaveClass 'disabled'
+
+    it 'should updated aria-disabled attribute when state changes', ->
+        # Arrange
+        shouldEnable = ko.observable true
+        element = @setHtmlFixture '<a data-bind="enable: shouldEnable" />'
+
+        @applyBindingsToHtmlFixture { shouldEnable: shouldEnable }        
+        expect(element).toHaveAttr 'aria-disabled', 'false'
+
+        # Act
+        shouldEnable false
+
+        # Assert
+        expect(element).toHaveAttr 'aria-disabled', 'true'
       
 describe "disable binding handler", ->
     it 'should apply a disabled class to element when element disabled', ->
@@ -69,3 +83,17 @@ describe "disable binding handler", ->
 
         # Assert
         expect(element).toNotHaveClass 'disabled'
+
+    it 'should updated aria-disabled attribute when state changes', ->
+        # Arrange
+        shouldDisable = ko.observable true
+        element = @setHtmlFixture '<a data-bind="disable: shouldDisable" />'
+
+        @applyBindingsToHtmlFixture { shouldDisable: shouldDisable }        
+        expect(element).toHaveAttr 'aria-disabled', 'true'
+
+        # Act
+        shouldDisable false
+
+        # Assert
+        expect(element).toHaveAttr 'aria-disabled', 'false'
