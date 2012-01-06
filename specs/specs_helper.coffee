@@ -73,6 +73,7 @@ beforeEach ->
             @actual.is ":empty"
 
         toExist: ->
+            @message = -> "Expected #{@actual.selector} to exist."
             @actual.size() > 0
 
         toHaveAttr: (attributeName, expectedAttributeValue) ->
@@ -96,7 +97,12 @@ beforeEach ->
             @actual.val() is value
 
         toBeDisabled: (selector) ->
-            @actual.is ":disabled"
+            @message = -> "Expected #{@actual.selector} to be disabled."
+            @actual.is(":disabled") or @actual.attr("aria-disabled") is "true"
+
+        toBeEnabled: (selector) ->
+            @message = -> "Expected #{@actual.selector} to be enabled."
+            not (@actual.is(":disabled") or @actual.attr("aria-disabled") is "true")
 
 afterEach ->    
     window.sinonSandbox.restore()

@@ -5,7 +5,7 @@
    (c) Adam Barclay
   */
 
-  var HistoryManager, Menu, MenuItem, Route, SitemapNode, TreeNode, TreeViewModel, createErrorKey, currentEnableBindingUpdate, currentPartsValueAccessor, currentValueBinding, draggableModel, emptyValue, getType, getValidationFailureMessage, handlers, hasValue, simpleHandler, validateValue;
+  var HistoryManager, Menu, MenuItem, PagerModel, Route, SitemapNode, TreeNode, TreeViewModel, createErrorKey, currentEnableBindingUpdate, currentPartsValueAccessor, currentValueBinding, draggableModel, emptyValue, getType, getValidationFailureMessage, handlers, hasValue, simpleHandler, toOrderDirection, validateValue;
   var __slice = Array.prototype.slice, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
   window.bo = {};
@@ -485,6 +485,14 @@
     }
   };
 
+  toOrderDirection = function(order) {
+    if (order === 'asc' || order === 'ascending') {
+      return 'ascending';
+    } else {
+      return 'descending';
+    }
+  };
+
   bo.DataSource = (function() {
 
     function DataSource(options) {
@@ -494,8 +502,28 @@
       this._hasLoadedOnce = false;
       this._serverPagingEnabled = this.options.serverPaging > 0;
       this._clientPagingEnabled = this.options.clientPaging > 0;
+      this.pagingEnabled = this._serverPagingEnabled || this._clientPagingEnabled;
       this._loadedItems = ko.observableArray();
-      this.sorting = ko.observable();
+      this.sortedBy = ko.observable();
+      this.sorting = ko.computed(function() {
+        var sortedBy;
+        sortedBy = _this.sortedBy();
+        if (sortedBy != null) {
+          if (_.isString(sortedBy)) {
+            return sortedBy;
+          } else if (sortedBy.length > 0) {
+            return _.reduce(sortedBy, (function(memo, o) {
+              var prop;
+              prop = "" + o.name + " " + o.order;
+              if (memo) {
+                return "" + memo + ", " + prop;
+              } else {
+                return prop;
+              }
+            }), '');
+          }
+        }
+      });
       this._sortFunction = ko.observable();
       this.items = ko.computed(function() {
         if (_this._sortFunction() != null) {
@@ -518,13 +546,24 @@
       this._setupInitialData();
     }
 
+    DataSource.prototype.getPropertingSortOrder = function(propertyName) {
+      var ordering, sortedBy;
+      sortedBy = this.sortedBy();
+      if ((sortedBy != null) && sortedBy.length > 0) {
+        ordering = _.find(sortedBy, function(o) {
+          return o.name === propertyName;
+        });
+        return ordering != null ? ordering.order : void 0;
+      }
+    };
+
     DataSource.prototype.sort = function() {
       if (!this._serverPagingEnabled) {
         this._sortFunction(function(a, b) {
           return (b < a) - (a < b);
         });
       }
-      return this.sorting('ascending');
+      return this.sortedBy('ascending');
     };
 
     DataSource.prototype.sortDescending = function() {
@@ -533,27 +572,28 @@
           return ((b < a) - (a < b)) * -1;
         });
       }
-      return this.sorting('descending');
+      return this.sortedBy('descending');
     };
 
     DataSource.prototype.sortBy = function(propertyNames) {
       var properties;
+      properties = _(propertyNames.split(',')).map(function(p) {
+        var indexOfSpace;
+        p = jQuery.trim(p);
+        indexOfSpace = p.indexOf(' ');
+        if (indexOfSpace > -1) {
+          return {
+            name: p.substring(0, indexOfSpace),
+            order: toOrderDirection(p.substring(indexOfSpace + 1))
+          };
+        } else {
+          return {
+            name: p,
+            order: 'ascending'
+          };
+        }
+      });
       if (!this._serverPagingEnabled) {
-        properties = _(propertyNames.split(',')).map(function(p) {
-          var indexOfSpace;
-          indexOfSpace = p.indexOf(' ');
-          if (indexOfSpace > -1) {
-            return {
-              name: p.substring(0, indexOfSpace),
-              order: p.substring(indexOfSpace + 1)
-            };
-          } else {
-            return {
-              name: p,
-              order: 'ascending'
-            };
-          }
-        });
         this._sortFunction(function(a, b) {
           var p, _i, _len;
           for (_i = 0, _len = properties.length; _i < _len; _i++) {
@@ -576,7 +616,7 @@
           return 0;
         });
       }
-      return this.sorting(propertyNames);
+      return this.sortedBy(properties);
     };
 
     DataSource.prototype.load = function() {
@@ -584,18 +624,30 @@
       if (!this._serverPagingEnabled) return this._doLoad();
     };
 
+    DataSource.prototype.goTo = function(pageNumber) {
+      return this.pageNumber(pageNumber);
+    };
+
+    DataSource.prototype.goToFirstPage = function() {
+      return this.goTo(1);
+    };
+
+    DataSource.prototype.goToLastPage = function() {
+      return this.goTo(this.pageCount());
+    };
+
     DataSource.prototype.goToNextPage = function() {
-      if (!this.isLastPage()) return this.pageNumber(this.pageNumber() + 1);
+      if (!this.isLastPage()) return this.goTo(this.pageNumber() + 1);
     };
 
     DataSource.prototype.goToPreviousPage = function() {
-      if (!this.isFirstPage()) return this.pageNumber(this.pageNumber() - 1);
+      if (!this.isFirstPage()) return this.goTo(this.pageNumber() - 1);
     };
 
     DataSource.prototype._setupInitialData = function() {
       if ((this.options.provider != null) && _.isArray(this.options.provider)) {
         this._setData(this.options.provider);
-        return this.pageNumber(1);
+        return this.goTo(1);
       }
     };
 
@@ -623,21 +675,6 @@
       });
       this.pageCount = ko.computed(function() {
         return Math.ceil(_this.totalCount() / _this.pageSize());
-      });
-      this.pages = ko.computed(function() {
-        if (_this.pageCount() > 0) {
-          return _(_.range(1, _this.pageCount() + 1)).map(function(p) {
-            return {
-              pageNumber: p,
-              isSelected: p === _this.pageNumber(),
-              select: function() {
-                return _this.pageNumber(p);
-              }
-            };
-          });
-        } else {
-          return [];
-        }
       });
       this.isFirstPage = ko.computed(function() {
         return _this.pageNumber() === 1;
@@ -1779,14 +1816,35 @@
       value = ko.utils.unwrapObservable(valueAccessor());
       $element = jQuery(element);
       jQuery("<span></span>").html($element.text()).appendTo($element.empty());
-      value.event = 'click';
-      return ko.bindingHandlers.command.init.apply(this, arguments);
+      if (_.isFunction(value)) {
+        return ko.bindingHandlers.click.init.apply(this, arguments);
+      }
+    }
+  };
+
+  ko.bindingHandlers.columnSort = {
+    init: function(element, viewModelAccessor) {
+      var dataSource, property;
+      dataSource = viewModelAccessor().dataSource;
+      property = viewModelAccessor().property;
+      ko.utils.toggleDomNodeCssClass(element, 'sortable', true);
+      return ko.utils.registerEventHandler(element, 'click', function() {
+        var sortOrder;
+        sortOrder = (dataSource.getPropertingSortOrder(property)) || 'descending';
+        if (sortOrder === 'descending') {
+          return dataSource.sortBy("" + property + " ascending");
+        } else {
+          return dataSource.sortBy("" + property + " descending");
+        }
+      });
     },
-    update: function(element, valueAccessor, allBindingsAccessor, viewModel) {
-      var options, shouldExecute;
-      options = valueAccessor();
-      shouldExecute = ko.bindingHandlers.command.shouldExecute(options.enable, viewModel);
-      return element.disabled = shouldExecute ? '' : 'disabled';
+    update: function(element, viewModelAccessor) {
+      var dataSource, property, sortOrder;
+      dataSource = viewModelAccessor().dataSource;
+      property = viewModelAccessor().property;
+      sortOrder = dataSource.getPropertingSortOrder(property);
+      ko.utils.toggleDomNodeCssClass(element, 'ascending', sortOrder === 'ascending');
+      return ko.utils.toggleDomNodeCssClass(element, 'descending', sortOrder === 'descending');
     }
   };
 
@@ -2262,6 +2320,62 @@
       var value;
       value = ko.utils.unwrapObservable(valueAccessor());
       return handlers[getType(value)](element, value);
+    }
+  };
+
+  bo.utils.addTemplate('pagerPageLinkTemplate', '<li data-bind="text: pageNumber, click: select, css: { \'is-selected\': isSelected, \'page\': true }"></li>');
+
+  bo.utils.addTemplate('pagerTemplate', '<div class="pager">\n    <ol class="previousLinks">\n    <li class="goto-first" data-bind="click: goToFirstPage, enable: !isFirstPage()">First</li>\n    <li class="goto-previous" data-bind="click: goToPreviousPage, enable: !isFirstPage()">Previous</li>\n</ol>\n\n    <ol class="pageLinks" data-bind="template: { foreach: pages, name: \'pagerPageLinkTemplate\' }"></ol>\n\n    <ol class="nextLinks">\n    <li class="goto-next" data-bind="enable: !isLastPage(), click: goToNextPage">Next</li>\n    <li class="goto-last" data-bind="enable: !isLastPage(), click: goToLastPage">Last</li>\n</ol>\n   </div>');
+
+  PagerModel = (function() {
+
+    function PagerModel(dataSource, maximumPagesShown) {
+      var _this = this;
+      this.dataSource = dataSource;
+      this.goToFirstPage = this.dataSource.goToFirstPage;
+      this.isFirstPage = this.dataSource.isFirstPage;
+      this.goToPreviousPage = this.dataSource.goToPreviousPage;
+      this.goToNextPage = this.dataSource.goToNextPage;
+      this.goToLastPage = this.dataSource.goToLastPage;
+      this.isLastPage = this.dataSource.isLastPage;
+      this.pages = ko.computed(function() {
+        var endPage, pages, startPage;
+        if (_this.dataSource.pageCount() > 0) {
+          startPage = _this.dataSource.pageNumber() - (maximumPagesShown / 2);
+          startPage = Math.max(1, Math.min(dataSource.pageCount() - maximumPagesShown + 1, startPage));
+          endPage = startPage + maximumPagesShown;
+          endPage = Math.min(endPage, _this.dataSource.pageCount() + 1);
+          pages = _.range(startPage, endPage);
+          return _(pages).map(function(p) {
+            return {
+              pageNumber: p,
+              isSelected: p === _this.dataSource.pageNumber(),
+              select: function() {
+                return _this.dataSource.pageNumber(p);
+              }
+            };
+          });
+        } else {
+          return [];
+        }
+      });
+    }
+
+    return PagerModel;
+
+  })();
+
+  ko.bindingHandlers.pager = {
+    init: function(element, valueAccessor, allBindingsAccessor) {
+      var dataSource, maximumPagesShown, _ref;
+      dataSource = valueAccessor();
+      maximumPagesShown = (_ref = allBindingsAccessor().maximumPagesShown) != null ? _ref : 10;
+      if (dataSource.pagingEnabled === true) {
+        ko.renderTemplate('pagerTemplate', new PagerModel(dataSource, maximumPagesShown), {}, element, 'replaceChildren');
+        return {
+          "controlsDescendantBindings": true
+        };
+      }
     }
   };
 

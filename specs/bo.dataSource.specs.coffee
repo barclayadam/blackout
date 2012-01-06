@@ -25,10 +25,6 @@ describe 'DataSource', ->
             expect(@dataSource.items).toBeAnObservableArray()
             expect(@dataSource.items()).toBeAnEmptyArray()
 
-        it 'should have a pages observable array property that is empty', ->
-            expect(@dataSource.pages).toBeAnObservableArray()
-            expect(@dataSource.pages()).toBeAnEmptyArray()
-
         it 'should have a pageItems observable array property that is empty', ->
             expect(@dataSource.pageItems).toBeAnObservableArray()
             expect(@dataSource.pageItems()).toBeAnEmptyArray()
@@ -44,6 +40,9 @@ describe 'DataSource', ->
                 provider: @loader
 
             @dataSource.load()
+
+        it 'should have a pagingEnabled property set to false', ->
+            expect(@dataSource.pagingEnabled).toEqual false
 
         it 'should call the loader with an empty object as first parameter', ->
             expect(@loader).toHaveBeenCalledWith {}
@@ -195,6 +194,12 @@ describe 'DataSource', ->
                 { myProperty: 13 }
             ]
 
+        it 'should set the sorting observable to be a string representation of the ordering', ->
+            expect(@dataSource.sorting()).toEqual 'myProperty ascending'
+
+        it 'should indicate a columns ordering through getPropertingSortOrder', ->
+            expect(@dataSource.getPropertingSortOrder('myProperty')).toEqual 'ascending'
+
     describe 'When a data source is sorted by multiple properties, with complex data set and no paging', ->
         beforeEach ->
             @loadedData = [
@@ -206,33 +211,16 @@ describe 'DataSource', ->
             @dataSource = new bo.DataSource 
                 provider: @loadedData
 
-        it 'should set the sorting observable to the passed in properties', ->
-            # Act
             @dataSource.sortBy 'myProperty, myOtherProperty'
 
-            # Assert
-            expect(@dataSource.sorting()).toEqual 'myProperty, myOtherProperty'
+        it 'should set the sorting observable to the normalised passed in properties', ->
+            expect(@dataSource.sorting()).toEqual 'myProperty ascending, myOtherProperty ascending'
 
         it 'should set the items observable to be the sorted dataset, ascending default', ->
-            # Act
-            @dataSource.sortBy 'myProperty, myOtherProperty'
-
-            # Assert
             expect(@dataSource.items()).toEqual [
                 { myProperty: 7, myOtherProperty: 1 },
                 { myProperty: 7, myOtherProperty: 4 },
                 { myProperty: 18, myOtherProperty: 1 }
-            ]
-
-        it 'should set the items observable to be the sorted dataset, adhering to sort direction', ->
-            # Act
-            @dataSource.sortBy 'myProperty descending, myOtherProperty'
-
-            # Assert
-            expect(@dataSource.items()).toEqual [
-                { myProperty: 18, myOtherProperty: 1 },
-                { myProperty: 7, myOtherProperty: 1 },
-                { myProperty: 7, myOtherProperty: 4 }
             ]
 
     describe 'When a data source is sorted, with client paging', ->
@@ -242,6 +230,9 @@ describe 'DataSource', ->
                 clientPaging: 5
 
             @dataSource.sort()
+
+        it 'should have a pagingEnabled property set to true', ->
+            expect(@dataSource.pagingEnabled).toEqual true
 
         it 'should set pageItems to ordered first page', ->
             expect(@dataSource.pageItems()).toEqual [1, 4, 7, 8, 9]
@@ -259,6 +250,9 @@ describe 'DataSource', ->
 
             @dataSource.sort()
             @dataSource.load()
+
+        it 'should have a pagingEnabled property set to true', ->
+            expect(@dataSource.pagingEnabled).toEqual true
 
         it 'should pass the sorting value as a parameter to loader', ->
             expect(@dataSource.sorting()).toEqual 'ascending'
@@ -368,12 +362,6 @@ describe 'DataSource', ->
         it 'should set the pageSize observable to the clientPaging size', ->
             expect(@dataSource.pageSize()).toEqual 5
 
-        it 'should have two pages', ->
-            expect(@dataSource.pages().length).toEqual 2
-
-        it 'should have the first page indicate it is selected', ->
-            expect(@dataSource.pages()[0].isSelected).toEqual true
-
     describe 'When a pageNumber is changed, after first load, with client paging and remote data', ->
         beforeEach ->
             # Arrange
@@ -405,12 +393,6 @@ describe 'DataSource', ->
 
         it 'should set the pageSize observable to the clientPaging size', ->
             expect(@dataSource.pageSize()).toEqual 5
-
-        it 'should have the first page indicate it is not selected', ->
-            expect(@dataSource.pages()[0].isSelected).toEqual false
-
-        it 'should have the second page indicate it is selected', ->
-            expect(@dataSource.pages()[1].isSelected).toEqual true
 
     describe 'When on the first page of multiple', ->
         beforeEach ->
@@ -511,12 +493,6 @@ describe 'DataSource', ->
         it 'should set the pageSize observable to the serverPaging size', ->
             expect(@dataSource.pageSize()).toEqual 5
 
-        it 'should have two pages', ->
-            expect(@dataSource.pages().length).toEqual 2
-
-        it 'should have the first page indicate it is selected', ->
-            expect(@dataSource.pages()[0].isSelected).toEqual true
-
     describe 'When a pageNumber is changed, after first load, with server paging', ->
         beforeEach ->
             # Arrange
@@ -557,12 +533,6 @@ describe 'DataSource', ->
         it 'should set the pageSize observable to the serverPaging size', ->
             expect(@dataSource.pageSize()).toEqual 5
 
-        it 'should have the first page indicate it is not selected', ->
-            expect(@dataSource.pages()[0].isSelected).toEqual false
-
-        it 'should have the second page indicate it is selected', ->
-            expect(@dataSource.pages()[1].isSelected).toEqual true
-
     describe 'When a data source is loaded, with client and server paging', ->
         beforeEach ->
             @allServerData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
@@ -601,12 +571,6 @@ describe 'DataSource', ->
 
         it 'should set the pageSize observable to the clientPaging size', ->
             expect(@dataSource.pageSize()).toEqual 5
-
-        it 'should have four pages', ->
-            expect(@dataSource.pages().length).toEqual 4
-
-        it 'should have the first page indicate it is selected', ->
-            expect(@dataSource.pages()[0].isSelected).toEqual true
 
     describe 'When a pageNumber is changed to page still within server page, after first load, with client and server paging', ->
         beforeEach ->
@@ -648,12 +612,6 @@ describe 'DataSource', ->
 
         it 'should set the pageSize observable to the clientPaging size', ->
             expect(@dataSource.pageSize()).toEqual 5
-
-        it 'should have the first page indicate it is not selected', ->
-            expect(@dataSource.pages()[0].isSelected).toEqual false
-
-        it 'should have the second page indicate it is selected', ->
-            expect(@dataSource.pages()[1].isSelected).toEqual true
 
     describe 'When a pageNumber is changed to page not within server page, after first load, with client and server paging', ->
         beforeEach ->
@@ -698,12 +656,3 @@ describe 'DataSource', ->
 
         it 'should set the pageSize observable to the clientPaging size', ->
             expect(@dataSource.pageSize()).toEqual 5
-
-        it 'should have the first page indicate it is not selected', ->
-            expect(@dataSource.pages()[0].isSelected).toEqual false
-
-        it 'should have the second page indicate it is not selected', ->
-            expect(@dataSource.pages()[1].isSelected).toEqual false
-
-        it 'should have the third page indicate it is selected', ->
-            expect(@dataSource.pages()[2].isSelected).toEqual true
