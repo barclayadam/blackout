@@ -192,7 +192,7 @@ class bo.DataSource
             @goTo 1
 
     _setupPaging: ->
-        @serverPageLastRetrieved = -1
+        @_lastProviderOptions = -1
         @clientPagesPerServerPage = @options.serverPaging / (@options.clientPaging || @options.serverPaging)
 
         @pageSize = ko.observable()
@@ -229,26 +229,29 @@ class bo.DataSource
         if @options.serverPaging
             @pageNumber.subscribe =>
                 @_doLoad()
+
+            @sorting.subscribe =>
+                @_doLoad()
     
     _doLoad: ->
         if @options.provider? and _.isArray @options.provider
             return
 
-        loadOptions = @searchParameters()
+        loadOptions = _.extend {}, @searchParameters()
 
         if @_serverPagingEnabled
             loadOptions.pageSize = @options.serverPaging
             loadOptions.pageNumber = Math.ceil @pageNumber() / @clientPagesPerServerPage
-
-            if loadOptions.pageNumber is @serverPageLastRetrieved
-                return
         
         loadOptions.sorting = @sorting() if @sorting()?
+
+        if _.isEqual loadOptions, @_lastProviderOptions
+            return
 
         @options.provider loadOptions, (loadedData) =>
             @_setData loadedData
 
-            @serverPageLastRetrieved = loadOptions.pageNumber
+            @_lastProviderOptions = loadOptions
 
     _setData: (loadedData) ->   
         items = []

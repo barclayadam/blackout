@@ -653,7 +653,7 @@
 
     DataSource.prototype._setupPaging = function() {
       var _this = this;
-      this.serverPageLastRetrieved = -1;
+      this._lastProviderOptions = -1;
       this.clientPagesPerServerPage = this.options.serverPaging / (this.options.clientPaging || this.options.serverPaging);
       this.pageSize = ko.observable();
       this.pageNumber = ko.observable();
@@ -682,7 +682,10 @@
         return _this.pageNumber() === _this.pageCount();
       });
       if (this.options.serverPaging) {
-        return this.pageNumber.subscribe(function() {
+        this.pageNumber.subscribe(function() {
+          return _this._doLoad();
+        });
+        return this.sorting.subscribe(function() {
           return _this._doLoad();
         });
       }
@@ -694,16 +697,16 @@
       if ((this.options.provider != null) && _.isArray(this.options.provider)) {
         return;
       }
-      loadOptions = this.searchParameters();
+      loadOptions = _.extend({}, this.searchParameters());
       if (this._serverPagingEnabled) {
         loadOptions.pageSize = this.options.serverPaging;
         loadOptions.pageNumber = Math.ceil(this.pageNumber() / this.clientPagesPerServerPage);
-        if (loadOptions.pageNumber === this.serverPageLastRetrieved) return;
       }
       if (this.sorting() != null) loadOptions.sorting = this.sorting();
+      if (_.isEqual(loadOptions, this._lastProviderOptions)) return;
       return this.options.provider(loadOptions, function(loadedData) {
         _this._setData(loadedData);
-        return _this.serverPageLastRetrieved = loadOptions.pageNumber;
+        return _this._lastProviderOptions = loadOptions;
       });
     };
 

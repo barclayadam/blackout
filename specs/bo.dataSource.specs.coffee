@@ -265,6 +265,27 @@ describe 'DataSource', ->
         it 'should set the items observable to be the sorted dataset', ->
             expect(@dataSource.items()).toEqual [1, 4, 7, 8, 9, 13]
 
+    describe 'When a data source is sorted after a load, with server paging', ->
+        beforeEach ->
+            @sortedDataToReturn = [1, 4, 7, 8, 9, 13]
+            @loader = @spy (o, callback) => callback 
+                items: @sortedDataToReturn
+                totalCount: @sortedDataToReturn.length
+
+            @dataSource = new bo.DataSource 
+                provider: @loader
+                serverPaging: 5
+
+            @dataSource.load()
+
+            @dataSource.sortBy 'aProperty ascending'
+
+        it 'should pass the sorting value as a parameter to loader', ->
+            expect(@loader).toHaveBeenCalledWith
+                pageNumber: 1
+                pageSize: 5
+                sorting: 'aProperty ascending'
+
     describe 'When a data source is loaded, with search parameters', ->
         beforeEach ->
             @dataToReturn = [1, 4, 7, 8, 9, 13]
