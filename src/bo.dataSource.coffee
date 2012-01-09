@@ -243,7 +243,7 @@ class bo.DataSource
             loadOptions.pageSize = @options.serverPaging
             loadOptions.pageNumber = Math.ceil @pageNumber() / @clientPagesPerServerPage
         
-        loadOptions.sorting = @sorting() if @sorting()?
+        loadOptions.orderBy = @sorting() if @sorting()?
 
         if _.isEqual loadOptions, @_lastProviderOptions
             return

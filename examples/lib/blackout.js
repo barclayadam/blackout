@@ -702,7 +702,7 @@
         loadOptions.pageSize = this.options.serverPaging;
         loadOptions.pageNumber = Math.ceil(this.pageNumber() / this.clientPagesPerServerPage);
       }
-      if (this.sorting() != null) loadOptions.sorting = this.sorting();
+      if (this.sorting() != null) loadOptions.orderBy = this.sorting();
       if (_.isEqual(loadOptions, this._lastProviderOptions)) return;
       return this.options.provider(loadOptions, function(loadedData) {
         _this._setData(loadedData);
