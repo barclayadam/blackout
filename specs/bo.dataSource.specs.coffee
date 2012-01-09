@@ -260,7 +260,7 @@ describe 'DataSource', ->
             expect(@loader).toHaveBeenCalledWith
                 pageNumber: 1
                 pageSize: 5
-                sorting: 'ascending' # Value of @dataSource.sorting()
+                orderBy: 'ascending' # Value of @dataSource.sorting()
 
         it 'should set the items observable to be the sorted dataset', ->
             expect(@dataSource.items()).toEqual [1, 4, 7, 8, 9, 13]
@@ -284,7 +284,7 @@ describe 'DataSource', ->
             expect(@loader).toHaveBeenCalledWith
                 pageNumber: 1
                 pageSize: 5
-                sorting: 'aProperty ascending'
+                orderBy: 'aProperty ascending'
 
     describe 'When a data source is loaded, with search parameters', ->
         beforeEach ->
