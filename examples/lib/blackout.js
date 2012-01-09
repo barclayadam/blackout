@@ -146,10 +146,10 @@
 
     function Bus(busOptions) {
       this.busOptions = busOptions;
-      this._init();
+      this._initBus();
     }
 
-    Bus.prototype._init = function() {
+    Bus.prototype._initBus = function() {
       if (!(this.busOptions != null)) {
         this.busOptions = {
           global: false,
@@ -158,7 +158,7 @@
       }
       this._subscribers = {};
       this._currentToken = 0;
-      return this._init = function() {};
+      return this._initBus = function() {};
     };
 
     Bus.prototype.clearAll = function() {
@@ -170,7 +170,7 @@
       var _this = this;
       bo.arg.ensureString(eventName, 'eventName');
       bo.arg.ensureFunction(func, 'func');
-      this._init();
+      this._initBus();
       if (this._subscribers[eventName] === void 0) {
         this._subscribers[eventName] = {};
       }
@@ -188,9 +188,13 @@
       var args, canContinue, e, eventName, events, indexOfSeparator, subscriber, t, _i, _len, _ref;
       eventName = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
       bo.arg.ensureString(eventName, 'eventName');
-      this._init();
+      this._initBus();
       if (this.busOptions.log === true) {
-        console.log("Publishing " + eventName + ".");
+        if (this.busOptions.global === false) {
+          console.log("Publishing " + eventName + ".");
+        } else {
+          console.log("Publishing " + eventName + " (global bus)");
+        }
       }
       if (this.busOptions.global === false) bo.bus.publish(eventName, args);
       indexOfSeparator = -1;

@@ -8,15 +8,15 @@
 #       ...
 class bo.Bus
     constructor: (@busOptions) ->
-        @_init()
+        @_initBus()
 
-    _init: ->
+    _initBus: ->
         @busOptions = { global: false, log: true } if not @busOptions?
 
         @_subscribers = {}
         @_currentToken = 0
 
-        @_init = ->
+        @_initBus = ->
 
     clearAll: ->
         @_subscribers = {}
@@ -32,7 +32,7 @@ class bo.Bus
         bo.arg.ensureString eventName, 'eventName'
         bo.arg.ensureFunction func, 'func'
 
-        @_init()
+        @_initBus()
 
         @_subscribers[eventName] = {} if @_subscribers[eventName] is undefined
 
@@ -60,10 +60,13 @@ class bo.Bus
     publish: (eventName, args...) ->
         bo.arg.ensureString eventName, 'eventName'
 
-        @_init()
+        @_initBus()
 
         if @busOptions.log is true
-            console.log "Publishing #{eventName}."
+            if @busOptions.global is false
+                console.log "Publishing #{eventName}." 
+            else
+                console.log "Publishing #{eventName} (global bus)"
 
         if @busOptions.global is false
             bo.bus.publish eventName, args
