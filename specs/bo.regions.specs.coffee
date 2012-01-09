@@ -268,7 +268,7 @@ describe 'RegionManager:', ->
             bo.bus.publish 'reactivateParts'
 
             # Assert
-            expect(homeActivateSpy.getCall(1).args[0]).toEqual parameters
+            expect(homeActivateSpy).toHaveBeenCalledWith parameters
 
 describe 'RegionManager Binding Handler', ->
     describe 'When a RegionManager has no current parts', ->
