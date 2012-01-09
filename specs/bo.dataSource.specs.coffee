@@ -576,17 +576,26 @@ describe 'DataSource', ->
     describe 'When a data source is loaded, with high client to server page ratio', ->
         beforeEach ->
             @allServerData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-            @loader = @spy()
+            @loader = @spy (o, callback) => 
+                start = (o.pageNumber - 1) * o.pageSize
+                end = start + o.pageSize
+
+                callback 
+                    items: @allServerData.slice start, end
+                    totalCount: @allServerData.length
 
             @dataSource = new bo.DataSource 
                 provider: @loader
-                clientPaging: 1
+                clientPaging: 2
                 serverPaging: 10
 
             @dataSource.load()
 
         it 'should call the loader with serverPaging pageSize and pageNumber parameters', ->
-            expect(@loader).toHaveBeenCalledWith { pageSize: 10, pageNumber: 1}
+            expect(@loader).toHaveBeenCalledWith { pageSize: 10, pageNumber: 1 }
+
+        it 'should correctly page items', ->
+            expect(@dataSource.pageItems()).toEqual [1, 2]
 
     describe 'When a pageNumber is changed to page still within server page, after first load, with client and server paging', ->
         beforeEach ->

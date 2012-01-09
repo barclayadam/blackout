@@ -201,9 +201,7 @@ class bo.DataSource
 
         @pageItems = ko.computed =>
             if @_clientPagingEnabled and @_serverPagingEnabled
-                adjustedPageNumber = @clientPagesPerServerPage - (@pageNumber() % @clientPagesPerServerPage)
-
-                start = (adjustedPageNumber - 1) * @pageSize()
+                start = ((@pageNumber() - 1) % @clientPagesPerServerPage) * @pageSize()
                 end = start + @pageSize()
                 @items().slice start, end
             else if @_clientPagingEnabled
