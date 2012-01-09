@@ -815,7 +815,7 @@
         value = values[key];
         this[key] = bo.utils.asObservable(value);
       }
-      bo.bus.publish('CommandCreated', this);
+      bo.bus.publish("commandCreated:" + this.name, this);
     }
 
     Command.prototype.properties = function() {

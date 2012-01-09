@@ -21,7 +21,7 @@ describe 'Messaging', ->
             it 'should publish a command created message', ->
                 # Arrange
                 commandCreatedSpy = @spy()
-                bo.bus.subscribe 'CommandCreated', commandCreatedSpy
+                bo.bus.subscribe 'commandCreated:Command1', commandCreatedSpy
 
                 # Act
                 command = new bo.Command 'Command1'

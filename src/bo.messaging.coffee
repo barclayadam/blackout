@@ -8,7 +8,7 @@ class bo.Command
         for key, value of values
             @[key] = bo.utils.asObservable value
 
-        bo.bus.publish 'CommandCreated', @
+        bo.bus.publish "commandCreated:#{@name}", @
 
     properties: ->
         properties = {}
