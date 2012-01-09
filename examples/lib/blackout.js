@@ -620,8 +620,12 @@
     };
 
     DataSource.prototype.load = function() {
+      var currentPageNumber;
+      currentPageNumber = this.pageNumber();
       this.pageNumber(1);
-      if (!this._serverPagingEnabled) return this._doLoad();
+      if (!this._serverPagingEnabled || currentPageNumber === 1) {
+        return this._doLoad();
+      }
     };
 
     DataSource.prototype.goTo = function(pageNumber) {

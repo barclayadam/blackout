@@ -149,15 +149,18 @@ class bo.DataSource
 
     # Performs a load of this data source, which will set the pageNumber to 1
     # and then, using the `provider` specified on construction, load the
-    # items uing the current search parameters (if any), the page size (if `serverPaging`)
-    # is enabled and the page number (i.e. 1).
+    # items uing the current search parameters (if any), the page size (if `serverPaging`
+    # is enabled), the current order, and the page number (i.e. 1).
     load: ->
+        currentPageNumber = @pageNumber()
+
         @pageNumber 1
 
         # serverPaging enabled means subscription to
         # pageNumber to perform re-load so only execute
-        # immediately if not enabled.
-        if not @_serverPagingEnabled
+        # immediately if not enabled, or if current page number
+        # is 1 as then subscription not called.
+        if not @_serverPagingEnabled or currentPageNumber is 1
             @_doLoad()
 
     # Goes to the specified page number.

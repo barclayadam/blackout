@@ -339,6 +339,8 @@ describe 'DataSource', ->
 
             @dataSource.load()
 
+            expect(@loader).toHaveBeenCalledOnce()
+
             # Act
             @searchParameterObservable 25
 
@@ -351,6 +353,36 @@ describe 'DataSource', ->
 
         it 'should reset the pageNumber to 1', ->
             expect(@dataSource.pageNumber()).toEqual 1
+
+    describe 'When search parameters change after an initial load, with server paging', ->
+        beforeEach ->
+            # Arrange
+            @dataToReturn = [1, 4, 7, 8, 9, 13]
+            @loader = @spy (o, callback) => callback @dataToReturn
+            @searchParameterObservable = ko.observable 10
+
+            @dataSource = new bo.DataSource 
+                serverPaging: 5
+                searchParameters:
+                    static: 5
+                    observable: @searchParameterObservable
+                provider: @loader
+
+            @dataSource.load()
+
+            expect(@loader).toHaveBeenCalledOnce()
+
+            # Act
+            @searchParameterObservable 25
+
+        it 'should call the loader with search parameters converted to plain values', ->
+            expect(@loader).toHaveBeenCalledTwice() # Including initial load
+
+            expect(@loader).toHaveBeenCalledWith
+                static: 5
+                observable: 25
+                pageNumber: 1
+                pageSize: 5
 
     describe 'When a data source is loaded, with client paging and remote data', ->
         beforeEach ->
