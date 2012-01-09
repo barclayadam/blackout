@@ -2194,7 +2194,7 @@
     }
   };
 
-  bo.utils.addTemplate('navigationItem', '<li data-bind="css: { active: isActive, current: isCurrent, \'has-children\': hasChildren }, visible: isVisible">\n    <!-- ko if: hasRoute -->\n        <a href="#" data-bind="navigateTo: name, text: name"></a>\n    <!-- /ko -->\n    <!-- ko ifnot: hasRoute -->\n        <span data-bind="text: name"></span>\n    <!-- /ko -->\n    <ul class="bo-navigation-sub-item" data-bind="template: { name : \'navigationItem\', foreach: children }"></ul>\n</li>');
+  bo.utils.addTemplate('navigationItem', '<li data-bind="css: { active: isActive, current: isCurrent, \'has-children\': hasChildren }, visible: isVisible">\n    <!-- ko if: hasRoute -->\n        <a href="#" data-bind="navigateTo: name, text: name"></a>\n        <span class="after-link"></span>\n    <!-- /ko -->\n    <!-- ko ifnot: hasRoute -->\n        <span data-bind="text: name"></span>\n    <!-- /ko -->\n    <ul class="bo-navigation-sub-item" data-bind="template: { name : \'navigationItem\', foreach: children }"></ul>\n</li>');
 
   bo.utils.addTemplate('navigationTemplate', '<ul class="bo-navigation" data-bind="template: { name : \'navigationItem\', foreach: nodes }"></ul>');
 
