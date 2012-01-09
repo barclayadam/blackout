@@ -1555,19 +1555,12 @@
       this.currentParts = ko.observable({});
       this.isLoading = ko.observable(false);
       bo.bus.subscribe("reactivateParts", function() {
-        return _this.reactivateParts();
+        return _this.reactivate();
       });
     }
 
-    RegionManager.prototype.reactivateParts = function() {
-      var part, region, _ref, _results;
-      _ref = this.currentParts();
-      _results = [];
-      for (region in _ref) {
-        part = _ref[region];
-        _results.push(part.activate(this.currentParameters));
-      }
-      return _results;
+    RegionManager.prototype.reactivate = function() {
+      return this.activate(this.currentParts(), this.currentParameters);
     };
 
     RegionManager.prototype.canDeactivate = function(options) {

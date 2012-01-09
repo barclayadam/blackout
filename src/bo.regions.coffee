@@ -9,10 +9,10 @@ class bo.RegionManager
         @currentParts = ko.observable {}
         @isLoading = ko.observable false
 
-        bo.bus.subscribe "reactivateParts", () => @reactivateParts()
+        bo.bus.subscribe "reactivateParts", () => @reactivate()
 
-    reactivateParts: () ->
-        part.activate @currentParameters for region, part of @currentParts()
+    reactivate: () ->
+        @activate @currentParts(), @currentParameters
 
     canDeactivate: (options = {}) ->
         hasDirtyPart = _.any(@currentParts(), (part) -> !part.canDeactivate())
