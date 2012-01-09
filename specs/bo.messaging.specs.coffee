@@ -21,7 +21,7 @@ describe 'Messaging', ->
             it 'should publish a command created message', ->
                 # Arrange
                 commandCreatedSpy = @spy()
-                bo.bus.subscribe 'CommandCreated', commandCreatedSpy
+                bo.bus.subscribe 'commandCreated:Command1', commandCreatedSpy
 
                 # Act
                 command = new bo.Command 'Command1'
@@ -73,15 +73,14 @@ describe 'Messaging', ->
 
             @server.respondWith "GET", "/ExecuteMyQuery/?query.name=My Query&query.values={}", [200, { "Content-Type": "application/json" },'{}']
 
-            callback = @spy()
-            bo.bus.subscribe "QueryExecuted", callback
-
             # Act
             bo.messaging.query 'My Query'
             @server.respond()
 
             # Assert
-            expect(callback).toHaveBeenCalledWith( { name: 'My Query', options: {} })
+            expect("queryExecuted:My Query").toHaveBeenPublishedWith
+                name: 'My Query'
+                options: {}
 
     describe 'When executing a command', ->
         it 'Makes a POST request to the command URL with name of command', ->
@@ -135,13 +134,12 @@ describe 'Messaging', ->
 
             @server.respondWith "POST", "/DoCommand/My Command", [200, { "Content-Type": "application/json" },'{}']
 
-            callback = @spy()
-            bo.bus.subscribe "CommandExecuted", callback
-
             # Act
             bo.messaging.command  new bo.Command 'My Command'
 
             @server.respond()
 
             # Assert
-            expect(callback).toHaveBeenCalledWith( { name: 'My Command', options: {} })
+            expect("commandExecuted:My Command").toHaveBeenPublishedWith
+                name: 'My Command', 
+                options: {}

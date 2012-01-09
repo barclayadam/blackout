@@ -1,6 +1,3 @@
-# reference "../lib/jquery.js"
-# reference "../lib/jquery.ui.js"
-# reference "../lib/knockout.js"
 # reference "bo.coffee"
 
 ko.bindingHandlers.splitter =

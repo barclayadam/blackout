@@ -14,8 +14,6 @@ bo.exportSymbol('bo.regionManagerExample.App.start', function (shellModel) {
     bo.exportSymbol('bo.regionManagerExample.App', new App(shellModel));
     ko.applyBindings(bo.regionManagerExample.App);
 
-    bo.bus.publish('AppInitialised');
-
-    bo.routing.router.initialise();
-    bo.routing.router.navigateTo("Home");
+    bo.bus.publish('appInitialised');
+    bo.bus.publish('navigateToRoute:Home');
 });

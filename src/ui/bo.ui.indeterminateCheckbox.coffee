@@ -3,29 +3,6 @@
 # reference "../lib/knockout.js"
 # reference "bo.coffee"
 
-ko.bindingHandlers.button =
-    init: (element, valueAccessor, allBindingsAccessor, viewModel) ->
-        jQuery(element).button()
-
-        value = ko.utils.unwrapObservable valueAccessor()
-
-        if not (value is true)		    
-            value.event = 'click'
-
-            ko.bindingHandlers.command.init.apply @, arguments
-
-    update: (element, valueAccessor, allBindingsAccessor, viewModel) ->
-        options = valueAccessor()
-
-        if ko.bindingHandlers.command.shouldExecute options.enable, viewModel
-            jQuery(element).button "enable"
-        else
-            jQuery(element).button "disable"
-
-ko.bindingHandlers.datepicker =
-    init: (element) ->
-        jQuery(element).datepicker({ dateFormat: 'yy/mm/dd' })
-
 ko.bindingHandlers.indeterminateCheckbox = 
     init: (element, valueAccessor) ->
         $element = jQuery element

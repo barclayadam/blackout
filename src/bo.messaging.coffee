@@ -8,7 +8,7 @@ class bo.Command
         for key, value of values
             @[key] = bo.utils.asObservable value
 
-        bo.bus.publish 'CommandCreated', @
+        bo.bus.publish "commandCreated:#{@name}", @
 
     properties: ->
         properties = {}
@@ -45,7 +45,7 @@ bo.messaging.query = (queryName, options = {}) ->
                     contentType: "application/json; charset=utf-8"
 
     ajaxPromise.done ->
-      bo.bus.publish 'QueryExecuted', { name: queryName, options: options }
+      bo.bus.publish "queryExecuted:#{queryName}", { name: queryName, options: options }
 
     ajaxPromise
 
@@ -84,7 +84,7 @@ bo.messaging.command = (command) ->
                     contentType: "application/json; charset=utf-8"
 
     ajaxPromise.done ->
-      bo.bus.publish 'CommandExecuted', { name: commandName, options: commandProperties }
+      bo.bus.publish "commandExecuted:#{commandName}", { name: commandName, options: commandProperties }
 
     ajaxPromise
 

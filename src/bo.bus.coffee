@@ -6,29 +6,45 @@
 #           tokenId: func1
 #           tokenId1: func2
 #       ...
-subscribers = {}
-token = 0
+class bo.Bus
+    constructor: (@busOptions) ->
+        @_init()
 
-bo.bus = 
+    _init: ->
+        @busOptions = { global: false, log: true } if not @busOptions?
+
+        @_subscribers = {}
+        @_currentToken = 0
+
+        @_init = ->
+
     clearAll: ->
-        subscribers = {}
+        @_subscribers = {}
 
     # Subscribes the given function to the specified eventName, being executed
     # if the exact same named event is raised.
     #
-    # The return result from this function is a 'token', a piece of data
-    # that can be passed to the bo.bus.unsubscribe function to stop receiving
-    # events from the bus.
+    # The return result from this function is a subscription, an object that
+    # has a single 'unsubscribe' method that, if called, will dispose of the
+    # subscription to the named event meaning no further events will be published
+    # to the give function.
     subscribe: (eventName, func) ->
         bo.arg.ensureString eventName, 'eventName'
         bo.arg.ensureFunction func, 'func'
 
-        subscribers[eventName] = {} if subscribers[eventName] is undefined
+        @_init()
 
-        token = ++token
-        subscribers[eventName][token] = func
+        @_subscribers[eventName] = {} if @_subscribers[eventName] is undefined
 
-        [eventName, token]
+        @_currentToken = ++@_currentToken
+        tokenToUse = @_currentToken
+
+        @_subscribers[eventName][tokenToUse] = func
+
+        {
+            unsubscribe: =>
+                delete @_subscribers[eventName][tokenToUse]
+        }
 
     # Publishes the given named event to any subscribed listeners, passing 
     # any arguments on to each subscriber as arguments to the subscription call
@@ -44,21 +60,26 @@ bo.bus =
     publish: (eventName, args...) ->
         bo.arg.ensureString eventName, 'eventName'
 
-        for t, subscriber of (subscribers[eventName] || {})
-            canContinue = subscriber.apply @, args
+        @_init()
 
-            if canContinue is false
-                return false
+        if @busOptions.log is true
+            console.log "Publishing #{eventName}."
+
+        if @busOptions.global is false
+            bo.bus.publish eventName, args
+
+        indexOfSeparator = -1
+        events = [eventName]
+
+        events.push eventName while eventName = eventName.substring 0, (eventName.lastIndexOf ':')
+
+        for e in events
+            for t, subscriber of (@_subscribers[e] || {})
+                canContinue = subscriber.apply @, args
+
+                if canContinue is false
+                    return false
             
-        true             
+        true
 
-    # Removes the subscription represented by the specified token, which is
-    # the value returned when registering a subscriber using the bo.bus.subscribe
-    # method.
-    unsubscribe: (token) ->
-        # token[0] == eventName
-        # token[1] == token (an integer)
-        bo.arg.ensureDefined token, 'token'
-
-        subscriptionList = subscribers[token[0]]
-        delete subscriptionList[token[1]]
+bo.bus = new bo.Bus { global: true, log: true }

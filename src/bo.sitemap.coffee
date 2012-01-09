@@ -1,4 +1,5 @@
 #reference "bo.coffee"
+#reference "bo.bus.coffee"
 
 class SitemapNode
     constructor: (sitemap, @name, @definition) ->
@@ -9,9 +10,15 @@ class SitemapNode
         @parent = null
         @children = ko.observableArray []
 
+        @isCurrent = ko.computed =>
+            sitemap.currentNode() is @
+
         if definition.url
-            bo.routing.routes.add name, definition.url
-            sitemap.RegionManager.register name, part for part in definition.parts if definition.parts
+            new bo.routing.Route name, definition.url
+
+            bo.bus.subscribe "routeNavigated:#{name}", (data = {}) =>
+                sitemap.currentNode @
+                sitemap.regionManager.activate @definition.parts, data.parameters
 
         @hasRoute = definition.url?
 
@@ -22,13 +29,6 @@ class SitemapNode
                 @isVisible = ko.observable definition.isInNavigation
         else
             @isVisible = ko.observable true
-
-        @isCurrent = ko.computed =>
-            currentRoute = bo.routing.router.currentRoute()
-            currentRoute?.name is @name
-
-        @isCurrent.subscribe (isCurrent) =>
-            sitemap.currentNode @ if isCurrent
 
         @isActive = ko.computed =>
             @isCurrent() or _.any(@children(), (c) -> c.isActive())
@@ -51,8 +51,8 @@ class bo.Sitemap
     # of child nodes by having a property with name that is not one of these values.
     @knownPropertyNames =  ['url', 'parts', 'isInNavigation']
 
-    constructor: (@RegionManager, pages) ->
-        bo.arg.ensureDefined RegionManager, "RegionManager"
+    constructor: (@regionManager, pages) ->
+        bo.arg.ensureDefined regionManager, "regionManager"
         bo.arg.ensureDefined pages, "pages"
 
         @currentNode = ko.observable()
@@ -69,7 +69,7 @@ class bo.Sitemap
     _createNode: (name, definition) ->
         node = new SitemapNode @, name, definition
 
-        for subName, subDefinition of definition when (jQuery.inArray subName, bo.Sitemap.knownPropertyNames) is -1
+        for subName, subDefinition of definition when not (_(bo.Sitemap.knownPropertyNames).contains subName)
             node.addChild @_createNode subName, subDefinition
 
         node

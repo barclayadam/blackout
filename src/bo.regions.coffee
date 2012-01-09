@@ -3,41 +3,21 @@
 # to support navigation throughout the application by using the routing mechanism
 # to load parts of the application.
 class bo.RegionManager
-    @reactivateEvent: "RegionManager.reactivateParts"
+    @reactivateEvent: "reactivateParts"
 
     constructor: () ->
-        @isRegionManager = true
-
-        @routeNameToParts = {}
-
-        @currentRoute = null
-        @currentParameters = null
         @currentParts = ko.observable {}
         @isLoading = ko.observable false
 
-        bo.bus.subscribe bo.routing.RouteNavigatedToEvent, (data) => @_handleRouteNavigatedTo data
-        bo.bus.subscribe bo.routing.RouteNavigatingToEvent, (data) => @canDeactivate()
-        bo.bus.subscribe RegionManager.reactivateEvent, () => @reactivateParts()
-
-    partsForRoute: (routeName) ->
-        @routeNameToParts[routeName]
-
-    register: (routeName, part) ->
-        bo.arg.ensureDefined routeName, 'routeName'
-        bo.arg.ensureDefined part, 'part'
-
-        throw "Cannot find route with name '#{routeName}'" if (bo.routing.routes.getRoute routeName) is undefined
-
-        @routeNameToParts[routeName] = [] if not @routeNameToParts[routeName]
-        @routeNameToParts[routeName].push part
+        bo.bus.subscribe "reactivateParts", () => @reactivateParts()
 
     reactivateParts: () ->
         part.activate @currentParameters for region, part of @currentParts()
 
     canDeactivate: (options = {}) ->
-        dirtyCount = (true for region, part of @currentParts() when !part.canDeactivate()).length
+        hasDirtyPart = _.any(@currentParts(), (part) -> !part.canDeactivate())
 
-        if dirtyCount > 0
+        if hasDirtyPart > 0
             if options.showConfirmation is false
                 false
             else
@@ -45,36 +25,29 @@ class bo.RegionManager
         else
             true
 
-    _handleRouteNavigatedTo: (data) ->
-        data.parameters ?= {}
+    activate: (parts, parameters = {}) ->
+        if @canDeactivate()
+            bo.bus.publish "partsActivating", { parts: parts }
+            
+            @isLoading true
+            @_deactivateAll()
 
-        if @_isRouteDifferent data.route
-            partsRegisteredForRoute = @partsForRoute data.route.name
+            partPromises = []
+            currentPartsToSet = {}
 
-            if not partsRegisteredForRoute
-                console.log "Could not find any parts registered against the route '#{data.route.name}'"
-            else
-                @isLoading true
-                @_deactivateAll()
+            for part in parts
+                partPromises = partPromises.concat part.activate parameters
+                currentPartsToSet[part.region] = part
 
-                partPromises = []
-                currentPartsToSet = {}
+            jQuery.when.apply(@, partPromises).done =>
+                @currentParts currentPartsToSet
+                @currentParameters = parameters
+                @isLoading false
 
-                for part in partsRegisteredForRoute
-                    partPromises = partPromises.concat part.activate data.parameters
-                    currentPartsToSet[part.region] = part
-
-                jQuery.when.apply(@, partPromises).done =>
-                    @currentParts currentPartsToSet
-                    @currentRoute = data.route.name
-                    @currentParameters = data.parameters
-                    @isLoading false
+                bo.bus.publish "partsActivated", { parts: parts }
 
     _deactivateAll: ->
         part.deactivate() for region, part of @currentParts()
-
-    _isRouteDifferent: (route) ->
-        !@currentRoute or @currentRoute isnt route.name
 
 currentPartsValueAccessor = (regionManager) ->
     -> { 'ifnot': _.isEmpty(regionManager.currentParts()), 'templateEngine': ko.nativeTemplateEngine.instance, 'data': regionManager }
@@ -82,13 +55,12 @@ currentPartsValueAccessor = (regionManager) ->
 ko.bindingHandlers.regionManager =
     init: (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) ->
         regionManager = ko.utils.unwrapObservable valueAccessor()
-        $element = jQuery(element)
 
         valueAccessor = currentPartsValueAccessor regionManager
         ko.bindingHandlers.template.init element, valueAccessor , allBindingsAccessor, regionManager, bindingContext
 
         regionManager.isLoading.subscribe (isLoading) ->
-            $element.toggleClass 'is-loading', isLoading
+            ko.utils.toggleDomNodeCssClass element, 'is-loading', isLoading
 
     update: (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) ->
         regionManager = ko.utils.unwrapObservable valueAccessor()
@@ -110,4 +82,4 @@ ko.bindingHandlers.region =
         if part?
             ko.renderTemplate part.templateName, part.viewModel, {}, element, "replaceChildren"
         else
-            jQuery(element).remove()
+            ko.removeNode element

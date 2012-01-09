@@ -4,8 +4,15 @@ browserTagCaseIndependentHtml = (html) ->
 beforeEach ->
     window.sinonSandbox = sinon.sandbox.create sinon.getConfig { injectInto: this }
 
-    bo.routing.routes.clear()
     bo.bus.clearAll()
+
+    publishSpy = window.sinonSandbox.spy bo.bus, "publish"
+
+    @setHtmlFixture = (html) =>
+        jQuery(html).appendTo(@fixture)
+
+    @applyBindingsToHtmlFixture = (viewModel) =>
+        ko.applyBindings viewModel, @fixture[0]
 
     @respondWithTemplate = (path, body) ->
         @server.respondWith "GET", path, [200, { "Content-Type": "text/html" }, body]
@@ -28,6 +35,15 @@ beforeEach ->
 
         toBeAnEmptyArray: ->
             @actual.length is 0
+
+        toHaveBeenPublished: ->
+            publishSpy.calledWith @actual
+
+        toHaveBeenPublishedWith: (args) ->
+            publishSpy.calledWith @actual, args
+
+        toHaveNotBeenPublished: ->
+            not (publishSpy.calledWith @actual)
 
     @fixture = jQuery('<div id="fixture" />').appendTo('body')
 
@@ -57,10 +73,12 @@ beforeEach ->
             @actual.is ":empty"
 
         toExist: ->
+            @message = -> "Expected #{@actual.selector} to exist."
             @actual.size() > 0
 
         toHaveAttr: (attributeName, expectedAttributeValue) ->
-            hasProperty @actual.attr(attributeName), expectedAttributeValue
+            @message = -> "Expected #{@actual.selector} to have attribute '#{attributeName}' with value '#{expectedAttributeValue}', was '#{@actual.attr(attributeName)}'."
+            @actual.attr(attributeName) is expectedAttributeValue
 
         toHaveId: (id) ->
             @actual.attr("id") is id
@@ -78,11 +96,13 @@ beforeEach ->
         toHaveValue: (value) ->
             @actual.val() is value
 
-        toHaveData: (key, expectedValue) ->
-            hasProperty @actual.data(key), expectedValue
-
         toBeDisabled: (selector) ->
-            @actual.is ":disabled"
+            @message = -> "Expected #{@actual.selector} to be disabled."
+            @actual.is(":disabled") or @actual.attr("aria-disabled") is "true"
+
+        toBeEnabled: (selector) ->
+            @message = -> "Expected #{@actual.selector} to be enabled."
+            not (@actual.is(":disabled") or @actual.attr("aria-disabled") is "true")
 
 afterEach ->    
     window.sinonSandbox.restore()
