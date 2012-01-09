@@ -2,12 +2,15 @@
 
 ko.bindingHandlers.splitter =
     init:  (element, valueAccessor) ->
+        value = valueAccessor()
+        enabled = value.enabled
+
         $splitter = jQuery(element)
         $parent = $splitter.parent()
         $left = $splitter.prev()
         $right = $splitter.next()
 
-        if($left.length is 0 or $right.length is 0)
+        if(!$left.is(':visible') or !$right.is(':visible'))
             return
 
         $splitter.addClass('splitter')

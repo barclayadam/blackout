@@ -2194,7 +2194,7 @@
     }
   };
 
-  bo.utils.addTemplate('navigationItem', '<li data-bind="css: { active: isActive, current: isCurrent, \'has-children\': hasChildren }, visible: isVisible">\n    <!-- ko if: hasRoute -->\n        <a href="#" data-bind="navigateTo: name, text: name"></a>\n    <!-- /ko -->\n    <!-- ko ifnot: hasRoute -->\n        <span data-bind="text: name"></span>\n    <!-- /ko -->\n    <ul class="bo-navigation-sub-item" data-bind="template: { name : \'navigationItem\', foreach: children }"></ul>\n</li>');
+  bo.utils.addTemplate('navigationItem', '<li data-bind="css: { active: isActive, current: isCurrent, \'has-children\': hasChildren }, visible: isVisible">\n    <!-- ko if: hasRoute -->\n        <a href="#" data-bind="navigateTo: name, text: name"></a>\n        <span class="after-link"></span>\n    <!-- /ko -->\n    <!-- ko ifnot: hasRoute -->\n        <span data-bind="text: name"></span>\n    <!-- /ko -->\n    <ul class="bo-navigation-sub-item" data-bind="template: { name : \'navigationItem\', foreach: children }"></ul>\n</li>');
 
   bo.utils.addTemplate('navigationTemplate', '<ul class="bo-navigation" data-bind="template: { name : \'navigationItem\', foreach: nodes }"></ul>');
 
@@ -2389,12 +2389,14 @@
 
   ko.bindingHandlers.splitter = {
     init: function(element, valueAccessor) {
-      var $left, $parent, $right, $splitter, leftMaxWidth, leftMinWidth, leftXBorderWidth, parentLeftBorder, parentOffset, parentWidth, rightMaxWidth, rightMinWidth, rightXBorderWidth, sliderLeftWall, sliderRightWall, splitterOuterWidth, splitterPosition;
+      var $left, $parent, $right, $splitter, enabled, leftMaxWidth, leftMinWidth, leftXBorderWidth, parentLeftBorder, parentOffset, parentWidth, rightMaxWidth, rightMinWidth, rightXBorderWidth, sliderLeftWall, sliderRightWall, splitterOuterWidth, splitterPosition, value;
+      value = valueAccessor();
+      enabled = value.enabled;
       $splitter = jQuery(element);
       $parent = $splitter.parent();
       $left = $splitter.prev();
       $right = $splitter.next();
-      if ($left.length === 0 || $right.length === 0) return;
+      if (!$left.is(':visible') || !$right.is(':visible')) return;
       $splitter.addClass('splitter');
       parentWidth = $parent.width();
       splitterOuterWidth = $splitter.outerWidth();
