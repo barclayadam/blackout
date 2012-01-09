@@ -12,7 +12,7 @@ class bo.RegionManager
         bo.bus.subscribe "reactivateParts", () => @reactivate()
 
     reactivate: () ->
-        @activate @currentParts(), @currentParameters
+        @activate _.values @currentParts(), @currentParameters
 
     canDeactivate: (options = {}) ->
         hasDirtyPart = _.any(@currentParts(), (part) -> !part.canDeactivate())

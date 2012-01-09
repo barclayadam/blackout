@@ -191,9 +191,9 @@
       this._initBus();
       if (this.busOptions.log === true) {
         if (this.busOptions.global === false) {
-          console.log("Publishing " + eventName + ".");
+          console.log("Publishing " + eventName + " (local)");
         } else {
-          console.log("Publishing " + eventName + " (global bus)");
+          console.log("Publishing " + eventName);
         }
       }
       if (this.busOptions.global === false) bo.bus.publish(eventName, args);
@@ -1560,7 +1560,7 @@
     }
 
     RegionManager.prototype.reactivate = function() {
-      return this.activate(this.currentParts(), this.currentParameters);
+      return this.activate(_.values(this.currentParts(), this.currentParameters));
     };
 
     RegionManager.prototype.canDeactivate = function(options) {

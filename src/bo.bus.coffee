@@ -64,9 +64,9 @@ class bo.Bus
 
         if @busOptions.log is true
             if @busOptions.global is false
-                console.log "Publishing #{eventName}." 
+                console.log "Publishing #{eventName} (local)" 
             else
-                console.log "Publishing #{eventName} (global bus)"
+                console.log "Publishing #{eventName}"
 
         if @busOptions.global is false
             bo.bus.publish eventName, args
