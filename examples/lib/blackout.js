@@ -701,6 +701,7 @@
       if ((this.options.provider != null) && _.isArray(this.options.provider)) {
         return;
       }
+      if (!(this.pageNumber() != null)) return;
       loadOptions = _.extend({}, this.searchParameters());
       if (this._serverPagingEnabled) {
         loadOptions.pageSize = this.options.serverPaging;
@@ -708,10 +709,12 @@
       }
       if (this.sorting() != null) loadOptions.orderBy = this.sorting();
       if (_.isEqual(loadOptions, this._lastProviderOptions)) return;
-      return this.options.provider(loadOptions, function(loadedData) {
+      this.isLoading(true);
+      return this.options.provider(loadOptions, (function(loadedData) {
         _this._setData(loadedData);
-        return _this._lastProviderOptions = loadOptions;
-      });
+        _this._lastProviderOptions = loadOptions;
+        return _this.isLoading(false);
+      }), this);
     };
 
     DataSource.prototype._setData = function(loadedData) {

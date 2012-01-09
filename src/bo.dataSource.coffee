@@ -240,6 +240,9 @@ class bo.DataSource
         if @options.provider? and _.isArray @options.provider
             return
 
+        if not @pageNumber()?
+            return
+
         loadOptions = _.extend {}, @searchParameters()
 
         if @_serverPagingEnabled
@@ -251,10 +254,14 @@ class bo.DataSource
         if _.isEqual loadOptions, @_lastProviderOptions
             return
 
-        @options.provider loadOptions, (loadedData) =>
-            @_setData loadedData
+        @isLoading true
 
+        @options.provider loadOptions, ((loadedData) =>
+            @_setData loadedData
             @_lastProviderOptions = loadOptions
+
+            @isLoading false
+        ), @
 
     _setData: (loadedData) ->   
         items = []

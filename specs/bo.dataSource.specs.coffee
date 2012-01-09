@@ -34,8 +34,12 @@ describe 'DataSource', ->
 
     describe 'When a data source is loaded, with no paging', ->
         beforeEach ->
+            @isLoadingDuringProvider = null
+
             @dataToReturn = [1, 4, 7, 8, 9, 13]
-            @loader = @spy (o, callback) => callback @dataToReturn
+            @loader = @spy (o, callback, dataSource) => 
+                @isLoadingDuringProvider = dataSource.isLoading()
+                callback @dataToReturn
             @dataSource = new bo.DataSource 
                 provider: @loader
 
@@ -64,6 +68,12 @@ describe 'DataSource', ->
 
         it 'should set the pageSize observable to the length of the loaded data', ->
             expect(@dataSource.pageSize()).toEqual @dataToReturn.length
+
+        it 'should set isLoading to true during the provider callback', ->
+            expect(@isLoadingDuringProvider).toEqual true
+
+        it 'should set isLoading to false once data has been loaded', ->
+            expect(@dataSource.isLoading()).toEqual false
 
     describe 'When a data source is loaded, with array provider', ->
         beforeEach ->
