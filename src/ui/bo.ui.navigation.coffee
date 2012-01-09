@@ -5,11 +5,11 @@
 bo.utils.addTemplate 'navigationItem', '''
         <li data-bind="css: { active: isActive, current: isCurrent, 'has-children': hasChildren }, visible: isVisible">
             <!-- ko if: hasRoute -->
-                <a href="#" data-bind="navigateTo: name, text: name"></a>
+                <a class="name" href="#" data-bind="navigateTo: name, text: name"></a>
                 <span class="after-link"></span>
             <!-- /ko -->
             <!-- ko ifnot: hasRoute -->
-                <span data-bind="text: name"></span>
+                <span class="name" data-bind="text: name"></span>
             <!-- /ko -->
             <ul class="bo-navigation-sub-item" data-bind="template: { name : 'navigationItem', foreach: children }"></ul>
         </li>
