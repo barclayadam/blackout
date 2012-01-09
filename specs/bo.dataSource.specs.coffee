@@ -65,7 +65,7 @@ describe 'DataSource', ->
         it 'should set the pageSize observable to the length of the loaded data', ->
             expect(@dataSource.pageSize()).toEqual @dataToReturn.length
 
-    describe 'When a data source is loaded, with array in constructor', ->
+    describe 'When a data source is loaded, with array provider', ->
         beforeEach ->
             @loadedData = [1, 4, 7, 8, 9, 13]
             @dataSource = new bo.DataSource 
@@ -552,7 +552,7 @@ describe 'DataSource', ->
             @dataSource.load()
 
         it 'should call the loader with serverPaging pageSize and pageNumber parameters', ->
-            expect(@loader).toHaveBeenCalledWith { pageSize: 10, pageNumber: 1}
+            expect(@loader).toHaveBeenCalledWith { pageSize: 10, pageNumber: 1 }
 
         it 'should set the items observable to the value passed back from the loader', ->
             expect(@dataSource.items()).toEqual [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -571,6 +571,22 @@ describe 'DataSource', ->
 
         it 'should set the pageSize observable to the clientPaging size', ->
             expect(@dataSource.pageSize()).toEqual 5
+            expect(@dataSource.pageSize()).toEqual 5
+
+    describe 'When a data source is loaded, with high client to server page ratio', ->
+        beforeEach ->
+            @allServerData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+            @loader = @spy()
+
+            @dataSource = new bo.DataSource 
+                provider: @loader
+                clientPaging: 1
+                serverPaging: 10
+
+            @dataSource.load()
+
+        it 'should call the loader with serverPaging pageSize and pageNumber parameters', ->
+            expect(@loader).toHaveBeenCalledWith { pageSize: 10, pageNumber: 1}
 
     describe 'When a pageNumber is changed to page still within server page, after first load, with client and server paging', ->
         beforeEach ->

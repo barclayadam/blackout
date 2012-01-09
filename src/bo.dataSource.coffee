@@ -240,7 +240,7 @@ class bo.DataSource
 
         if @_serverPagingEnabled
             loadOptions.pageSize = @options.serverPaging
-            loadOptions.pageNumber = Math.round @pageNumber() / @clientPagesPerServerPage
+            loadOptions.pageNumber = Math.ceil @pageNumber() / @clientPagesPerServerPage
 
             if loadOptions.pageNumber is @serverPageLastRetrieved
                 return

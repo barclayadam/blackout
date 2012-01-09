@@ -698,7 +698,7 @@
       loadOptions = this.searchParameters();
       if (this._serverPagingEnabled) {
         loadOptions.pageSize = this.options.serverPaging;
-        loadOptions.pageNumber = Math.round(this.pageNumber() / this.clientPagesPerServerPage);
+        loadOptions.pageNumber = Math.ceil(this.pageNumber() / this.clientPagesPerServerPage);
         if (loadOptions.pageNumber === this.serverPageLastRetrieved) return;
       }
       if (this.sorting() != null) loadOptions.sorting = this.sorting();
@@ -2332,12 +2332,20 @@
     function PagerModel(dataSource, maximumPagesShown) {
       var _this = this;
       this.dataSource = dataSource;
-      this.goToFirstPage = this.dataSource.goToFirstPage;
       this.isFirstPage = this.dataSource.isFirstPage;
-      this.goToPreviousPage = this.dataSource.goToPreviousPage;
-      this.goToNextPage = this.dataSource.goToNextPage;
-      this.goToLastPage = this.dataSource.goToLastPage;
       this.isLastPage = this.dataSource.isLastPage;
+      this.goToFirstPage = function() {
+        return this.dataSource.goToFirstPage();
+      };
+      this.goToPreviousPage = function() {
+        return this.dataSource.goToPreviousPage();
+      };
+      this.goToNextPage = function() {
+        return this.dataSource.goToNextPage();
+      };
+      this.goToLastPage = function() {
+        return this.dataSource.goToLastPage();
+      };
       this.pages = ko.computed(function() {
         var endPage, pages, startPage;
         if (_this.dataSource.pageCount() > 0) {

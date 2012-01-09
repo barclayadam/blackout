@@ -18,12 +18,20 @@ bo.utils.addTemplate 'pagerTemplate',
 
 class PagerModel
 	constructor: (@dataSource, maximumPagesShown) ->
-        @goToFirstPage = @dataSource.goToFirstPage
         @isFirstPage = @dataSource.isFirstPage
-        @goToPreviousPage = @dataSource.goToPreviousPage
-        @goToNextPage = @dataSource.goToNextPage
-        @goToLastPage = @dataSource.goToLastPage
         @isLastPage = @dataSource.isLastPage
+
+        @goToFirstPage = ->
+            @dataSource.goToFirstPage()
+
+        @goToPreviousPage = ->
+                @dataSource.goToPreviousPage()
+
+        @goToNextPage = ->
+            @dataSource.goToNextPage()
+
+        @goToLastPage = ->
+            @dataSource.goToLastPage()
 
         @pages = ko.computed =>
             if @dataSource.pageCount() > 0

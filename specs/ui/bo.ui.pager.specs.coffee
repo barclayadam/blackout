@@ -89,6 +89,16 @@ describe 'Pager', ->
 			it 'should enable the last page link', ->	
 				expect(@pager.find('.goto-last')).toBeEnabled()
 
+			it 'should go to the last page when last page link clicked', ->
+				@pager.find('.goto-last').click()
+
+				expect(@dataSource.pageNumber()).toEqual 2
+
+			it 'should go to the last page when next page link clicked', ->
+				@pager.find('.goto-next').click()
+
+				expect(@dataSource.pageNumber()).toEqual 2
+
 		describe 'When currently showing second page', ->
 			beforeEach ->
 				@dataSource.goTo 2	
@@ -113,6 +123,17 @@ describe 'Pager', ->
 
 			it 'should disable the last page link', ->	
 				expect(@pager.find('.goto-last')).toBeDisabled()
+
+			it 'should go to the first page when first page link clicked', ->
+				@pager.find('.goto-first').click()
+
+				expect(@dataSource.pageNumber()).toEqual 1
+
+			it 'should go to the first page when previous page link clicked', ->
+				@pager.find('.goto-previous').click()
+
+				expect(@dataSource.pageNumber()).toEqual 1
+
 
 	describe 'When bound to a paged data source with more pages (20) than a maximum (10)', ->
 		beforeEach ->
