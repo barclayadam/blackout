@@ -98,7 +98,7 @@ class bo.DataSource
         @_setupPaging()
         @_setupInitialData()
 
-    getPropertingSortOrder: (propertyName) ->
+    getPropertySortOrder: (propertyName) ->
         sortedBy = @sortedBy()
 
         if sortedBy? and sortedBy.length > 0

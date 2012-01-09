@@ -197,8 +197,8 @@ describe 'DataSource', ->
         it 'should set the sorting observable to be a string representation of the ordering', ->
             expect(@dataSource.sorting()).toEqual 'myProperty ascending'
 
-        it 'should indicate a columns ordering through getPropertingSortOrder', ->
-            expect(@dataSource.getPropertingSortOrder('myProperty')).toEqual 'ascending'
+        it 'should indicate a columns ordering through getPropertySortOrder', ->
+            expect(@dataSource.getPropertySortOrder('myProperty')).toEqual 'ascending'
 
     describe 'When a data source is sorted by multiple properties, with complex data set and no paging', ->
         beforeEach ->

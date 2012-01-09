@@ -546,7 +546,7 @@
       this._setupInitialData();
     }
 
-    DataSource.prototype.getPropertingSortOrder = function(propertyName) {
+    DataSource.prototype.getPropertySortOrder = function(propertyName) {
       var ordering, sortedBy;
       sortedBy = this.sortedBy();
       if ((sortedBy != null) && sortedBy.length > 0) {
@@ -659,10 +659,9 @@
       this.pageNumber = ko.observable();
       this.totalCount = ko.observable();
       this.pageItems = ko.computed(function() {
-        var adjustedPageNumber, end, start;
+        var end, start;
         if (_this._clientPagingEnabled && _this._serverPagingEnabled) {
-          adjustedPageNumber = _this.clientPagesPerServerPage - (_this.pageNumber() % _this.clientPagesPerServerPage);
-          start = (adjustedPageNumber - 1) * _this.pageSize();
+          start = ((_this.pageNumber() - 1) % _this.clientPagesPerServerPage) * _this.pageSize();
           end = start + _this.pageSize();
           return _this.items().slice(start, end);
         } else if (_this._clientPagingEnabled) {
@@ -1830,7 +1829,7 @@
       ko.utils.toggleDomNodeCssClass(element, 'sortable', true);
       return ko.utils.registerEventHandler(element, 'click', function() {
         var sortOrder;
-        sortOrder = (dataSource.getPropertingSortOrder(property)) || 'descending';
+        sortOrder = (dataSource.getPropertySortOrder(property)) || 'descending';
         if (sortOrder === 'descending') {
           return dataSource.sortBy("" + property + " ascending");
         } else {
@@ -1842,7 +1841,7 @@
       var dataSource, property, sortOrder;
       dataSource = viewModelAccessor().dataSource;
       property = viewModelAccessor().property;
-      sortOrder = dataSource.getPropertingSortOrder(property);
+      sortOrder = dataSource.getPropertySortOrder(property);
       ko.utils.toggleDomNodeCssClass(element, 'ascending', sortOrder === 'ascending');
       return ko.utils.toggleDomNodeCssClass(element, 'descending', sortOrder === 'descending');
     }

@@ -28,7 +28,7 @@ describe 'Column Sort', ->
 				@columnSort.click()
 
 			it 'should sort the data source in ascending order', ->
-				expect(@dataSource.getPropertingSortOrder('myProperty')).toEqual 'ascending'
+				expect(@dataSource.getPropertySortOrder('myProperty')).toEqual 'ascending'
 
 	describe 'When bound to a data source with ascending ordering', ->
 		beforeEach ->
@@ -61,7 +61,7 @@ describe 'Column Sort', ->
 				@columnSort.click()
 
 			it 'should sort the data source in descending order', ->
-				expect(@dataSource.getPropertingSortOrder('myProperty')).toEqual 'descending'
+				expect(@dataSource.getPropertySortOrder('myProperty')).toEqual 'descending'
 
 	describe 'When bound to a data source with descending ordering', ->
 		beforeEach ->
@@ -94,4 +94,4 @@ describe 'Column Sort', ->
 				@columnSort.click()
 
 			it 'should sort the data source in ascending order', ->
-				expect(@dataSource.getPropertingSortOrder('myProperty')).toEqual 'ascending'
+				expect(@dataSource.getPropertySortOrder('myProperty')).toEqual 'ascending'
