@@ -109,10 +109,14 @@ class HistoryManager
     # be removed when navigating away from the page on which the paramater
     # was set.
     setQueryParameter: (name, value, isPersisted = false) ->
+        @navigating = true
+
         @persistedQueryParameters[name] = value if isPersisted
         @transientQueryParameters[name] = value if not isPersisted
         
         @historyjs.pushState null, null, @_generateUrl @_getNormalisedHash()
+
+        @navigating = false
             
     # Initialises this router, registering the necessary events to provide URL updating based
     # on the current route (see `routeNavigated` message), in addition to publishing the initial

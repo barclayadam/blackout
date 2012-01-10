@@ -1385,9 +1385,11 @@
 
     HistoryManager.prototype.setQueryParameter = function(name, value, isPersisted) {
       if (isPersisted == null) isPersisted = false;
+      this.navigating = true;
       if (isPersisted) this.persistedQueryParameters[name] = value;
       if (!isPersisted) this.transientQueryParameters[name] = value;
-      return this.historyjs.pushState(null, null, this._generateUrl(this._getNormalisedHash()));
+      this.historyjs.pushState(null, null, this._generateUrl(this._getNormalisedHash()));
+      return this.navigating = false;
     };
 
     HistoryManager.prototype.initialise = function() {
