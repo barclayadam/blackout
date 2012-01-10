@@ -36,7 +36,7 @@ ko.extenders.addressable = (target, paramNameOrOptions) ->
         isPersistent = paramNameOrOptions.persistent
 
     target.subscribe (newValue) ->
-        bo.routing.router.setQueryParameter paramName, newValue, isPersistent
+        bo.routing.manager.setQueryParameter paramName, newValue, isPersistent
 
     # If URL is changed, update observable
     jQuery(window).bind "statechange", ->

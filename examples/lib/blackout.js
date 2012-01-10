@@ -248,7 +248,7 @@
       isPersistent = paramNameOrOptions.persistent;
     }
     target.subscribe(function(newValue) {
-      return bo.routing.router.setQueryParameter(paramName, newValue, isPersistent);
+      return bo.routing.manager.setQueryParameter(paramName, newValue, isPersistent);
     });
     jQuery(window).bind("statechange", function() {
       var newValue;
