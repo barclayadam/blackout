@@ -8,6 +8,7 @@ class SitemapNode
         bo.arg.ensureDefined definition, "definition"
 
         @parent = null
+        @metadata = @definition.metadata
         @children = ko.observableArray []
 
         @isCurrent = ko.computed =>
@@ -49,7 +50,7 @@ class SitemapNode
 class bo.Sitemap
     # Array of property names that have a meaning within a node definition. Used to allow definition
     # of child nodes by having a property with name that is not one of these values.
-    @knownPropertyNames =  ['url', 'parts', 'isInNavigation']
+    @knownPropertyNames =  ['url', 'parts', 'isInNavigation', 'metadata']
 
     constructor: (@regionManager, pages) ->
         bo.arg.ensureDefined regionManager, "regionManager"

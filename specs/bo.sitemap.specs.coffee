@@ -35,6 +35,18 @@ describe 'Sitemap', ->
             # Assert
             expect("routeCreated:Home").toHaveBeenPublished()
 
+        it 'should store the metadata field when one is supplied', ->
+            # Act
+            metadata = { myProperty: 7 }
+            regionManager = new bo.RegionManager()
+            sitemap = new bo.Sitemap regionManager,
+                'Home':
+                    url: '/'
+                    metadata: metadata
+
+            # Assert
+            expect(sitemap.nodes[0].metadata).toBe metadata
+
         it 'should have a hasRoute property set to true if url is defined', ->
             # Act
             regionManager = new bo.RegionManager()
@@ -93,7 +105,6 @@ describe 'Sitemap', ->
                 'Home':
                     url: '/'
                     parts: [new bo.Part 'My Shiny Part' ]
-                    isInNavigation: false
 
             # Assert
             expect(sitemap.nodes.length).toEqual 1            

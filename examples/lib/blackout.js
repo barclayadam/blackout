@@ -1178,6 +1178,7 @@
       bo.arg.ensureDefined(name, "name");
       bo.arg.ensureDefined(definition, "definition");
       this.parent = null;
+      this.metadata = this.definition.metadata;
       this.children = ko.observableArray([]);
       this.isCurrent = ko.computed(function() {
         return sitemap.currentNode() === _this;
@@ -1228,7 +1229,7 @@
 
   bo.Sitemap = (function() {
 
-    Sitemap.knownPropertyNames = ['url', 'parts', 'isInNavigation'];
+    Sitemap.knownPropertyNames = ['url', 'parts', 'isInNavigation', 'metadata'];
 
     function Sitemap(regionManager, pages) {
       var pageDefinition, pageName;
