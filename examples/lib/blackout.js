@@ -2399,7 +2399,7 @@
   ko.bindingHandlers.splitter = {
     init: function(element, valueAccessor) {
       return _.defer(function() {
-        var $left, $parent, $right, $splitter, enabled, leftMaxWidth, leftMinWidth, leftXBorderWidth, parentLeftBorder, parentOffset, parentWidth, rightMaxWidth, rightMinWidth, rightXBorderWidth, sliderLeftWall, sliderRightWall, splitterOuterWidth, splitterPosition, value;
+        var $left, $parent, $right, $splitter, enabled, leftMaxWidth, leftMinWidth, leftXBorderWidth, originalLeft, parentLeftBorder, parentOffset, parentWidth, rightMaxWidth, rightMinWidth, rightXBorderWidth, sliderLeftWall, sliderRightWall, splitterOuterWidth, splitterPosition, value;
         value = valueAccessor();
         enabled = value.enabled;
         $splitter = jQuery(element);
@@ -2418,11 +2418,13 @@
         rightMaxWidth = $parent.width() - (leftMinWidth + leftXBorderWidth + rightXBorderWidth + splitterOuterWidth);
         $left.css({
           left: 0,
+          right: 'auto',
           top: 0,
           bottom: 0,
           position: 'absolute'
         });
         $right.css({
+          left: 'auto',
           right: 0,
           top: 0,
           bottom: 0,
@@ -2441,12 +2443,16 @@
         parentOffset = $parent.offset();
         sliderLeftWall = parentOffset.left + leftMinWidth + leftXBorderWidth + parentLeftBorder;
         sliderRightWall = parentOffset.left + parentWidth - rightXBorderWidth - parentLeftBorder - rightMinWidth - splitterOuterWidth;
-        return $splitter.draggable({
+        $splitter.draggable({
           axis: "x",
           containment: [sliderLeftWall, 0, sliderRightWall, 0],
           drag: function(event, ui) {
             return splitterPosition(ui.position.left);
           }
+        });
+        originalLeft = splitterPosition();
+        return $splitter.on('dblclick', function() {
+          return splitterPosition(originalLeft);
         });
       });
     }

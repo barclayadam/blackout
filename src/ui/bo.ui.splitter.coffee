@@ -27,8 +27,8 @@ ko.bindingHandlers.splitter =
             leftMaxWidth = $parent.width() - (rightMinWidth + rightXBorderWidth + leftXBorderWidth + splitterOuterWidth)
             rightMaxWidth = $parent.width() - (leftMinWidth + leftXBorderWidth + rightXBorderWidth + splitterOuterWidth)
 
-            $left.css { left: 0, top: 0, bottom: 0, position: 'absolute' }
-            $right.css  { right: 0, top: 0, bottom: 0, position: 'absolute' }
+            $left.css  { left: 0,      right: 'auto', top: 0, bottom: 0, position: 'absolute' }
+            $right.css { left: 'auto', right: 0,      top: 0, bottom: 0, position: 'absolute' }
 
             splitterPosition = ko.observable $left.outerWidth()
 
@@ -51,3 +51,8 @@ ko.bindingHandlers.splitter =
                 containment: [sliderLeftWall, 0, sliderRightWall, 0]
                 drag: (event, ui) ->
                     splitterPosition ui.position.left
+
+            originalLeft = splitterPosition()
+
+            $splitter.on 'dblclick', ->
+                splitterPosition originalLeft
