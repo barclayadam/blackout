@@ -10,6 +10,6 @@
     <description>Blackout</description>
   </metadata>
   <files>
-    <file src="output\blackout-latest.js" target="content\assets\js\lib\blackout.js" />
+    <file src="output\blackout-latest.js" target="content\js\lib\blackout.js" />
   </files>
 </package>
