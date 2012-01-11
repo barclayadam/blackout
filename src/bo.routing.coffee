@@ -114,7 +114,7 @@ class HistoryManager
         @persistedQueryParameters[name] = value if isPersisted
         @transientQueryParameters[name] = value if not isPersisted
         
-        @historyjs.pushState null, null, @_generateUrl @_getNormalisedHash()
+        @historyjs.pushState null, null, @_generateUrl()
 
         @navigating = false
             
