@@ -13,15 +13,7 @@ while($true) {
       $changed.Name.Contains("src"))
      {
         start-sleep -s 1
-        &.\build\run-build-file.bat Concatenate
-
-        if ($LastExitCode -eq 0) {
-            &.\build\run-build-file.bat UpdateExamples
-        }
-        else {
-            &.\build\run-build-file.bat CoreCompile
-        }
-
+        &.\build\run-build-file.bat UpdateExamples
 
         "Waiting for changes"
      }
