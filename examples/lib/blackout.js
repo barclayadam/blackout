@@ -1440,7 +1440,14 @@
 
   bo.routing = {
     Route: Route,
-    manager: new HistoryManager()
+    manager: new HistoryManager(),
+    navigateTo: function(routeName, parameters, canVeto) {
+      if (canVeto == null) canVeto = true;
+      return bo.bus.publish("navigateToRoute:" + routeName, {
+        parameters: parameters,
+        canVeto: canVeto
+      });
+    }
   };
 
   ko.bindingHandlers.navigateTo = {
@@ -1451,10 +1458,7 @@
       return jQuery(element).click(function(event) {
         var _ref;
         if (bo.utils.isElementEnabled(allBindingsAccessor)) {
-          bo.bus.publish("navigateToRoute:" + routeName, {
-            parameters: parameters,
-            canVeto: (_ref = allBindingsAccessor().canVeto) != null ? _ref : true
-          });
+          bo.routing.navigateTo(routeName, parameters, (_ref = allBindingsAccessor().canVeto) != null ? _ref : true);
           event.preventDefault();
           return false;
         }

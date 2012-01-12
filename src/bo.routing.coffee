@@ -168,6 +168,11 @@ bo.routing =
     Route: Route    
     manager: new HistoryManager()
 
+    navigateTo: (routeName, parameters, canVeto = true) ->
+        bo.bus.publish "navigateToRoute:#{routeName}", 
+            parameters: parameters
+            canVeto: canVeto
+
 ko.bindingHandlers.navigateTo =
     init: (element, valueAccessor, allBindingsAccessor) ->
         routeName = valueAccessor()
@@ -175,9 +180,7 @@ ko.bindingHandlers.navigateTo =
 
         jQuery(element).click (event) ->
             if bo.utils.isElementEnabled allBindingsAccessor
-                bo.bus.publish "navigateToRoute:#{routeName}", 
-                    parameters: parameters
-                    canVeto: allBindingsAccessor().canVeto ? true
+                bo.routing.navigateTo routeName, parameters, allBindingsAccessor().canVeto ? true
 
                 event.preventDefault()
                 false
