@@ -81,7 +81,10 @@ task Concatenate -depends Clean {
  Updates the examples to have the latest version of Blackout.
 #>
 task UpdateExamples -depends Concatenate {
-    copy "output\blackout-latest.js" "../examples/lib/blackout.js"
+    CreateFolderIfMissing "../examples/lib/"
+
+    copy "output/blackout-latest.js" "../examples/lib/blackout.js"
+    copy "../lib/*.js" "../examples/lib/"
 }
 
 <#
