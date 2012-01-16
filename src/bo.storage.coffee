@@ -1,9 +1,6 @@
 # Original from https://gist.github.com/350433
 if typeof window.localStorage is "undefined" or typeof window.sessionStorage is "undefined"
     createCookie = (name, value, days) ->
-        date = undefined
-        expires = undefined
-
         if days
             date = new Date()
             date.setTime date.getTime() + (days * 24 * 60 * 60 * 1000)
@@ -18,7 +15,6 @@ if typeof window.localStorage is "undefined" or typeof window.sessionStorage is 
 
         ca = document.cookie.split ";"
         i = 0
-        c = undefined
 
         while i < ca.length
             c = ca[i]
@@ -88,7 +84,8 @@ if typeof window.localStorage is "undefined" or typeof window.sessionStorage is 
     window.sessionStorage = new Storage("session") if typeof window.sessionStorage is "undefined"
 
 ko.extenders.localStorage = (target, key) ->
-    target window.localStorage.getItem key
+    stored = window.localStorage.getItem key
+    target(stored) if stored?
 
     target.subscribe (newValue) ->
         window.localStorage.setItem key, newValue
@@ -96,7 +93,8 @@ ko.extenders.localStorage = (target, key) ->
     target
 
 ko.extenders.sessionStorage = (target, key) ->
-    target window.sessionStorage.getItem key
+    stored = window.sessionStorage.getItem key
+    target(stored) if stored?
 
     target.subscribe (newValue) ->
         window.sessionStorage.setItem key, newValue
