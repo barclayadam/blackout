@@ -154,7 +154,17 @@ class HistoryManager
 
     _handleExternalChange: ->
         if not @navigating
-            bo.bus.publish 'urlChanged', { url: @_getNormalisedHash() }
+            fullUrl = @_getNormalisedHash()
+            queryStringDelimiterIndex = fullUrl.indexOf('?')
+
+            if queryStringDelimiterIndex is -1
+                bo.bus.publish 'urlChanged', 
+                    url: fullUrl, 
+                    fullUrl: fullUrl
+            else
+                bo.bus.publish 'urlChanged', 
+                    url: fullUrl.substring(0, queryStringDelimiterIndex)
+                    fullUrl: fullUrl 
 
     # Gets a normalised hash value, a string that can be used to determine what route is
     # currently being accessed. This will strip any leading periods and remove the query string,
