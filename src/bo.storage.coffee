@@ -84,23 +84,23 @@ if typeof window.localStorage is "undefined" or typeof window.sessionStorage is 
     window.sessionStorage = new Storage("session") if typeof window.sessionStorage is "undefined"
 
 storageExtender = (target, keyOrOptions, type) ->
-    if _.isString keyOrOptions
-        options = 
-            key: keyOrOptions
-            isObject: false
-    else
-        options = keyOrOptions
+    key = keyOrOptions
+    isObject = false
+
+    if not _.isString keyOrOptions
+        key = keyOrOptions.key
+        isObject = keyOrOptions.isObject
             
     stored = window[type + 'Storage'].getItem key
 
     if stored?
-        if options.isObject
+        if isObject
             target JSON.parse stored
         else
             target stored
 
     target.subscribe (newValue) ->
-        if options.isObject
+        if isObject
             window[type + 'Storage'].setItem key, JSON.stringify newValue
         else
             window[type + 'Storage'].setItem key, newValue
