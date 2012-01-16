@@ -83,20 +83,52 @@ if typeof window.localStorage is "undefined" or typeof window.sessionStorage is 
     window.localStorage = new Storage("local") if typeof window.localStorage is "undefined"
     window.sessionStorage = new Storage("session") if typeof window.sessionStorage is "undefined"
 
-ko.extenders.localStorage = (target, key) ->
-    stored = window.localStorage.getItem key
-    target(stored) if stored?
+storageExtender = (target, keyOrOptions, type) ->
+    if _.isString keyOrOptions
+        options = 
+            key: keyOrOptions
+            isObject: false
+    else
+        options = keyOrOptions
+            
+    stored = window[type + 'Storage'].getItem key
+
+    if stored?
+        if options.isObject
+            target JSON.parse stored
+        else
+            target stored
 
     target.subscribe (newValue) ->
-        window.localStorage.setItem key, newValue
+        if options.isObject
+            window[type + 'Storage'].setItem key, JSON.stringify newValue
+        else
+            window[type + 'Storage'].setItem key, newValue
 
     target
 
-ko.extenders.sessionStorage = (target, key) ->
-    stored = window.sessionStorage.getItem key
-    target(stored) if stored?
+# Extends this observable to use `localStorage` as a persistent storage
+# for the data of this observable.
+#
+# `keyOrOptions` can have one of two formats:
+# * A simple string, that identifies the key used to store / retrieve
+#   the data. Assumes data is a simple value (string, integer, date etc.)
+# * An options object that contains two properties. `key` identifies
+#   the name of the key used to store / retrieve the data. `isObject`
+#   to identify whether the value being stored is more than just a simple
+#   object and should therefore be `stringified` before being stored.
+ko.extenders.localStorage = (target, keyOrOptions) ->
+    storageExtender target, keyOrOptions, 'local'
 
-    target.subscribe (newValue) ->
-        window.sessionStorage.setItem key, newValue
-
-    target
+# Extends this observable to use `sessionStorage` as a persistent storage
+# for the data of this observable.
+#
+# `keyOrOptions` can have one of two formats:
+# * A simple string, that identifies the key used to store / retrieve
+#   the data. Assumes data is a simple value (string, integer, date etc.)
+# * An options object that contains two properties. `key` identifies
+#   the name of the key used to store / retrieve the data. `isObject`
+#   to identify whether the value being stored is more than just a simple
+#   object and should therefore be `stringified` before being stored.
+ko.extenders.sessionStorage = (target, keyOrOptions) ->
+    storageExtender target, keyOrOptions, 'session'
