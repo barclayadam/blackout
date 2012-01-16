@@ -1,6 +1,7 @@
 src\bo.coffee
 src\bo.utils.coffee
 src\bo.bus.coffee
+src\bo.storage.coffee
 src\bo.extenders.coffee
 src\bo.validation.coffee    
 src\bo.dataSource.coffee
