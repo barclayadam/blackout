@@ -14,7 +14,7 @@ class TreeNode
         @contextMenu = @viewModel.contextMenu
         
         @type = @data.type || 'folder'
-        @cssClass = @data.cssClass || @type.toLowerCase()        
+        @cssClass = @data.cssClass || bo.utils.toCssClass @type
 
         @checkState = ko.observable @data.isChecked || false
         @checkState.subscribe (newValue) =>
