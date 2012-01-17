@@ -147,6 +147,14 @@ class bo.DataSource
 
         @sortedBy properties
 
+    # Removes the given item from this data source.
+    #
+    # TODO: Define this method in such a way that it will handle server paging
+    # better (currently leaves a 'gap', will reshow this item if user visits another
+    # page then goes back to the page this item is on).
+    remove: (item) ->
+        @_loadedItems.remove item
+
     # Performs a load of this data source, which will set the pageNumber to 1
     # and then, using the `provider` specified on construction, load the
     # items uing the current search parameters (if any), the page size (if `serverPaging`
