@@ -1,6 +1,3 @@
-bo.utils.addTemplate 'pagerPageLinkTemplate', 
-				     '''<li data-bind="text: pageNumber, click: select, css: { 'is-selected': isSelected, 'page': true }"></li>'''
-
 bo.utils.addTemplate 'pagerTemplate', 
 '''<div class="pager">
     <ol class="previousLinks">
@@ -8,7 +5,9 @@ bo.utils.addTemplate 'pagerTemplate',
 	    <li class="goto-previous" data-bind="click: goToPreviousPage, enable: !isFirstPage()">Previous</li>
 	</ol>
 
-    <ol class="pageLinks" data-bind="template: { foreach: pages, name: 'pagerPageLinkTemplate' }"></ol>
+    <ol class="pageLinks" data-bind="foreach: pages">
+        <li data-bind="text: pageNumber, click: select, css: { 'is-selected': isSelected, 'page': true }"></li>
+    </ol>
 
     <ol class="nextLinks">
 	    <li class="goto-next" data-bind="enable: !isLastPage(), click: goToNextPage">Next</li>
@@ -17,36 +16,40 @@ bo.utils.addTemplate 'pagerTemplate',
    </div>'''
 
 class PagerModel
-	constructor: (@dataSource, maximumPagesShown) ->
-        @isFirstPage = @dataSource.isFirstPage
-        @isLastPage = @dataSource.isLastPage
+	constructor: (dataSource, maximumPagesShown) ->
+        @isFirstPage = dataSource.isFirstPage
+        @isLastPage = dataSource.isLastPage
 
         @goToFirstPage = ->
-            @dataSource.goToFirstPage()
+            dataSource.goToFirstPage()
 
         @goToPreviousPage = ->
-                @dataSource.goToPreviousPage()
+            dataSource.goToPreviousPage()
 
         @goToNextPage = ->
-            @dataSource.goToNextPage()
+            dataSource.goToNextPage()
 
         @goToLastPage = ->
-            @dataSource.goToLastPage()
+            dataSource.goToLastPage()
 
         @pages = ko.computed =>
-            if @dataSource.pageCount() > 0
-                startPage = @dataSource.pageNumber() - (maximumPagesShown / 2)
-                startPage = Math.max 1, Math.min dataSource.pageCount() - maximumPagesShown + 1, startPage
+            pageCount = dataSource.pageCount()
+
+            if pageCount > 0
+                pageNumber = dataSource.pageNumber()
+
+                startPage = pageNumber - (maximumPagesShown / 2)
+                startPage = Math.max 1, Math.min pageCount - maximumPagesShown + 1, startPage
 
                 endPage = startPage + maximumPagesShown
-                endPage = Math.min endPage, @dataSource.pageCount() + 1
+                endPage = Math.min endPage, pageCount + 1
 
                 pages = _.range startPage, endPage
 
                 _(pages).map (p) =>
                     pageNumber: p
-                    isSelected: p is @dataSource.pageNumber()
-                    select: => @dataSource.pageNumber p
+                    isSelected: p is pageNumber
+                    select: => dataSource.pageNumber p
             else
                 []    
 
