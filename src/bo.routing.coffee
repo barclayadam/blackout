@@ -55,7 +55,7 @@ class Route
 
     # Navigates to this route, creating the full URL that this route and the passed parameters
     # represent and raising messages that other parts of the application can respond to, such
-    # as the history manager (browser's history) or a `region manager`.
+    # as the history manager (browser's history) or the `sitemap`.
     #
     # When first called a 'routeNavigating' message will be published, allowing subscribers
     # a chance to veto the navigation by returning `false`. This veto behaviour can be overriden
