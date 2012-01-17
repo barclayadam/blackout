@@ -201,7 +201,7 @@ class TreeNode
             options.name = @defaultChildName if not options.name
 
             @_executeHandler 'onAddNewChild', options.type, options.name, (data) =>
-                @addChild data, =>
+                @addChild data, (newNode) =>
                     newNode.isRenaming true if @renameAfterAdd
 
     addChild: (data, completed) ->
