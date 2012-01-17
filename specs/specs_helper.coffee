@@ -5,6 +5,8 @@ beforeEach ->
     window.sinonSandbox = sinon.sandbox.create sinon.getConfig { injectInto: this }
 
     bo.bus.clearAll()
+    window.sessionStorage.clear();
+    window.localStorage.clear();
 
     publishSpy = window.sinonSandbox.spy bo.bus, "publish"
 

@@ -23,6 +23,7 @@ ko.extenders.publishable = (target, eventName) ->
 
             if shouldChange is false
                 target currentValue
+                
     result
 
 # Extends an observable to be linked to a query string parameter of a URL, allowing
