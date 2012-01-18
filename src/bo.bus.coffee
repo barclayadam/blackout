@@ -21,32 +21,32 @@ class bo.Bus
     clearAll: ->
         @_subscribers = {}
 
-    # Subscribes the given function to the specified eventName, being executed
+    # Subscribes the given function to the specified messageName, being executed
     # if the exact same named event is raised.
     #
     # The return result from this function is a subscription, an object that
     # has a single 'unsubscribe' method that, if called, will dispose of the
     # subscription to the named event meaning no further events will be published
     # to the give function.
-    subscribe: (eventName, func) ->
-        bo.arg.ensureString eventName, 'eventName'
+    subscribe: (messageName, func) ->
+        bo.arg.ensureString messageName, 'messageName'
         bo.arg.ensureFunction func, 'func'
 
         @_initBus()
 
-        @_subscribers[eventName] = {} if @_subscribers[eventName] is undefined
+        @_subscribers[messageName] = {} if @_subscribers[messageName] is undefined
 
         @_currentToken = ++@_currentToken
         tokenToUse = @_currentToken
 
-        @_subscribers[eventName][tokenToUse] = func
+        @_subscribers[messageName][tokenToUse] = func
 
         {
             unsubscribe: =>
-                delete @_subscribers[eventName][tokenToUse]
+                delete @_subscribers[messageName][tokenToUse]
         }
 
-    # Publishes the given named event to any subscribed listeners, passing 
+    # Publishes the given named message to any subscribed listeners, passing 
     # any arguments on to each subscriber as arguments to the subscription call
     #
     # (e.g. 
@@ -57,27 +57,27 @@ class bo.Bus
     # If any subscriber returns `false` then no further subscribers will be
     # notified of the event and `false` will be returned from this method, indicating
     # a failure.
-    publish: (eventName, args...) ->
-        bo.arg.ensureString eventName, 'eventName'
+    publish: (messageName, args...) ->
+        bo.arg.ensureString messageName, 'messageName'
 
         @_initBus()
 
         if @busOptions.log is true
             if @busOptions.global is false
-                console.log "Publishing #{eventName} (local)" 
+                console.log "Publishing #{messageName} (local)" 
             else
-                console.log "Publishing #{eventName}"
+                console.log "Publishing #{messageName}"
 
         if @busOptions.global is false
-            bo.bus.publish eventName, args
+            bo.bus.publish messageName, args
 
         indexOfSeparator = -1
-        events = [eventName]
+        messages = [messageName]
 
-        events.push eventName while eventName = eventName.substring 0, (eventName.lastIndexOf ':')
+        messages.push messageName while messageName = messageName.substring 0, (messageName.lastIndexOf ':')
 
-        for e in events
-            for t, subscriber of (@_subscribers[e] || {})
+        for msg in messages
+            for t, subscriber of (@_subscribers[msg] || {})
                 canContinue = subscriber.apply @, args
 
                 if canContinue is false

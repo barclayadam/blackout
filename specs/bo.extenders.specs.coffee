@@ -84,82 +84,142 @@ describe 'When extending an observable to be async', ->
         expect(loadedCount).toEqual 1 # Last two should not have updated
 
 describe 'When extending an observable to be publishable', ->
-    it 'returns a value which can be read', ->
-        # Act
-        observable = ko.observable(456).extend { publishable: 'MyEvent' }
-            
-        # Assert
-        expect(observable()).toEqual 456
+    describe 'with a globally publishable observable', ->
+        beforeEach ->
+            @observable = ko.observable(456).extend { publishable: 'MyEvent' }
 
-    it 'returns a value which can be written', ->
-        #Arrange
-        observable = ko.observable(456).extend { publishable: 'MyEvent' }
-            
-        # Act
-        observable 123
+        it 'returns a value which can be read', ->
+            expect(@observable()).toEqual 456
 
-        # Assert
-        expect(observable()).toEqual 123
+        it 'returns a value which can be written', ->                
+            # Act
+            @observable 123
 
-    it 'publishes an event on write', ->
-        #Arrange
-        subscriber = @spy()
-        observable = ko.observable(456).extend { publishable: 'MyEvent' }
+            # Assert
+            expect(@observable()).toEqual 123
 
-        bo.bus.subscribe 'MyEvent', subscriber
-            
-        # Act
-        observable 123
+        it 'publishes an event on write', ->
+            #Arrange
+            subscriber = @spy()
+            bo.bus.subscribe 'MyEvent', subscriber
+                
+            # Act
+            @observable 123
 
-        # Assert
-        expect(subscriber).toHaveBeenCalledOnce()
-        expect(subscriber).toHaveBeenCalledWith 123
+            # Assert
+            expect(subscriber).toHaveBeenCalledOnce()
+            expect(subscriber).toHaveBeenCalledWith 123
 
-    it 'does not write value if a subscriber vetoes the change', ->
-        #Arrange
-        subscriber = @stub().returns false
-        observable = ko.observable(456).extend { publishable: 'MyEvent' }
+        it 'does not write value if a subscriber vetoes the change', ->
+            #Arrange
+            subscriber = @stub().returns false
+            bo.bus.subscribe 'MyEvent', subscriber
+                
+            # Act
+            @observable 123
 
-        bo.bus.subscribe 'MyEvent', subscriber
-            
-        # Act
-        observable 123
+            # Assert
+            expect(@observable()).toEqual 456
 
-        # Assert
-        expect(observable()).toEqual 456
+        it 'returns the value being set during event publishing', ->
+            # Arrange
+            observedValueDuringPublish = undefined
 
-    it 'returns the value being set during event publishing', ->
-        # Arrange
-        observedValueDuringPublish = undefined
-        observable = ko.observable(456).extend { publishable: 'MyEvent' }
-        subscriber = @spy ->
-            observedValueDuringPublish = observable()
-            false
+            subscriber = @spy =>
+                observedValueDuringPublish = @observable()
+                false
 
-        bo.bus.subscribe 'MyEvent', subscriber
-            
-        # Act
-        observable 123
+            bo.bus.subscribe 'MyEvent', subscriber
+                
+            # Act
+            @observable 123
 
-        # Assert
-        expect(observedValueDuringPublish).toEqual 123
-        expect(observable()).toEqual 456
+            # Assert
+            expect(observedValueDuringPublish).toEqual 123
+            expect(@observable()).toEqual 456
 
-    it 'raises two change events if vetoed to indicate value reverted', ->
-        # Arrange
-        observable = ko.observable(456).extend { publishable: 'MyEvent' }
-            
-        spy = @spy()
-        observable.subscribe spy
-            
-        subscriber = @stub().returns false
-        bo.bus.subscribe 'MyEvent', subscriber
-            
-        # Act
-        observable 123
+        it 'raises two change events if vetoed to indicate value reverted', ->
+            # Arrange                
+            spy = @spy()
+            @observable.subscribe spy
+                
+            subscriber = @stub().returns false
+            bo.bus.subscribe 'MyEvent', subscriber
+                
+            # Act
+            @observable 123
 
-        # Assert
-        expect(spy).toHaveBeenCalledTwice()
+            # Assert
+            expect(spy).toHaveBeenCalledTwice()
+
+    describe 'with a locally publishable observable', ->
+        beforeEach ->
+            @bus = new bo.Bus()
+            @observable = ko.observable(456).extend { publishable: { message: 'MyEvent', bus: @bus } }
+
+        it 'returns a value which can be read', ->
+            expect(@observable()).toEqual 456
+
+        it 'returns a value which can be written', ->                
+            # Act
+            @observable 123
+
+            # Assert
+            expect(@observable()).toEqual 123
+
+        it 'publishes an event on write', ->
+            #Arrange
+            subscriber = @spy()
+            @bus.subscribe 'MyEvent', subscriber
+                
+            # Act
+            @observable 123
+
+            # Assert
+            expect(subscriber).toHaveBeenCalledOnce()
+            expect(subscriber).toHaveBeenCalledWith 123
+
+        it 'does not write value if a subscriber vetoes the change', ->
+            #Arrange
+            subscriber = @stub().returns false
+            @bus.subscribe 'MyEvent', subscriber
+                
+            # Act
+            @observable 123
+
+            # Assert
+            expect(@observable()).toEqual 456
+
+        it 'returns the value being set during event publishing', ->
+            # Arrange
+            observedValueDuringPublish = undefined
+
+            subscriber = @spy =>
+                observedValueDuringPublish = @observable()
+                false
+
+            @bus.subscribe 'MyEvent', subscriber
+                
+            # Act
+            @observable 123
+
+            # Assert
+            expect(observedValueDuringPublish).toEqual 123
+            expect(@observable()).toEqual 456
+
+        it 'raises two change events if vetoed to indicate value reverted', ->
+            # Arrange                
+            spy = @spy()
+            @observable.subscribe spy
+                
+            subscriber = @stub().returns false
+            @bus.subscribe 'MyEvent', subscriber
+                
+            # Act
+            @observable 123
+
+            # Assert
+            expect(spy).toHaveBeenCalledTwice()
 
 describe 'When extending an observable to be onDemand', ->
     it 'returns a value which can be read, with the default value being returned initially', ->
