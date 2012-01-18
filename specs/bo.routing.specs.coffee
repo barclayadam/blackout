@@ -5,20 +5,18 @@ describe 'Routing:', ->
                 creator = -> new bo.routing.Route '/My URL'
                 expect(creator).toThrow "Argument 'definition' must be a string. 'undefined' was passed."
 
-        describe 'when constructed', ->
-            it 'should have a name property', ->
-                # Act
-                route = new bo.routing.Route 'Home', '/'
+        describe 'when constructed with name and definition only', ->
+            beforeEach ->
+                @route = new bo.routing.Route 'Home', '/'
 
-                # Assert
-                expect(route.name).toEqual 'Home'
+            it 'should have a name property', ->
+                expect(@route.name).toEqual 'Home'
 
             it 'should have a definition property', ->
-                # Act
-                route = new bo.routing.Route 'Home', '/'
+                expect(@route.definition).toEqual '/'
 
-                # Assert
-                expect(route.definition).toEqual '/'
+            it 'should have a title property set to the name of the route', ->
+                expect(@route.title).toEqual 'Home'
 
         describe 'when navigateToRoute message published', ->
             it 'should raise a route navigating event with generated URL and itself as data', ->

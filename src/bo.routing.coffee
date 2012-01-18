@@ -33,6 +33,8 @@ class Route
         bo.arg.ensureString name, 'name'
         bo.arg.ensureString definition, 'definition'
 
+        @title = @name
+
         @paramNames = []
 
         routeDefinitionAsRegex = @definition.replace paramRegex, (_, mode, name) =>
@@ -114,7 +116,7 @@ class HistoryManager
         @persistedQueryParameters[name] = value if isPersisted
         @transientQueryParameters[name] = value if not isPersisted
         
-        @historyjs.pushState null, null, @_generateUrl()
+        @historyjs.pushState null, document.title, @_generateUrl()
 
         @navigating = false
             
@@ -126,20 +128,20 @@ class HistoryManager
     # subscribed so when it is called those subscribers can react accordingly to the initial route.
     initialise: ->
         bo.bus.subscribe 'routeNavigated', (d) =>
-            @_updateFromRouteUrl d.url
+            @_updateFromRoute d
 
         jQuery(window).bind 'statechange', => 
             @_handleExternalChange()
 
         @_handleExternalChange()
           
-    _updateFromRouteUrl: (routeUrl) ->
+    _updateFromRoute: (routeMessage) ->
         @navigating = true
 
-        @currentRouteUrl = routeUrl
+        @currentRouteUrl = routeMessage.url
         @transientQueryParameters = {}
         
-        @historyjs.pushState null, null, @_generateUrl()
+        @historyjs.pushState null, routeMessage.route.title, @_generateUrl()
 
         @navigating = false
 
