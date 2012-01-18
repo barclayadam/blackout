@@ -17,10 +17,6 @@ class bo.Command
 
 bo.messaging = {}
 
-# A function that can be overriden by an application to process any options
-# before they are sent to the server.
-bo.messaging.processOptions = (options) -> options
-
 bo.messaging.config =
     query:
         url: "/Query/?query.name=$queryName&query.values=$queryValues"
@@ -36,10 +32,10 @@ bo.messaging.config =
 bo.messaging.query = (queryName, options = {}) ->
     bo.arg.ensureDefined queryName, "queryName"
     
-    queryOptions = bo.messaging.processOptions options
+    bo.bus.publish "queryExecuting:#{queryName}", { name: queryName, options: options }
     
     ajaxPromise = jQuery.ajax
-                    url: bo.messaging.config.query.url.replace("$queryValues", ko.toJSON queryOptions).replace("$queryName", queryName)
+                    url: bo.messaging.config.query.url.replace("$queryValues", ko.toJSON options).replace("$queryName", queryName)
                     type: "GET"
                     dataType: "json"
                     contentType: "application/json; charset=utf-8"
@@ -53,8 +49,9 @@ bo.messaging.queryDownload = (queryName, contentType, options = {}) ->
     bo.arg.ensureDefined queryName, "queryName"
     bo.arg.ensureDefined queryName, "contentType"
     
-    queryOptions = bo.messaging.processOptions options
-    url = bo.messaging.config.queryDownload.url.replace("$queryValues", ko.toJSON queryOptions).replace("$queryName", queryName).replace("$contentType", contentType)
+    bo.bus.publish "queryExecuting:#{queryName}", { name: queryName, options: options }
+
+    url = bo.messaging.config.queryDownload.url.replace("$queryValues", ko.toJSON options).replace("$queryName", queryName).replace("$contentType", contentType)
 
     form = document.createElement "form"
     document.body.appendChild form
@@ -74,7 +71,7 @@ bo.messaging.command = (command) ->
     bo.arg.ensureDefined command, "command"
 
     commandName = command.name
-    commandProperties = bo.messaging.processOptions command.properties()
+    commandProperties = command.properties()
 
     ajaxPromise = jQuery.ajax
                     url: bo.messaging.config.command.url.replace("$commandName", commandName)

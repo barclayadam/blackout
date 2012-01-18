@@ -15,7 +15,7 @@ class SitemapNode
             sitemap.currentNode() is @
 
         if definition.url
-            new bo.routing.Route name, definition.url
+            new bo.routing.Route name, definition.url, { metadata: @definition.metadata}
 
             bo.bus.subscribe "routeNavigated:#{name}", (data = {}) =>
                 sitemap.currentNode @

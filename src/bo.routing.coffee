@@ -29,11 +29,12 @@ class Route
     paramRegex = /{(\*?)(\w+)}/g
 
     # Constructs a new route, with a name and route definition.
-    constructor: (@name, @definition) ->
+    constructor: (@name, @definition, @options = {}) ->
         bo.arg.ensureString name, 'name'
         bo.arg.ensureString definition, 'definition'
 
-        @title = @name
+        @title = @options.title || @name
+        @metadata = @options.metadata || {}
 
         @paramNames = []
 

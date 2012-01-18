@@ -47,6 +47,25 @@ describe 'Sitemap', ->
             # Assert
             expect(sitemap.nodes[0].metadata).toBe metadata
 
+        it 'should create the route with metadata set when metadat supplied', ->
+            # Act
+            observedMetadata = undefined
+
+            creationSpy = @spy (r) ->
+                observedMetadata = r.metadata
+
+            bo.bus.subscribe 'routeCreated:Home', creationSpy
+
+            metadata = { myProperty: 7 }
+            regionManager = new bo.RegionManager()
+            sitemap = new bo.Sitemap regionManager,
+                'Home':
+                    url: '/'
+                    metadata: metadata
+
+            # Assert
+            expect(observedMetadata).toBe metadata
+
         it 'should have a hasRoute property set to true if url is defined', ->
             # Act
             regionManager = new bo.RegionManager()

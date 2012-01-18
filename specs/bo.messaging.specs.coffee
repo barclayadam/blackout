@@ -41,12 +41,6 @@ describe 'Messaging', ->
                 # Assert
                 expect(properties).toEqual { 'property': 'My Value' }
 
-    it 'Has a default processOptions function which returns the same options passed', ->
-        options = { key: 'Some Value' }
-        processedOptions = bo.messaging.processOptions options
-
-        expect(processedOptions).toEqual options
-
     describe 'When executing a query', ->
         it 'Makes a GET request to the query URL with name of query', ->
             # Arrange			
@@ -66,6 +60,15 @@ describe 'Messaging', ->
             # Assert
             expect(callback).toHaveBeenCalled()
 
+        it 'Should publish a message with the query on start of execution', ->
+            # Act
+            bo.messaging.query 'My Query'
+
+            # Assert
+            expect("queryExecuting:My Query").toHaveBeenPublishedWith
+                name: 'My Query'
+                options: {}
+
         it 'Should publish a message with the query on successful completion of the query', ->
             # Arrange
             bo.messaging.config.query.url = "/ExecuteMyQuery/?query.name=$queryName&query.values=$queryValues"
@@ -83,7 +86,7 @@ describe 'Messaging', ->
                 options: {}
 
     describe 'When executing a command', ->
-        it 'Makes a POST request to the command URL with name of command', ->
+        it 'Should make a POST request to the command URL with name of command', ->
             # Arrange			
             bo.messaging.config.command.url = "/DoCommand/$commandName"
             bo.messaging.config.command.optionsParameterName = "myOptions"
@@ -104,7 +107,7 @@ describe 'Messaging', ->
             # Assert
             expect(callback).toHaveBeenCalled()
 
-        it 'Makes a POST request to the batch URL with all commands', ->
+        it 'Should make a POST request to the batch URL with all commands', ->
             bo.messaging.config.command.batchUrl = "/SendBatch"
             bo.messaging.config.command.optionsParameterName = "myOptions"
 

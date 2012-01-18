@@ -18,6 +18,30 @@ describe 'Routing:', ->
             it 'should have a title property set to the name of the route', ->
                 expect(@route.title).toEqual 'Home'
 
+            it 'should have an empty metadata property', ->
+                expect(@route.metadata).toEqual {}
+
+        describe 'when constructed with options', ->
+            beforeEach ->
+                @metadata = 
+                    metadata: 
+                        aMetadataProperty: 5 
+
+                @options = 
+                    metadata: @metadata
+                    title: 'My Custom Title'
+
+                @route = new bo.routing.Route 'Home', '/', @options
+
+            it 'should store options in options property', ->
+                expect(@route.options).toBe @options
+
+            it 'should set metadata property from options object', ->
+                expect(@route.metadata).toBe @metadata
+
+            it 'should override title from options object', ->
+                expect(@route.title).toEqual 'My Custom Title'
+
         describe 'when navigateToRoute message published', ->
             it 'should raise a route navigating event with generated URL and itself as data', ->
                 # Arrange
