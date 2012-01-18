@@ -428,11 +428,15 @@ describe 'DataSource', ->
     describe 'When a pageNumber is changed, after first load, with client paging and remote data', ->
         beforeEach ->
             # Arrange
+            @pageChangedSpy = @spy()
+
             @dataToReturn = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
             @loader = @spy (o, callback) => callback @dataToReturn
             @dataSource = new bo.DataSource 
                 provider: @loader
                 clientPaging: 5
+
+            @dataSource.subscribe 'pageChanged:2', @pageChangedSpy
 
             @dataSource.load()
 
@@ -456,6 +460,9 @@ describe 'DataSource', ->
 
         it 'should set the pageSize observable to the clientPaging size', ->
             expect(@dataSource.pageSize()).toEqual 5
+
+        it 'should publish a pageChanged message', ->
+            expect(@pageChangedSpy).toHaveBeenCalledOnce()
 
     describe 'When on the first page of multiple', ->
         beforeEach ->

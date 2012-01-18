@@ -11,13 +11,13 @@
 # If any subscribers wishes to revert the change they can return false,
 # in which case this observable will be set back to its original value
 # and raise another set of subscription events.
-ko.extenders.publishable = (target, messageNameOrOptions) ->
-    messageName = messageNameOrOptions
+ko.extenders.publishable = (target, messageOrOptions) ->
+    messageNameOrFunction = messageOrOptions
     bus = bo.bus
 
-    if not _.isString messageNameOrOptions
-        messageName = messageNameOrOptions.message
-        bus = messageNameOrOptions.bus
+    if not _.isString messageOrOptions
+        messageNameOrFunction = messageOrOptions.message
+        bus = messageOrOptions.bus
 
     result = ko.computed
         read: target
@@ -25,6 +25,11 @@ ko.extenders.publishable = (target, messageNameOrOptions) ->
         write: (value) ->
             currentValue = target()
             target value
+
+            messageName = messageNameOrFunction
+
+            if _.isFunction messageNameOrFunction
+                messageName = messageNameOrFunction result
 
             shouldChange = bus.publish messageName, value
 

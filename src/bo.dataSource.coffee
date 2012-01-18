@@ -38,7 +38,7 @@ toOrderDirection = (order) ->
 # the `options` at construction time, specying the size of the page. In addition
 # the `provider` must correctly adhere to the page size and number passed to it as 
 # the `pageSize` and `pageNumber` properties of its `loadOptions` parameter.
-class bo.DataSource
+class bo.DataSource extends bo.Bus
     constructor: (@options) ->
         # An observable property that represents whether or not this data source is
         # currently loading some data (using the specified `provider`).
@@ -207,8 +207,9 @@ class bo.DataSource
         @clientPagesPerServerPage = @options.serverPaging / (@options.clientPaging || @options.serverPaging)
 
         @pageSize = ko.observable()
-        @pageNumber = ko.observable()
         @totalCount = ko.observable()
+        @pageNumber = ko.observable().extend
+            publishable: { message: ((p) -> "pageChanged:#{p()}"), bus: @ }
 
         @pageItems = ko.computed =>
             if @_clientPagingEnabled and @_serverPagingEnabled

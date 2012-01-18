@@ -152,6 +152,30 @@ describe 'When extending an observable to be publishable', ->
             # Assert
             expect(spy).toHaveBeenCalledTwice()
 
+    describe 'with a custom message creation function ', ->
+        beforeEach ->
+            # Arrange
+            @messageCreationStub = @stub().returns 'myCustomEvent'
+
+            @bus = new bo.Bus()
+            @subscriber = @spy()
+
+            @bus.subscribe 'myCustomEvent', @subscriber
+
+            @observable = ko.observable(456).extend 
+                publishable: 
+                    message: @messageCreationStub
+                    bus: @bus
+
+            # Act
+            @observable(123)
+
+        it 'should pass the observable to the creation function', ->
+            expect(@messageCreationStub).toHaveBeenCalledWith @observable
+
+        it 'should use the result of the creation function as the message name', ->
+            expect(@subscriber).toHaveBeenCalledOnce()
+
     describe 'with a locally publishable observable', ->
         beforeEach ->
             @bus = new bo.Bus()
