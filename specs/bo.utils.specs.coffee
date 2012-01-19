@@ -11,10 +11,10 @@ describe 'Utils', ->
 
         it 'should replace spaces with dashes', ->
             # Act
-            cssClass = bo.utils.toCssClass 'my class'
+            cssClass = bo.utils.toCssClass 'this is my class'
 
             # Assert
-            expect(cssClass).toEqual 'my-class'
+            expect(cssClass).toEqual 'this-is-my-class'
 
         it 'should lower case the value', ->
             # Act

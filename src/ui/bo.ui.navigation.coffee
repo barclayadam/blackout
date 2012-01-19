@@ -3,7 +3,7 @@
 # reference "bo.coffee"
 
 bo.utils.addTemplate 'navigationItem', '''
-        <li data-bind="css: { active: isActive, current: isCurrent, 'has-children': hasChildren }, visible: isVisible">
+        <li data-bind="css: { active: isActive, current: isCurrent, 'has-children': hasChildren }, visible: isVisible, attr: { id : bo.utils.toCssClass(name) }">
             <!-- ko if: hasRoute -->
                 <a class="name" href="#" data-bind="navigateTo: name, text: name"></a>
                 <span class="after-link"></span>

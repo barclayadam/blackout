@@ -19,7 +19,10 @@ window.bo.utils =
     toCssClass: (value) ->
         value = ko.utils.unwrapObservable value
 
-        value.replace(' ', '-').toLowerCase() if value?
+        if value 
+            value = value.replace /\s/g, '-'
+            value = value.toLowerCase()
+            value
 
     joinObservables: (masterObservable, others...) ->
         other masterObservable() for other in others
