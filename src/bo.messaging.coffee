@@ -29,23 +29,25 @@ bo.messaging.config =
         batchUrl: "/Command/Batch"
         optionsParameterName: 'values'
 
-bo.messaging.query = (queryName, options = {}) ->
+bo.messaging.query = (queryName, options = {}, ajaxOptions = {}) ->
     bo.arg.ensureDefined queryName, "queryName"
     
     bo.bus.publish "queryExecuting:#{queryName}", { name: queryName, options: options }
-    
-    ajaxPromise = jQuery.ajax
+
+    request = _.extend {}, ajaxOptions, 
                     url: bo.messaging.config.query.url.replace("$queryValues", ko.toJSON options).replace("$queryName", queryName)
                     type: "GET"
                     dataType: "json"
                     contentType: "application/json; charset=utf-8"
+    
+    ajaxPromise = jQuery.ajax request
 
     ajaxPromise.done ->
       bo.bus.publish "queryExecuted:#{queryName}", { name: queryName, options: options }
 
     ajaxPromise
 
-bo.messaging.queryDownload = (queryName, contentType, options = {}) ->
+bo.messaging.queryDownload = (queryName, contentType, options = {}, ajaxOptions = {}) ->
     bo.arg.ensureDefined queryName, "queryName"
     bo.arg.ensureDefined queryName, "contentType"
     
