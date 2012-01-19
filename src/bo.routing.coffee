@@ -52,7 +52,7 @@ class Route
         bo.bus.subscribe 'urlChanged', (data) =>
             if Route.current isnt @
                 if (args = @_match data.url) isnt undefined
-                    bo.bus.publish "routeNavigated:#{@name}", { url: (@_create args), route: @, parameters: args } 
+                    @navigateTo args
         
         bo.bus.publish "routeCreated:#{@name}", @
 
