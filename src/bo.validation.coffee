@@ -19,8 +19,8 @@ getValidationFailureMessage = (propertyName, propertyValue, model, ruleName, rul
         model.modelValidationRules[propertyName][messagePropertyName]
     else if propertyValue?.validationRules?[messagePropertyName]?
         propertyValue.validationRules[messagePropertyName]
-    else if bo.messages[ruleName]?
-        bo.messages[ruleName] propertyName, model, ruleOptions
+    else if bo.rules[ruleName]?.message?
+        bo.rules[ruleName].message propertyName, model, ruleOptions
     else
         "#{bo.utils.fromCamelToTitleCase propertyName} validation failed" 
 
@@ -31,10 +31,10 @@ validateValue = (propertyName, propertyValue, propertyRules, model) ->
     
     if propertyRules
         for ruleName, ruleOptions of propertyRules when !(ruleName.endsWith 'Message')
-            if not bo.validators[ruleName]?
+            if not bo.rules[ruleName]?
                 throw new Error "'#{ruleName}' is not a validator. Must be defined as method on bo.validators"      
 
-            isValid = bo.validators[ruleName](unwrappedPropertyValue, model, ruleOptions)
+            isValid = bo.rules[ruleName].validator(unwrappedPropertyValue, model, ruleOptions)
 
             if not isValid
                 errors.push getValidationFailureMessage propertyName, propertyValue, model, ruleName, ruleOptions 
@@ -117,53 +117,60 @@ ko.extenders.validatable = (target, validationRules) ->
 ko.subscribable.fn.validatable = (validationRules) ->
     ko.extenders.validatable @, validationRules
     @
+
+bo.rules =
+    required: 
+        validator: (value, model, options) ->
+            hasValue value
         
-bo.validators =
-    required: (value, model, options) ->
-        hasValue value
+        message: (propertyName, model, options) ->
+            "#{bo.utils.fromCamelToTitleCase propertyName} is required."
 
-    regex: (value, model, options) ->
-        (emptyValue value) or (options.test value)
+    regex:
+        validator: (value, model, options) ->
+            (emptyValue value) or (options.test value)
 
-    minLength: (value, model, options) ->
-        (emptyValue value) or (value.length? and value.length >= options)
+        message: (propertyName, model, options) ->
+            "#{bo.utils.fromCamelToTitleCase propertyName} is invalid."
+
+    minLength: 
+        validator: (value, model, options) ->
+            (emptyValue value) or (value.length? and value.length >= options)
+
+        message: (propertyName, model, options) ->
+            "#{bo.utils.fromCamelToTitleCase propertyName} must be at least #{options} characters long."
     
-    maxLength: (value, model, options) ->
-        (emptyValue value) or (value.length? and value.length <= options)
+    maxLength:
+        validator: (value, model, options) ->
+            (emptyValue value) or (value.length? and value.length <= options)
     
-    rangeLength: (value, model, options) ->
-        (bo.validators.minLength value, model, options[0]) and (bo.validators.maxLength value, model, options[1])
-
-    min: (value, model, options) ->
-        (emptyValue value) or (value >= options)
-
-    max: (value, model, options) ->
-        (emptyValue value) or (value <= options)
-
-    range: (value, model, options) ->
-        (bo.validators.min value, model, options[0]) and (bo.validators.max value, model, options[1])
-
-bo.messages =
-    required: (propertyName, model, options) ->
-        "#{bo.utils.fromCamelToTitleCase propertyName} is required."
-
-    regex: (propertyName, model, options) ->
-        "#{bo.utils.fromCamelToTitleCase propertyName} is invalid."
-
-    minLength: (propertyName, model, options) ->
-        "#{bo.utils.fromCamelToTitleCase propertyName} must be at least #{options} characters long."
+        message: (propertyName, model, options) ->
+            "#{bo.utils.fromCamelToTitleCase propertyName} must be no more than #{options} characters long."
     
-    maxLength: (propertyName, model, options) ->
-        "#{bo.utils.fromCamelToTitleCase propertyName} must be no more than #{options} characters long."
+    rangeLength:
+        validator: (value, model, options) ->
+            (bo.rules.minLength.validator value, model, options[0]) and (bo.rules.maxLength.validator value, model, options[1])
     
-    rangeLength: (propertyName, model, options) ->
-        "#{bo.utils.fromCamelToTitleCase propertyName} must be between #{options[0]} and #{options[1]} characters long."
+        message: (propertyName, model, options) ->
+            "#{bo.utils.fromCamelToTitleCase propertyName} must be between #{options[0]} and #{options[1]} characters long."
 
-    min: (propertyName, model, options) ->
-        "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to or greater than #{options}."
+    min:
+        validator: (value, model, options) ->
+            (emptyValue value) or (value >= options)
 
-    max: (propertyName, model, options) ->
-        "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to or less than #{options}."
+        message: (propertyName, model, options) ->
+            "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to or greater than #{options}."
 
-    range: (propertyName, model, options) ->
-        "#{bo.utils.fromCamelToTitleCase propertyName} must be between #{options[0]} and #{options[1]}."
+    max:
+        validator: (value, model, options) ->
+            (emptyValue value) or (value <= options)
+
+        message: (propertyName, model, options) ->
+            "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to or less than #{options}."
+
+    range:
+        validator: (value, model, options) ->
+            (bo.rules.min.validator value, model, options[0]) and (bo.rules.max.validator value, model, options[1])
+
+        message: (propertyName, model, options) ->
+            "#{bo.utils.fromCamelToTitleCase propertyName} must be between #{options[0]} and #{options[1]}."
