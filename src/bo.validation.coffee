@@ -98,6 +98,8 @@ bo.validatableModel = (model, modelValidationRules = {}) ->
 
     model.validate = -> bo.validate model
 
+    model
+
 # Makes an observable validatable, to be used in conjunction with a validatableModel
 # and the bo.validate method.
 #

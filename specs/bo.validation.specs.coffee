@@ -4,11 +4,11 @@ describe 'Validation:', ->
     describe 'When validating', ->
         it 'should throw an exception if a validator is specified that does not exist', ->
             # Arrange
-            model = { myProperty: 'myValue' }
-            model.modelValidationRules =  { myProperty: { myNonExistentValidator: true } } 
+            model = bo.validatableModel { myProperty: 'myValue' }
+            bo.validatableModel model, { myProperty: { myNonExistentValidator: true } } 
 
             # Act
-            validate = -> bo.validate model
+            validate = -> model.validate()
 
             # Assert
             expect(validate).toThrow '\'myNonExistentValidator\' is not a validator. Must be defined as method on bo.validators'
@@ -17,10 +17,10 @@ describe 'Validation:', ->
             # Arrange
             requiredSpy = @spy bo.rules.required, "validator"
             model = { myProperty: 'myValue' }
-            model.modelValidationRules =  { myProperty: { required: true } } 
+            bo.validatableModel model, { myProperty: { required: true } } 
 
             # Act
-            bo.validate model
+            model.validate()
 
             # Assert
             expect(requiredSpy).toHaveBeenCalled()
@@ -29,11 +29,12 @@ describe 'Validation:', ->
         it 'should validate arrays with elements with validation rules as bracketed error keys', ->
             # Arrange
             ArrayItemType = ->
-                arrayProperty: undefined
-                modelValidationRules:
-                    'arrayProperty':
-                        required: true
-            model =
+                model =
+                    arrayProperty: undefined                        
+
+                bo.validatableModel model, { 'arrayProperty' : { required:  true } }                
+            
+            model = 
                 myArray: [new ArrayItemType(), new ArrayItemType()]
 
             # Act
@@ -49,10 +50,10 @@ describe 'Validation:', ->
                 validator: -> true
 
             model = { myProperty: 'myValue' }
-            model.modelValidationRules =  { myProperty: { myCustomValidator: true } } 
+            bo.validatableModel model, { myProperty: { myCustomValidator: true } } 
 
             # Act
-            validationErrors = bo.validate model
+            validationErrors = model.validate()
 
             # Assert
             expect(validationErrors).toEqual {}
@@ -68,7 +69,7 @@ describe 'Validation:', ->
             # Arrange
             model = { myProperty: undefined }
             model.modelErrors = ko.observable()
-            model.modelValidationRules =  { myProperty: { required: true } } 
+            bo.validatableModel model, { myProperty: { required: true } } 
 
             obs = ko.observable undefined
 
@@ -84,7 +85,7 @@ describe 'Validation:', ->
         it 'should unwrap an observable for validation', ->
             # Arrange
             model = { myProperty: undefined }
-            model.modelValidationRules =  { myProperty: { required: true } } 
+            bo.validatableModel model, { myProperty: { required: true } } 
 
             # Act
             validationErrors = bo.validate ko.observable model
@@ -98,10 +99,10 @@ describe 'Validation:', ->
                 validator: -> false
 
             model = { myProperty: 'myValue' }
-            model.modelValidationRules =  { myProperty: { myCustomValidator: true } } 
+            bo.validatableModel model, { myProperty: { myCustomValidator: true } } 
 
             # Act
-            validationErrors = bo.validate model
+            validationErrors = model.validate()
 
             # Assert
             expect(validationErrors).toEqual { 'myProperty': ['My Property validation failed']}
@@ -113,10 +114,10 @@ describe 'Validation:', ->
                 message: (propertyName, model, options) -> "#{propertyName} failed myCustomValidator validation"
 
             model = { myProperty: 'myValue' }
-            model.modelValidationRules =  { myProperty: { myCustomValidator: true } } 
+            bo.validatableModel model, { myProperty: { myCustomValidator: true } } 
 
             # Act
-            validationErrors = bo.validate model
+            validationErrors = model.validate()
 
             # Assert
             expect(validationErrors).toEqual { 'myProperty': ['myProperty failed myCustomValidator validation']}
@@ -124,10 +125,10 @@ describe 'Validation:', ->
         it 'should return validation message for rule if message defined for rule explictly', ->
             # Arrange
             model = { myProperty: undefined }
-            model.modelValidationRules =  { myProperty: { required: true, requiredMessage: 'A custom validation message' } }
+            bo.validatableModel model, { myProperty: { required: true, requiredMessage: 'A custom validation message' } }
 
             # Act
-            validationErrors = bo.validate model
+            validationErrors = model.validate()
 
             # Assert
             expect(validationErrors).toEqual { 'myProperty': ['A custom validation message']}
@@ -136,42 +137,24 @@ describe 'Validation:', ->
             # Arrange
             model =
                 myFirstProperty: undefined
-                modelValidationRules:
-                    'myFirstProperty':
-                        required: true
+
+            bo.validatableModel model, { 'myFirstProperty': { required: true } }
 
             # Act
-            validationErrors = bo.validate model
+            validationErrors = model.validate()
 
             # Assert
             expect(validationErrors['myFirstProperty']).toBeDefined()
-
-        it 'should set found errors to errors property if it exists', ->
-            # Arrange
-            model =
-                myFirstProperty: undefined
-                modelErrors: []
-                modelValidationRules:
-                    'myFirstProperty':
-                        required: true
-
-            # Act
-            validationErrors = bo.validate model
-
-            # Assert
-            expect(model.modelErrors['myFirstProperty']).toBeDefined()
 
         it 'should set found errors to errors observable if it exists', ->
             # Arrange
             model =
                 myFirstProperty: undefined
-                modelErrors: ko.observable()
-                modelValidationRules:
-                    'myFirstProperty':
-                        required: true
+
+            bo.validatableModel model, { 'myFirstProperty': { required: true } }
 
             # Act
-            validationErrors = bo.validate model
+            validationErrors = model.validate()
 
             # Assert
             expect(model.modelErrors()['myFirstProperty']).toBeDefined()
@@ -180,12 +163,10 @@ describe 'Validation:', ->
             # Arrange
             model =
                 myFirstProperty: ko.observable()
-                modelErrors: ko.observable()
-                modelValidationRules:
-                    'myFirstProperty':
-                        required: true
+
+            bo.validatableModel model, { 'myFirstProperty' : { required: true } }
                                     
-            bo.validate model
+            model.validate()
 
             # Act
             model.myFirstProperty 12346
@@ -198,12 +179,11 @@ describe 'Validation:', ->
             model =
                 myFirstProperty: undefined
                 mySecondProperty: undefined
-                modelValidationRules:
-                    'myFirstProperty':
-                        required: true
+
+            bo.validatableModel model, { 'myFirstProperty': { required: true } }
 
             # Act
-            validationErrors = bo.validate model
+            validationErrors = model.validate()
 
             # Assert
             expect(validationErrors['mySecondProperty']).toBeUndefined()
@@ -212,12 +192,11 @@ describe 'Validation:', ->
             # Arrange
             model =
                 myFirstProperty: ko.observable()
-                modelValidationRules:
-                    'myFirstProperty':
-                        required: true
+
+            bo.validatableModel model, { 'myFirstProperty': { required: true } }
 
             # Act
-            validationErrors = bo.validate model
+            validationErrors = model.validate()
 
             # Assert
             expect(validationErrors['myFirstProperty']).toBeDefined()
@@ -225,43 +204,44 @@ describe 'Validation:', ->
         it 'should validate observable arrays with elements with validation rules as bracketed error keys', ->
             # Arrange
             ArrayItemType = ->
-                arrayProperty: undefined
-                modelValidationRules:
-                    'arrayProperty':
-                        required: true
+                model = 
+                    arrayProperty: undefined
+                
+                bo.validatableModel model, { 'arrayProperty': { required: true } }
+
             model =
                 myArray: ko.observableArray [new ArrayItemType(), new ArrayItemType()]
 
+            bo.validatableModel model, {}
+
             # Act
-            validationErrors = bo.validate model
+            validationErrors = model.validate()
 
             # Assert
             expect(validationErrors['myArray[0].arrayProperty']).toBeDefined()
             expect(validationErrors['myArray[1].arrayProperty']).toBeDefined()
             
-        it 'should set found errors to errors property of each item of array if it exists on child object, with parent key', ->
+        it 'should set found errors to errors property of each item of array, with parent key', ->
             # Arrange
             ArrayItemType = ->
-                arrayProperty: undefined
-                modelErrors: {}
-                modelValidationRules:
-                    'arrayProperty':
-                        required: true
+                model = 
+                    arrayProperty: undefined
 
-            model =
-                myArray: [new ArrayItemType(), new ArrayItemType()]
+                bo.validatableModel model, { 'arrayProperty': { required: true } }
+
+            model = bo.validatableModel { myArray: [new ArrayItemType(), new ArrayItemType()] }
 
             # Act
-            validationErrors = bo.validate model
+            validationErrors = model.validate()
 
             # Assert
-            expect(model.myArray[0].modelErrors['arrayProperty']).toBeDefined()
-            expect(model.myArray[1].modelErrors['arrayProperty']).toBeDefined()
+            expect(model.myArray[0].modelErrors()['arrayProperty']).toBeDefined()
+            expect(model.myArray[1].modelErrors()['arrayProperty']).toBeDefined()
 
         it 'should validate child objects with validation rules as dot separated error keys', ->
             # Arrange
             model =
-                myChildProperty:
+                myChildProperty: 
                     anotherProperty: undefined
                     modelValidationRules:
                         'anotherProperty':
@@ -278,7 +258,7 @@ describe 'Validation:', ->
             model =
                 myChildProperty:
                     anotherProperty: undefined
-                    modelErrors: {}
+
                     modelValidationRules:
                         'anotherProperty':
                             required: true
@@ -306,7 +286,7 @@ describe 'Validation:', ->
 
         it 'should validate nested child objects with validation rules as dot separated error keys', ->
             # Arrange
-            model =
+            model = bo.validatableModel
                 myChildProperty:
                     myOtherChildProperty:
                         anotherProperty: undefined
@@ -315,7 +295,7 @@ describe 'Validation:', ->
                                 required: true
 
             # Act
-            validationErrors = bo.validate model
+            validationErrors = model.validate()
 
             # Assert
             expect(validationErrors['myChildProperty.myOtherChildProperty.anotherProperty']).toBeDefined()
@@ -347,55 +327,54 @@ describe 'Validation:', ->
 
         it 'should include validation errors of property in returned errors list when validating model', ->
             # Arrange
-            model =
+            model = bo.validatableModel
                 myFirstProperty: ko.observable().extend { validatable: { required: true } }
 
             # Act
-            validationErrors = bo.validate model
+            validationErrors = model.validate()
 
             # Assert
             expect(validationErrors['myFirstProperty']).toBeDefined()
 
         it 'should add validation errors to model errors property of containing model when validating model', ->
             # Arrange
-            model =
-                modelErrors: ko.observable {}
+            model = bo.validatableModel
                 myFirstProperty: ko.observable().extend { validatable: { required: true } }
 
             # Act
-            bo.validate model
+            model.validate()
 
             # Assert
             expect(model.modelErrors()['myFirstProperty']).toBeDefined()
 
         it 'should set the errors observable of the validatable value when validating model', ->
             # Arrange
-            model =
+            model = bo.validatableModel
                 myFirstProperty: ko.observable().extend { validatable: { required: true } }
 
             # Act
-            bo.validate model
+            model.validate()
 
             # Assert
             expect(model.myFirstProperty.errors()[0]).toEqual 'My First Property is required.'
 
         it 'should set the isValid observable of the validatable value to false when validation fails', ->
             # Arrange
-            model =
+            model = bo.validatableModel
                 myFirstProperty: ko.observable().extend { validatable: { required: true } }
 
             # Act
-            bo.validate model
+            model.validate()
 
             # Assert
             expect(model.myFirstProperty.isValid()).toBe false
 
         it 'should update the errors property of validatable when value changes after initial validation', ->
             # Arrange
-            model =
+            model = bo.validatableModel
                 myFirstProperty: ko.observable().extend { validatable: { required: true } }
                 
-            bo.validate model
+            model.validate()
             expect(model.myFirstProperty.errors().length).toBe 1
 
             # Act
