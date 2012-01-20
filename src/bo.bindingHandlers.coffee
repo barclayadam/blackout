@@ -109,52 +109,6 @@ ko.bindingHandlers.value =
     update: ->
         currentValueBinding.update.apply @, arguments
         ko.bindingHandlers.validated.update.apply @, arguments
-                        
-ko.bindingHandlers.validated =
-    options:
-        inputValidClass: 'input-validation-valid'
-        inputInvalidClass: 'input-validation-error'
-
-        messageValidClass: 'field-validation-valid'
-        messageInvalidClass: 'field-validation-error'
-
-    init: (element, valueAccessor, allBindings, viewModel) ->
-        value = valueAccessor()
-        $element = jQuery element
-
-        if value?.errors?
-            $validationElement = jQuery('<span />').insertAfter $element
-            ko.utils.domData.set element, 'validationElement', $validationElement
-
-        if value?.validationRules?.required?
-            $element.attr "aria-required", true
-
-    update: (element, valueAccessor, allBindings, viewModel) ->
-        $element = jQuery element
-        $validationElement = ko.utils.domData.get element, 'validationElement'
-        value = valueAccessor()
-        
-        if value?.errors?        
-            shouldEnable = ko.utils.unwrapObservable(allBindings().enable || true)
-            shouldDisable = ko.utils.unwrapObservable(allBindings().disable || false)
-
-            isEnabled = shouldEnable is true and shouldDisable is false
-        
-            errorMessages = value.errors()
-            options = ko.bindingHandlers.validated.options
-
-            isInvalid = isEnabled and errorMessages.length > 0
-            isValid = not isInvalid
-
-            $element.toggleClass options.inputValidClass, isValid
-            $element.toggleClass options.inputInvalidClass, isInvalid
-
-            $element.attr "aria-invalid", isInvalid
-            
-            $validationElement.toggleClass options.messageValidClass, isValid
-            $validationElement.toggleClass options.messageInvalidClass, isInvalid
-
-            $validationElement.html (if isValid then '' else errorMessages.join '<br />')
 
 # Binding to do event delegation for any event
 # Converted JavaScript from: http://www.knockmeout.net/2011/04/event-delegation-in-knockoutjs.html

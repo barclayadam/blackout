@@ -56,7 +56,7 @@ describe 'ViewModels', ->
             viewModel.set 'command', command
             viewModel.getCommandsToSubmit = -> [command]
 
-            validateSpy = @spy bo, "validate"
+            validateSpy = @spy bo.validation, "validate"
 
             # Act
             viewModel.submit()

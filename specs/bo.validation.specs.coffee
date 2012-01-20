@@ -11,11 +11,11 @@ describe 'Validation:', ->
             validate = -> model.validate()
 
             # Assert
-            expect(validate).toThrow '\'myNonExistentValidator\' is not a validator. Must be defined as method on bo.validators'
+            expect(validate).toThrow '\'myNonExistentValidator\' is not a validator. Must be defined as method on bo.validation.rules'
 
         it 'should validate properties by executing method attached to bo.validate', ->
             # Arrange
-            requiredSpy = @spy bo.rules.required, "validator"
+            requiredSpy = @spy bo.validation.rules.required, "validator"
             model = { myProperty: 'myValue' }
             bo.validatableModel model, { myProperty: { required: true } } 
 
@@ -38,7 +38,7 @@ describe 'Validation:', ->
                 myArray: [new ArrayItemType(), new ArrayItemType()]
 
             # Act
-            validationErrors = bo.validate model
+            validationErrors = bo.validation.validate model
 
             # Assert
             expect(validationErrors['myArray[0].arrayProperty']).toBeDefined()
@@ -46,7 +46,7 @@ describe 'Validation:', ->
 
         it 'should return an empty object if no validators fail', ->
             # Arrange
-            bo.rules.myCustomValidator = 
+            bo.validation.rules.myCustomValidator = 
                 validator: -> true
 
             model = { myProperty: 'myValue' }
@@ -60,7 +60,7 @@ describe 'Validation:', ->
 
         it 'should return an empty object if model to validate is undefined', ->
             # Act
-            validationErrors = bo.validate undefined
+            validationErrors = bo.validation.validate undefined
 
             # Assert
             expect(validationErrors).toEqual {}
@@ -68,12 +68,11 @@ describe 'Validation:', ->
         it 'should revalidate an observable model when it changes if it was undefined when first validated', ->
             # Arrange
             model = { myProperty: undefined }
-            model.modelErrors = ko.observable()
             bo.validatableModel model, { myProperty: { required: true } } 
 
             obs = ko.observable undefined
 
-            validationErrors = bo.validate obs
+            validationErrors = bo.validation.validate obs
             expect(validationErrors).toEqual {}
 
             # Act
@@ -88,14 +87,14 @@ describe 'Validation:', ->
             bo.validatableModel model, { myProperty: { required: true } } 
 
             # Act
-            validationErrors = bo.validate ko.observable model
+            validationErrors = bo.validation.validate ko.observable model
 
             # Assert
             expect(validationErrors['myProperty']).toBeDefined()
 
         it 'should return default failure message for property if validation fails and no message defined', ->
             # Arrange
-            bo.rules.myCustomValidator = 
+            bo.validation.rules.myCustomValidator = 
                 validator: -> false
 
             model = { myProperty: 'myValue' }
@@ -109,7 +108,7 @@ describe 'Validation:', ->
 
         it 'should return validators default error message when defined on bo.messages with no model validation message', ->
             # Arrange
-            bo.rules.myCustomValidator = 
+            bo.validation.rules.myCustomValidator = 
                 validator: -> false
                 message: (propertyName, model, options) -> "#{propertyName} failed myCustomValidator validation"
 
@@ -248,7 +247,7 @@ describe 'Validation:', ->
                             required: true
 
             # Act
-            validationErrors = bo.validate model
+            validationErrors = bo.validation.validate model
 
             # Assert
             expect(validationErrors['myChildProperty.anotherProperty']).toBeDefined()
@@ -264,7 +263,7 @@ describe 'Validation:', ->
                             required: true
 
             # Act
-            validationErrors = bo.validate model
+            validationErrors = bo.validation.validate model
 
             # Assert
             expect(model.myChildProperty.modelErrors['anotherProperty']).toBeDefined()
@@ -279,7 +278,7 @@ describe 'Validation:', ->
                             required: true
 
             # Act
-            validationErrors = bo.validate model
+            validationErrors = bo.validation.validate model
 
             # Assert
             expect(validationErrors['myChildProperty.anotherProperty']).toBeDefined()
@@ -386,28 +385,28 @@ describe 'Validation:', ->
     describe 'With a required validator', ->
         it 'should return true if property value is defined', ->
             # Act
-            isValid = bo.rules.required.validator 'my Value', {}, true
+            isValid = bo.validation.rules.required.validator 'my Value', {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return false if property value is undefined', ->
             # Act
-            isValid = bo.rules.required.validator undefined, {}, true
+            isValid = bo.validation.rules.required.validator undefined, {}, true
 
             # Assert
             expect(isValid).toBe false
 
         it 'should return false if property value is null', ->
             # Act
-            isValid = bo.rules.required.validator null, {}, true
+            isValid = bo.validation.rules.required.validator null, {}, true
 
             # Assert
             expect(isValid).toBe false
 
         it 'should return false if property value is empty string', ->
             # Act
-            isValid = bo.rules.required.validator '', {}, true
+            isValid = bo.validation.rules.required.validator '', {}, true
 
             # Assert
             expect(isValid).toBe false
@@ -415,35 +414,35 @@ describe 'Validation:', ->
     describe 'With a regex validator', ->
         it 'should return true if property value is undefined', ->
             # Act
-            isValid = bo.rules.regex.validator undefined, {}, true
+            isValid = bo.validation.rules.regex.validator undefined, {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is null', ->
             # Act
-            isValid = bo.rules.regex.validator null, {}, true
+            isValid = bo.validation.rules.regex.validator null, {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is empty string', ->
             # Act
-            isValid = bo.rules.regex.validator '', {}, true
+            isValid = bo.validation.rules.regex.validator '', {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value matches regular expression', ->
             # Act
-            isValid = bo.rules.regex.validator '01234', {}, /[0-9]+/
+            isValid = bo.validation.rules.regex.validator '01234', {}, /[0-9]+/
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return false if property value does not match regular expression', ->
             # Act
-            isValid = bo.rules.regex.validator 'abc', {}, /[0-9]+/
+            isValid = bo.validation.rules.regex.validator 'abc', {}, /[0-9]+/
 
             # Assert
             expect(isValid).toBe false
@@ -451,49 +450,49 @@ describe 'Validation:', ->
     describe 'With a minLength validator', ->
         it 'should return true if property value is undefined', ->
             # Act
-            isValid = bo.rules.minLength.validator undefined, {}, true
+            isValid = bo.validation.rules.minLength.validator undefined, {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is null', ->
             # Act
-            isValid = bo.rules.minLength.validator null, {}, true
+            isValid = bo.validation.rules.minLength.validator null, {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is empty string', ->
             # Act
-            isValid = bo.rules.minLength.validator '', {}, true
+            isValid = bo.validation.rules.minLength.validator '', {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property is string with required number of characters', ->
             # Act
-            isValid = bo.rules.minLength.validator '01', {}, 2
+            isValid = bo.validation.rules.minLength.validator '01', {}, 2
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property is string with more than required number of characters', ->
             # Act
-            isValid = bo.rules.minLength.validator '0123456', {}, 2
+            isValid = bo.validation.rules.minLength.validator '0123456', {}, 2
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return false if property is string with too few characters', ->
             # Act
-            isValid = bo.rules.minLength.validator 'c', {}, 2
+            isValid = bo.validation.rules.minLength.validator 'c', {}, 2
 
             # Assert
             expect(isValid).toBe false
 
         it 'should return false if property is not a string', ->
             # Act
-            isValid = bo.rules.minLength.validator false, {}, [2, 4]
+            isValid = bo.validation.rules.minLength.validator false, {}, [2, 4]
 
             # Assert
             expect(isValid).toBe false
@@ -501,49 +500,49 @@ describe 'Validation:', ->
     describe 'With a maxLength validator', ->
         it 'should return true if property value is undefined', ->
             # Act
-            isValid = bo.rules.maxLength.validator undefined, {}, true
+            isValid = bo.validation.rules.maxLength.validator undefined, {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is null', ->
             # Act
-            isValid = bo.rules.maxLength.validator null, {}, true
+            isValid = bo.validation.rules.maxLength.validator null, {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is empty string', ->
             # Act
-            isValid = bo.rules.maxLength.validator '', {}, true
+            isValid = bo.validation.rules.maxLength.validator '', {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property is string with maximum number of characters allowed', ->
             # Act
-            isValid = bo.rules.maxLength.validator '01', {}, 2
+            isValid = bo.validation.rules.maxLength.validator '01', {}, 2
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property is string with less than maximum number of characters', ->
             # Act
-            isValid = bo.rules.maxLength.validator '0', {}, 2
+            isValid = bo.validation.rules.maxLength.validator '0', {}, 2
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return false if property is string with too many characters', ->
             # Act
-            isValid = bo.rules.maxLength.validator 'cfty', {}, 2
+            isValid = bo.validation.rules.maxLength.validator 'cfty', {}, 2
 
             # Assert
             expect(isValid).toBe false
 
         it 'should return false if property is not a string', ->
             # Act
-            isValid = bo.rules.maxLength.validator false, {}, [2, 4]
+            isValid = bo.validation.rules.maxLength.validator false, {}, [2, 4]
 
             # Assert
             expect(isValid).toBe false
@@ -551,63 +550,63 @@ describe 'Validation:', ->
     describe 'With a rangeLength validator', ->
         it 'should return true if property value is undefined', ->
             # Act
-            isValid = bo.rules.rangeLength.validator undefined, {}, true
+            isValid = bo.validation.rules.rangeLength.validator undefined, {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is null', ->
             # Act
-            isValid = bo.rules.rangeLength.validator null, {}, true
+            isValid = bo.validation.rules.rangeLength.validator null, {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is empty string', ->
             # Act
-            isValid = bo.rules.rangeLength.validator '', {}, true
+            isValid = bo.validation.rules.rangeLength.validator '', {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property is string with minimum number of characters as defined by first element of options array', ->
             # Act
-            isValid = bo.rules.rangeLength.validator '12', {}, [2, 4]
+            isValid = bo.validation.rules.rangeLength.validator '12', {}, [2, 4]
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property is string with maximum number of characters as defined by second element of options array', ->
             # Act
-            isValid = bo.rules.rangeLength.validator '1234', {}, [2, 4]
+            isValid = bo.validation.rules.rangeLength.validator '1234', {}, [2, 4]
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property is string with character count within minimum and maximum allowed', ->
             # Act
-            isValid = bo.rules.rangeLength.validator '123', {}, [2, 4]
+            isValid = bo.validation.rules.rangeLength.validator '123', {}, [2, 4]
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return false if property is string with too many characters', ->
             # Act
-            isValid = bo.rules.rangeLength.validator '12345', {}, [2, 4]
+            isValid = bo.validation.rules.rangeLength.validator '12345', {}, [2, 4]
 
             # Assert
             expect(isValid).toBe false
 
         it 'should return false if property is string with too few characters', ->
             # Act
-            isValid = bo.rules.rangeLength.validator '1', {}, [2, 4]
+            isValid = bo.validation.rules.rangeLength.validator '1', {}, [2, 4]
 
             # Assert
             expect(isValid).toBe false
 
         it 'should return false if property is not a string', ->
             # Act
-            isValid = bo.rules.rangeLength.validator false, {}, [2, 4]
+            isValid = bo.validation.rules.rangeLength.validator false, {}, [2, 4]
 
             # Assert
             expect(isValid).toBe false
@@ -615,49 +614,49 @@ describe 'Validation:', ->
     describe 'With a min validator', ->
         it 'should return true if property value is undefined', ->
             # Act
-            isValid = bo.rules.min.validator undefined, {}, true
+            isValid = bo.validation.rules.min.validator undefined, {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is null', ->
             # Act
-            isValid = bo.rules.min.validator null, {}, true
+            isValid = bo.validation.rules.min.validator null, {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is empty string', ->
             # Act
-            isValid = bo.rules.min.validator '', {}, true
+            isValid = bo.validation.rules.min.validator '', {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is equal to minimum option value', ->
             # Act
-            isValid = bo.rules.min.validator 56, {}, 56
+            isValid = bo.validation.rules.min.validator 56, {}, 56
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is greater than minimum option value', ->
             # Act
-            isValid = bo.rules.min.validator 456, {}, 56
+            isValid = bo.validation.rules.min.validator 456, {}, 56
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return false if property value is less than minimum option value', ->
             # Act
-            isValid = bo.rules.min.validator 4, {}, 56
+            isValid = bo.validation.rules.min.validator 4, {}, 56
 
             # Assert
             expect(isValid).toBe false
 
         it 'should return false if property is not a number', ->
             # Act
-            isValid = bo.rules.min.validator "Not a Number", {}, 5
+            isValid = bo.validation.rules.min.validator "Not a Number", {}, 5
 
             # Assert
             expect(isValid).toBe false
@@ -665,49 +664,49 @@ describe 'Validation:', ->
     describe 'With a max validator', ->
         it 'should return true if property value is undefined', ->
             # Act
-            isValid = bo.rules.max.validator undefined, {}, true
+            isValid = bo.validation.rules.max.validator undefined, {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is null', ->
             # Act
-            isValid = bo.rules.max.validator null, {}, true
+            isValid = bo.validation.rules.max.validator null, {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is empty string', ->
             # Act
-            isValid = bo.rules.max.validator '', {}, true
+            isValid = bo.validation.rules.max.validator '', {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is equal to maximum option value', ->
             # Act
-            isValid = bo.rules.max.validator 56, {}, 56
+            isValid = bo.validation.rules.max.validator 56, {}, 56
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is less than maximum option value', ->
             # Act
-            isValid = bo.rules.max.validator 34, {}, 56
+            isValid = bo.validation.rules.max.validator 34, {}, 56
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return false if property value is greater than maximum option value', ->
             # Act
-            isValid = bo.rules.max.validator 346, {}, 56
+            isValid = bo.validation.rules.max.validator 346, {}, 56
 
             # Assert
             expect(isValid).toBe false
 
         it 'should return false if property is not a number', ->
             # Act
-            isValid = bo.rules.max.validator "Not a Number", {}, 5
+            isValid = bo.validation.rules.max.validator "Not a Number", {}, 5
 
             # Assert
             expect(isValid).toBe false
@@ -715,63 +714,63 @@ describe 'Validation:', ->
     describe 'With a range validator', ->
         it 'should return true if property value is undefined', ->
             # Act
-            isValid = bo.rules.range.validator undefined, {}, true
+            isValid = bo.validation.rules.range.validator undefined, {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is null', ->
             # Act
-            isValid = bo.rules.range.validator null, {}, true
+            isValid = bo.validation.rules.range.validator null, {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is empty string', ->
             # Act
-            isValid = bo.rules.range.validator '', {}, true
+            isValid = bo.validation.rules.range.validator '', {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property is minimum value as defined by first element of options array', ->
             # Act
-            isValid = bo.rules.range.validator 2, {}, [2, 65]
+            isValid = bo.validation.rules.range.validator 2, {}, [2, 65]
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property is maximum value as defined by second element of options array', ->
             # Act
-            isValid = bo.rules.range.validator 65, {}, [2, 65]
+            isValid = bo.validation.rules.range.validator 65, {}, [2, 65]
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property is within minimum and maximum allowed', ->
             # Act
-            isValid = bo.rules.range.validator 3, {}, [2, 4]
+            isValid = bo.validation.rules.range.validator 3, {}, [2, 4]
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return false if property is more than maximum', ->
             # Act
-            isValid = bo.rules.range.validator 5, {}, [2, 4]
+            isValid = bo.validation.rules.range.validator 5, {}, [2, 4]
 
             # Assert
             expect(isValid).toBe false
 
         it 'should return false if property is less than minimum', ->
             # Act
-            isValid = bo.rules.range.validator 1, {}, [2, 4]
+            isValid = bo.validation.rules.range.validator 1, {}, [2, 4]
 
             # Assert
             expect(isValid).toBe false
 
         it 'should return false if property is not a number', ->
             # Act
-            isValid = bo.rules.range.validator "Not a Number", {}, [2, 4]
+            isValid = bo.validation.rules.range.validator "Not a Number", {}, [2, 4]
 
             # Assert
             expect(isValid).toBe false

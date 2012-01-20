@@ -19,8 +19,8 @@ getValidationFailureMessage = (propertyName, propertyValue, model, ruleName, rul
         model.modelValidationRules[propertyName][messagePropertyName]
     else if propertyValue?.validationRules?[messagePropertyName]?
         propertyValue.validationRules[messagePropertyName]
-    else if bo.rules[ruleName]?.message?
-        bo.rules[ruleName].message propertyName, model, ruleOptions
+    else if bo.validation.rules[ruleName]?.message?
+        bo.validation.rules[ruleName].message propertyName, model, ruleOptions
     else
         "#{bo.utils.fromCamelToTitleCase propertyName} validation failed" 
 
@@ -31,10 +31,10 @@ validateValue = (propertyName, propertyValue, propertyRules, model) ->
     
     if propertyRules
         for ruleName, ruleOptions of propertyRules when !(ruleName.endsWith 'Message')
-            if not bo.rules[ruleName]?
-                throw new Error "'#{ruleName}' is not a validator. Must be defined as method on bo.validators"      
+            if not bo.validation.rules[ruleName]?
+                throw new Error "'#{ruleName}' is not a validator. Must be defined as method on bo.validation.rules"      
 
-            isValid = bo.rules[ruleName].validator(unwrappedPropertyValue, model, ruleOptions)
+            isValid = bo.validation.rules[ruleName].validator(unwrappedPropertyValue, model, ruleOptions)
 
             if not isValid
                 errors.push getValidationFailureMessage propertyName, propertyValue, model, ruleName, ruleOptions 
@@ -42,40 +42,100 @@ validateValue = (propertyName, propertyValue, propertyRules, model) ->
     propertyValue.errors errors if propertyValue?.errors?
     errors
 
-bo.validate = (modelToValidate, parentProperty = '') ->
-    errors = {}
+bo.validation =
+    modelProperties: ['modelErrors', 'modelValidationRules', 'validationRules', 'isValid', 'errors', 'serverErrors', 'allErrors', 'validate']
 
-    # Use computed to allow observable properties to be automatically validated
-    # on change, updating the errors property of the model being validated.
-    ko.computed ->
-        model = ko.utils.unwrapObservable modelToValidate
+    validate: (modelToValidate, parentProperty = '') ->
+        errors = {}
 
-        if model?
-            modelErrors = {}
-            rules = model.modelValidationRules || {}
+        # Use computed to allow observable properties to be automatically validated
+        # on change, updating the errors property of the model being validated.
+        ko.computed ->
+            model = ko.utils.unwrapObservable modelToValidate
+
+            if model?
+                modelErrors = {}
+                rules = model.modelValidationRules || {}
+                
+                for propertyName, propertyValue of model when not _(bo.validation.modelProperties).contains(propertyName)
+                    unwrappedPropertyValue = ko.utils.unwrapObservable propertyValue
+                    errorKey = createErrorKey propertyName, parentProperty
+
+                    valueValidationErrors = validateValue propertyName, propertyValue, rules[propertyName], model
+
+                    if valueValidationErrors.length > 0
+                        errors[errorKey] = valueValidationErrors
+                        modelErrors[propertyName] = valueValidationErrors
+
+                    if _.isArray unwrappedPropertyValue
+                        for arrayItem, i in unwrappedPropertyValue
+                            _.extend errors, bo.validation.validate arrayItem, "#{errorKey}[#{i}]"
+                    else if jQuery.isPlainObject unwrappedPropertyValue
+                        _.extend errors, bo.validation.validate unwrappedPropertyValue, errorKey
+
+                if ko.isWriteableObservable model.modelErrors
+                    model.modelErrors modelErrors
+                else
+                    model.modelErrors = modelErrors
+
+        errors
+    
+    rules:
+        required: 
+            validator: (value, model, options) ->
+                hasValue value
             
-            for propertyName, propertyValue of model when not _(['modelErrors', 'modelValidationRules', 'validationRules', 'isValid', 'errors']).contains(propertyName)
-                unwrappedPropertyValue = ko.utils.unwrapObservable propertyValue
-                errorKey = createErrorKey propertyName, parentProperty
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} is required."
 
-                valueValidationErrors = validateValue propertyName, propertyValue, rules[propertyName], model
+        regex:
+            validator: (value, model, options) ->
+                (emptyValue value) or (options.test value)
 
-                if valueValidationErrors.length > 0
-                    errors[errorKey] = valueValidationErrors
-                    modelErrors[propertyName] = valueValidationErrors
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} is invalid."
 
-                if _.isArray unwrappedPropertyValue
-                    for arrayItem, i in unwrappedPropertyValue
-                        _.extend errors, bo.validate arrayItem, "#{errorKey}[#{i}]"
-                else if jQuery.isPlainObject unwrappedPropertyValue
-                    _.extend errors, bo.validate unwrappedPropertyValue, errorKey
+        minLength: 
+            validator: (value, model, options) ->
+                (emptyValue value) or (value.length? and value.length >= options)
 
-            if ko.isWriteableObservable model.modelErrors
-                model.modelErrors modelErrors
-            else
-                model.modelErrors = modelErrors
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} must be at least #{options} characters long."
+        
+        maxLength:
+            validator: (value, model, options) ->
+                (emptyValue value) or (value.length? and value.length <= options)
+        
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} must be no more than #{options} characters long."
+        
+        rangeLength:
+            validator: (value, model, options) ->
+                (bo.validation.rules.minLength.validator value, model, options[0]) and (bo.validation.rules.maxLength.validator value, model, options[1])
+        
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} must be between #{options[0]} and #{options[1]} characters long."
 
-    errors
+        min:
+            validator: (value, model, options) ->
+                (emptyValue value) or (value >= options)
+
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to or greater than #{options}."
+
+        max:
+            validator: (value, model, options) ->
+                (emptyValue value) or (value <= options)
+
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to or less than #{options}."
+
+        range:
+            validator: (value, model, options) ->
+                (bo.validation.rules.min.validator value, model, options[0]) and (bo.validation.rules.max.validator value, model, options[1])
+
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} must be between #{options[0]} and #{options[1]}."
 
 # Given a model and a set of (optional) model validation rules will add the necessary
 # methods and observables to make the model validatable.
@@ -96,7 +156,12 @@ bo.validatableModel = (model, modelValidationRules = {}) ->
     model.isValid = ko.computed -> _.isEmpty model.modelErrors()
     model.modelValidationRules = modelValidationRules
 
-    model.validate = -> bo.validate model
+    model.serverErrors = ko.observable {}
+
+    model.allErrors = ko.computed ->
+        _.extend {}, model.modelErrors(), model.serverErrors()
+
+    model.validate = -> bo.validation.validate model
 
     model
 
@@ -119,60 +184,46 @@ ko.extenders.validatable = (target, validationRules) ->
 ko.subscribable.fn.validatable = (validationRules) ->
     ko.extenders.validatable @, validationRules
     @
+                        
+ko.bindingHandlers.validated =
+    options:
+        inputValidClass: 'input-validation-valid'
+        inputInvalidClass: 'input-validation-error'
 
-bo.rules =
-    required: 
-        validator: (value, model, options) ->
-            hasValue value
+        messageValidClass: 'field-validation-valid'
+        messageInvalidClass: 'field-validation-error'
+
+    init: (element, valueAccessor, allBindings, viewModel) ->
+        value = valueAccessor()
+        $element = jQuery element
+
+        if value?.errors?
+            $validationElement = jQuery('<span />').insertAfter $element
+            ko.utils.domData.set element, 'validationElement', $validationElement
+
+        if value?.validationRules?.required?
+            $element.attr "aria-required", true
+
+    update: (element, valueAccessor, allBindings, viewModel) ->
+        $element = jQuery element
+        $validationElement = ko.utils.domData.get element, 'validationElement'
+        value = valueAccessor()
         
-        message: (propertyName, model, options) ->
-            "#{bo.utils.fromCamelToTitleCase propertyName} is required."
+        if value?.errors?        
+            isEnabled = bo.utils.isElementEnabled allBindings
+        
+            errorMessages = value.allErrors()
+            options = ko.bindingHandlers.validated.options
 
-    regex:
-        validator: (value, model, options) ->
-            (emptyValue value) or (options.test value)
+            isInvalid = isEnabled and errorMessages.length > 0
+            isValid = not isInvalid
 
-        message: (propertyName, model, options) ->
-            "#{bo.utils.fromCamelToTitleCase propertyName} is invalid."
+            $element.toggleClass options.inputValidClass, isValid
+            $element.toggleClass options.inputInvalidClass, isInvalid
 
-    minLength: 
-        validator: (value, model, options) ->
-            (emptyValue value) or (value.length? and value.length >= options)
+            $element.attr "aria-invalid", isInvalid
+            
+            $validationElement.toggleClass options.messageValidClass, isValid
+            $validationElement.toggleClass options.messageInvalidClass, isInvalid
 
-        message: (propertyName, model, options) ->
-            "#{bo.utils.fromCamelToTitleCase propertyName} must be at least #{options} characters long."
-    
-    maxLength:
-        validator: (value, model, options) ->
-            (emptyValue value) or (value.length? and value.length <= options)
-    
-        message: (propertyName, model, options) ->
-            "#{bo.utils.fromCamelToTitleCase propertyName} must be no more than #{options} characters long."
-    
-    rangeLength:
-        validator: (value, model, options) ->
-            (bo.rules.minLength.validator value, model, options[0]) and (bo.rules.maxLength.validator value, model, options[1])
-    
-        message: (propertyName, model, options) ->
-            "#{bo.utils.fromCamelToTitleCase propertyName} must be between #{options[0]} and #{options[1]} characters long."
-
-    min:
-        validator: (value, model, options) ->
-            (emptyValue value) or (value >= options)
-
-        message: (propertyName, model, options) ->
-            "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to or greater than #{options}."
-
-    max:
-        validator: (value, model, options) ->
-            (emptyValue value) or (value <= options)
-
-        message: (propertyName, model, options) ->
-            "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to or less than #{options}."
-
-    range:
-        validator: (value, model, options) ->
-            (bo.rules.min.validator value, model, options[0]) and (bo.rules.max.validator value, model, options[1])
-
-        message: (propertyName, model, options) ->
-            "#{bo.utils.fromCamelToTitleCase propertyName} must be between #{options[0]} and #{options[1]}."
+            $validationElement.html (if isValid then '' else errorMessages.join '<br />')

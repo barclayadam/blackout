@@ -2,6 +2,8 @@
 #reference "bo.utils.coffee"
 
 class bo.Command  
+    @propertiesToIgnore: ['name', 'properties']
+
     constructor: (@name, values = {}) ->
         bo.validatableModel @
 
@@ -12,7 +14,7 @@ class bo.Command
 
     properties: ->
         properties = {}
-        properties[key] = value for key, value of @ when not _(['name', 'validate', 'modelErrors', 'properties', 'modelValidationRules', 'isValid']).contains key
+        properties[key] = value for key, value of @ when not _(bo.Command.propertiesToIgnore.concat(bo.validation.modelProperties)).contains key
         properties
 
 bo.messaging = {}
