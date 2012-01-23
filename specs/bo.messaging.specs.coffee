@@ -24,17 +24,15 @@ describe 'Messaging', ->
                 # Assert
                 expect(commandCreatedSpy).toHaveBeenCalledWith command
 
-        describe 'With a command that has property values set', ->
-            it 'has a properties function that returns all property key / value pairs', ->
+            it 'should have a properties function that returns all property key / value pairs as plain values', ->
                 # Arrange
-                command = new bo.Command 'Command1'
-                command.property = "My Value"
+                command = new bo.Command 'Command1', { property: 'My value' }
 
                 # Act
                 properties = command.properties()
 
                 # Assert
-                expect(properties).toEqual { 'property': 'My Value' }
+                expect(properties).toEqual { 'property': 'My value' }
 
     describe 'When executing a single query', ->
         beforeEach ->       
