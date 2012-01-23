@@ -2,19 +2,19 @@
 #reference "bo.utils.coffee"
 
 class bo.Command  
-    @propertiesToIgnore: ['name', 'properties']
+    @propertiesToIgnore: ['name', 'properties'].concat(bo.validation.modelProperties)
 
     constructor: (@name, values = {}) ->
-        bo.validatableModel @
-
         for key, value of values
             @[key] = bo.utils.asObservable value
+            
+        bo.validatableModel @
 
         bo.bus.publish "commandCreated:#{@name}", @
 
     properties: ->
         properties = {}
-        properties[key] = value for key, value of @ when not _(bo.Command.propertiesToIgnore.concat(bo.validation.modelProperties)).contains key
+        properties[key] = value for key, value of @ when not _(bo.Command.propertiesToIgnore).contains key
         properties
 
 bo.messaging = {}

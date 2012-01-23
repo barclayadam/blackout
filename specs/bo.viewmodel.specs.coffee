@@ -46,10 +46,8 @@ describe 'ViewModels', ->
 
         it 'should validate values that have been "set"', ->
             # Arrange
-            command = new bo.Command 'My Command', { myProperty: undefined }
-            command.validationRules =
-                myProperty:
-                    required: true
+            command = new bo.Command 'My Command', 
+                  myProperty: undefined
 
             viewModel = new bo.ViewModel()
             viewModel.isDirty true
@@ -66,10 +64,8 @@ describe 'ViewModels', ->
 
         it 'should not submit if commandToSubmit is not valid', ->
             # Arrange
-            command = new bo.Command 'My Command', { myProperty: undefined }
-            command.modelValidationRules =
-                myProperty:
-                    required: true
+            command = new bo.Command 'My Command', 
+                  myProperty: ko.observable(undefined).validatable { required: true }
 
             viewModel = new bo.ViewModel()
             viewModel.isDirty true
@@ -83,7 +79,6 @@ describe 'ViewModels', ->
             viewModel.submit()
 
             # Assert
-            expect(command.modelErrors()['myProperty']).toBeDefined()
             expect(commandSpy).toHaveNotBeenCalled()
             expect(commandBatchSpy).toHaveNotBeenCalled()
 
@@ -112,8 +107,8 @@ describe 'ViewModels', ->
 
             viewModel = new TestVM()
             viewModel.isDirty true
+            viewModel.set 'command', command
 
-            validateStub = @stub viewModel, "validate", -> # Do nothing, keep viewModel valid
             commandStub = @stub bo.messaging, 'command', -> new jQuery.Deferred().promise()
 
             # Act
@@ -132,8 +127,9 @@ describe 'ViewModels', ->
 
             viewModel = new TestVM()
             viewModel.isDirty true
+            viewModel.set 'command1', command1
+            viewModel.set 'command2', command2
 
-            validateStub = @stub viewModel, "validate", -> # Do nothing, keep viewModel valid
             commandStub = @stub bo.messaging, 'commands', -> new jQuery.Deferred().promise()
 
             # Act
@@ -151,11 +147,11 @@ describe 'ViewModels', ->
 
             viewModel = new TestVM()
             viewModel.isDirty true
+            viewModel.set 'command', command
             viewModel.onSubmitSuccess = @spy()
 
             deferred = new jQuery.Deferred()
 
-            validateStub = @stub viewModel, "validate", -> # Do nothing, keep viewModel valid
             commandStub = @stub bo.messaging, 'command', -> deferred.promise()
 
             # Act
@@ -174,11 +170,11 @@ describe 'ViewModels', ->
 
             viewModel = new TestVM()
             viewModel.isDirty true
+            viewModel.set 'command', command
             viewModel.onSubmitSuccess = @spy()
 
             deferred = new jQuery.Deferred()
 
-            validateStub = @stub viewModel, "validate", -> # Do nothing, keep viewModel valid
             commandStub = @stub bo.messaging, 'command', -> deferred.promise()
 
             # Act

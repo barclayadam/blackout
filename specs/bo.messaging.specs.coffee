@@ -7,11 +7,6 @@ describe 'Messaging', ->
                 command = new bo.Command 'Command1'
                 expect(command.name).toEqual 'Command1'
 
-            it 'should have a modelErrors observable', ->
-                command = new bo.Command 'Command1'
-                expect(command.modelErrors).toBeObservable()
-                expect(command.modelErrors()).toEqual {}
-
             it 'should create observables for each property / value pair passed in constructor', ->
                 command = new bo.Command 'Command1', { myProperty: 'This value' }
 

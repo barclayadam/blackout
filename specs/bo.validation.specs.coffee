@@ -4,8 +4,8 @@ describe 'Validation:', ->
     describe 'When validating', ->
         it 'should throw an exception if a validator is specified that does not exist', ->
             # Arrange
-            model = bo.validatableModel { myProperty: 'myValue' }
-            bo.validatableModel model, { myProperty: { myNonExistentValidator: true } } 
+            model = bo.validatableModel 
+                myProperty: ko.observable('myValue').validatable { myNonExistentValidator: true }
 
             # Act
             validate = -> model.validate()
@@ -16,8 +16,8 @@ describe 'Validation:', ->
         it 'should validate properties by executing method attached to bo.validate', ->
             # Arrange
             requiredSpy = @spy bo.validation.rules.required, "validator"
-            model = { myProperty: 'myValue' }
-            bo.validatableModel model, { myProperty: { required: true } } 
+            model = bo.validatableModel 
+                myProperty: ko.observable('myValue').validatable { required: true }
 
             # Act
             model.validate()
@@ -26,278 +26,145 @@ describe 'Validation:', ->
             expect(requiredSpy).toHaveBeenCalled()
             expect(requiredSpy).toHaveBeenCalledWith 'myValue', model, true
 
-        it 'should validate arrays with elements with validation rules as bracketed error keys', ->
-            # Arrange
-            ArrayItemType = ->
-                model =
-                    arrayProperty: undefined                        
-
-                bo.validatableModel model, { 'arrayProperty' : { required:  true } }                
-            
-            model = 
-                myArray: [new ArrayItemType(), new ArrayItemType()]
-
-            # Act
-            validationErrors = bo.validation.validate model
-
-            # Assert
-            expect(validationErrors['myArray[0].arrayProperty']).toBeDefined()
-            expect(validationErrors['myArray[1].arrayProperty']).toBeDefined()
-
-        it 'should return an empty object if no validators fail', ->
+        it 'should return false if no validators fail', ->
             # Arrange
             bo.validation.rules.myCustomValidator = 
                 validator: -> true
 
-            model = { myProperty: 'myValue' }
-            bo.validatableModel model, { myProperty: { myCustomValidator: true } } 
+            model = bo.validatableModel 
+                myProperty: ko.observable('myValue').validatable { myCustomValidator: true }
 
             # Act
-            validationErrors = model.validate()
+            isValid = model.validate()
 
             # Assert
-            expect(validationErrors).toEqual {}
+            expect(isValid).toEqual true
 
-        it 'should return an empty object if model to validate is undefined', ->
+        it 'should return true if model to validate is undefined', ->
             # Act
-            validationErrors = bo.validation.validate undefined
+            isValid = bo.validation.validate undefined
 
             # Assert
-            expect(validationErrors).toEqual {}
+            expect(isValid).toEqual true
 
-        it 'should revalidate an observable model when it changes if it was undefined when first validated', ->
+        it 'should revalidate an observable when it changes if it was undefined when first validated', ->
             # Arrange
-            model = { myProperty: undefined }
-            bo.validatableModel model, { myProperty: { required: true } } 
+            model = bo.validatableModel 
+                myProperty: ko.observable(undefined).validatable { required: true }
 
             obs = ko.observable undefined
 
-            validationErrors = bo.validation.validate obs
-            expect(validationErrors).toEqual {}
+            bo.validation.validate obs
 
             # Act
             obs model
 
             # Assert
-            expect(model.modelErrors()['myProperty']).toBeDefined()
+            expect(model.isValid()).toBe false
 
         it 'should unwrap an observable for validation', ->
             # Arrange
-            model = { myProperty: undefined }
-            bo.validatableModel model, { myProperty: { required: true } } 
+            model = bo.validatableModel 
+                myProperty: ko.observable(undefined).validatable { required: true }
 
             # Act
-            validationErrors = bo.validation.validate ko.observable model
+            isValid = bo.validation.validate ko.observable model
 
             # Assert
-            expect(validationErrors['myProperty']).toBeDefined()
+            expect(isValid).toBe false
 
-        it 'should return default failure message for property if validation fails and no message defined', ->
+        it 'should set default failure message for property if validation fails and no message defined', ->
             # Arrange
             bo.validation.rules.myCustomValidator = 
                 validator: -> false
 
-            model = { myProperty: 'myValue' }
-            bo.validatableModel model, { myProperty: { myCustomValidator: true } } 
+            model = bo.validatableModel 
+                myProperty: ko.observable('myValue').validatable { myCustomValidator: true }
 
             # Act
-            validationErrors = model.validate()
+            model.validate()
 
             # Assert
-            expect(validationErrors).toEqual { 'myProperty': ['My Property validation failed']}
+            expect(model.myProperty.errors()[0]).toEqual 'My Property validation failed'
 
-        it 'should return validators default error message when defined on bo.messages with no model validation message', ->
+        it 'should return validators default error message when defined with no model validation message', ->
             # Arrange
             bo.validation.rules.myCustomValidator = 
                 validator: -> false
                 message: (propertyName, model, options) -> "#{propertyName} failed myCustomValidator validation"
 
-            model = { myProperty: 'myValue' }
-            bo.validatableModel model, { myProperty: { myCustomValidator: true } } 
+            model = bo.validatableModel 
+                myProperty: ko.observable('myValue').validatable { myCustomValidator: true }
 
             # Act
-            validationErrors = model.validate()
+            model.validate()
 
             # Assert
-            expect(validationErrors).toEqual { 'myProperty': ['myProperty failed myCustomValidator validation']}
+            expect(model.myProperty.errors()[0]).toEqual 'myProperty failed myCustomValidator validation'
 
         it 'should return validation message for rule if message defined for rule explictly', ->
             # Arrange
-            model = { myProperty: undefined }
-            bo.validatableModel model, { myProperty: { required: true, requiredMessage: 'A custom validation message' } }
+            model = bo.validatableModel 
+                myProperty: ko.observable(undefined).validatable { required: true, requiredMessage: 'A custom validation message' }
 
             # Act
-            validationErrors = model.validate()
-
-            # Assert
-            expect(validationErrors).toEqual { 'myProperty': ['A custom validation message']}
-
-        it 'should validate simple properties', ->
-            # Arrange
-            model =
-                myFirstProperty: undefined
-
-            bo.validatableModel model, { 'myFirstProperty': { required: true } }
-
-            # Act
-            validationErrors = model.validate()
-
-            # Assert
-            expect(validationErrors['myFirstProperty']).toBeDefined()
-
-        it 'should set found errors to errors observable if it exists', ->
-            # Arrange
-            model =
-                myFirstProperty: undefined
-
-            bo.validatableModel model, { 'myFirstProperty': { required: true } }
-
-            # Act
-            validationErrors = model.validate()
-
-            # Assert
-            expect(model.modelErrors()['myFirstProperty']).toBeDefined()
-
-        it 'should update errors property with new validation rules if validating an observable value', ->
-            # Arrange
-            model =
-                myFirstProperty: ko.observable()
-
-            bo.validatableModel model, { 'myFirstProperty' : { required: true } }
-                                    
             model.validate()
 
+            # Assert
+            expect(model.myProperty.errors()[0]).toEqual 'A custom validation message'
+
+        it 'should validate properties that are validatable', ->
+            # Arrange
+            model = bo.validatableModel 
+                myProperty: ko.observable(undefined).validatable { required: true }
+
             # Act
-            model.myFirstProperty 12346
+            model.validate()
 
             # Assert
-            expect(model.modelErrors()['myFirstProperty']).toBeUndefined()
+            expect(model.myProperty.isValid()).toEqual false
 
         it 'should not validate properties with no validation rules', ->
             # Arrange
-            model =
-                myFirstProperty: undefined
-                mySecondProperty: undefined
-
-            bo.validatableModel model, { 'myFirstProperty': { required: true } }
+            model = bo.validatableModel
+                myFirstProperty: ko.observable('A Value').validatable { required: true }
+                mySecondProperty: ko.observable(undefined)
 
             # Act
-            validationErrors = model.validate()
+            isValid = model.validate()
 
             # Assert
-            expect(validationErrors['mySecondProperty']).toBeUndefined()
+            expect(isValid).toBe true
+            expect(model.isValid()).toBe true
 
-        it 'should validate observable properties', ->
-            # Arrange
-            model =
-                myFirstProperty: ko.observable()
-
-            bo.validatableModel model, { 'myFirstProperty': { required: true } }
-
-            # Act
-            validationErrors = model.validate()
-
-            # Assert
-            expect(validationErrors['myFirstProperty']).toBeDefined()
-
-        it 'should validate observable arrays with elements with validation rules as bracketed error keys', ->
+        it 'should validate observable arrays', ->
             # Arrange
             ArrayItemType = ->
-                model = 
-                    arrayProperty: undefined
-                
-                bo.validatableModel model, { 'arrayProperty': { required: true } }
+                arrayProperty: ko.observable(undefined).validatable { required: true }
 
-            model =
+            model = bo.validatableModel 
                 myArray: ko.observableArray [new ArrayItemType(), new ArrayItemType()]
 
-            bo.validatableModel model, {}
-
             # Act
-            validationErrors = model.validate()
+            isValid = model.validate()
 
             # Assert
-            expect(validationErrors['myArray[0].arrayProperty']).toBeDefined()
-            expect(validationErrors['myArray[1].arrayProperty']).toBeDefined()
-            
-        it 'should set found errors to errors property of each item of array, with parent key', ->
-            # Arrange
-            ArrayItemType = ->
-                model = 
-                    arrayProperty: undefined
+            expect(isValid).toEqual false
+            expect(model.myArray()[0].arrayProperty.isValid()).toEqual false
+            expect(model.myArray()[1].arrayProperty.isValid()).toEqual false
 
-                bo.validatableModel model, { 'arrayProperty': { required: true } }
-
-            model = bo.validatableModel { myArray: [new ArrayItemType(), new ArrayItemType()] }
-
-            # Act
-            validationErrors = model.validate()
-
-            # Assert
-            expect(model.myArray[0].modelErrors()['arrayProperty']).toBeDefined()
-            expect(model.myArray[1].modelErrors()['arrayProperty']).toBeDefined()
-
-        it 'should validate child objects with validation rules as dot separated error keys', ->
-            # Arrange
-            model =
-                myChildProperty: 
-                    anotherProperty: undefined
-                    modelValidationRules:
-                        'anotherProperty':
-                            required: true
-
-            # Act
-            validationErrors = bo.validation.validate model
-
-            # Assert
-            expect(validationErrors['myChildProperty.anotherProperty']).toBeDefined()
-
-        it 'should set found errors to errors property if it exists on child object, with parent key', ->
-            # Arrange
-            model =
-                myChildProperty:
-                    anotherProperty: undefined
-
-                    modelValidationRules:
-                        'anotherProperty':
-                            required: true
-
-            # Act
-            validationErrors = bo.validation.validate model
-
-            # Assert
-            expect(model.myChildProperty.modelErrors['anotherProperty']).toBeDefined()
-
-        it 'should validate child observable objects with validation rules as dot separated error keys', ->
-            # Arrange
-            model =
-                myChildProperty: ko.observable
-                    anotherProperty: undefined
-                    modelValidationRules:
-                        'anotherProperty':
-                            required: true
-
-            # Act
-            validationErrors = bo.validation.validate model
-
-            # Assert
-            expect(validationErrors['myChildProperty.anotherProperty']).toBeDefined()
-
-        it 'should validate nested child objects with validation rules as dot separated error keys', ->
+        it 'should validate child objects with validation rules', ->
             # Arrange
             model = bo.validatableModel
-                myChildProperty:
-                    myOtherChildProperty:
-                        anotherProperty: undefined
-                        modelValidationRules:
-                            'anotherProperty':
-                                required: true
+                myChildProperty: 
+                    anotherProperty: ko.observable(undefined).validatable { required: true }
 
             # Act
-            validationErrors = model.validate()
+            isValid = model.validate()
 
             # Assert
-            expect(validationErrors['myChildProperty.myOtherChildProperty.anotherProperty']).toBeDefined()
+            expect(isValid).toEqual false
+            expect(model.myChildProperty.anotherProperty.isValid()).toEqual false
             
     describe 'With an observable extended to be validatable', ->
         it 'returns a value which can be read', ->
@@ -324,29 +191,7 @@ describe 'Validation:', ->
             # Assert
             expect(observable()).toEqual 456
 
-        it 'should include validation errors of property in returned errors list when validating model', ->
-            # Arrange
-            model = bo.validatableModel
-                myFirstProperty: ko.observable().extend { validatable: { required: true } }
-
-            # Act
-            validationErrors = model.validate()
-
-            # Assert
-            expect(validationErrors['myFirstProperty']).toBeDefined()
-
-        it 'should add validation errors to model errors property of containing model when validating model', ->
-            # Arrange
-            model = bo.validatableModel
-                myFirstProperty: ko.observable().extend { validatable: { required: true } }
-
-            # Act
-            model.validate()
-
-            # Assert
-            expect(model.modelErrors()['myFirstProperty']).toBeDefined()
-
-        it 'should set the errors observable of the validatable value when validating model', ->
+        it 'should set the errors observable of the validatable value when validating', ->
             # Arrange
             model = bo.validatableModel
                 myFirstProperty: ko.observable().extend { validatable: { required: true } }
@@ -381,6 +226,68 @@ describe 'Validation:', ->
 
             # Assert
             expect(model.myFirstProperty.errors().length).toBe 0
+
+    describe 'When adding server errors to validatable model', ->
+        beforeEach ->
+            @model = bo.validatableModel
+                myProperty: ko.observable('My Value').validatable { required: true }
+
+            @model.setServerErrors
+                    '*': ['A global server error'],
+                    'myProperty': ['myProperty server error']
+                    'myUnknownProperty': ['myUnknownProperty server error']
+
+        it 'should add known property errors onto a validatable property', ->
+            expect(@model.myProperty.serverErrors()).toContain 'myProperty server error'
+
+        it 'should not add errors of a known property to the model server errors', ->
+            expect(@model.serverErrors()).toNotContain 'myProperty server error'
+
+        it 'should add errors from the form property (*) to the model server errors', ->
+            expect(@model.serverErrors()).toContain 'A global server error'
+
+        it 'should add errors from unknown properties to the model server errors', ->
+            expect(@model.serverErrors()).toContain 'myUnknownProperty server error'
+
+    describe 'When clearing server errors', ->
+        beforeEach ->
+            @model = bo.validatableModel
+                myProperty: ko.observable('My Value').validatable { required: true }
+
+            # ensure server errors set
+            @model.setServerErrors
+                    '*': ['A global server error'],
+                    'myProperty': ['myProperty server error']
+                    'myUnknownProperty': ['myUnknownProperty server error']
+
+            # Now clear
+            @model.clearServerErrors()
+
+        it 'should remove server errors from validatable properties', ->
+            expect(@model.myProperty.serverErrors()).toBeAnEmptyArray()
+
+        it 'should remove all model server errors', ->
+            expect(@model.serverErrors()).toBeAnEmptyArray()
+
+    describe 'When clearing server errors by setting an empty object', ->
+        beforeEach ->
+            @model = bo.validatableModel
+                myProperty: ko.observable('My Value').validatable { required: true }
+
+            # ensure server errors set
+            @model.setServerErrors
+                    '*': ['A global server error'],
+                    'myProperty': ['myProperty server error']
+                    'myUnknownProperty': ['myUnknownProperty server error']
+
+            # Now clear
+            @model.setServerErrors {}
+
+        it 'should remove server errors from validatable properties', ->
+            expect(@model.myProperty.serverErrors()).toBeAnEmptyArray()
+
+        it 'should remove all model server errors', ->
+            expect(@model.serverErrors()).toBeAnEmptyArray()
         
     describe 'With a required validator', ->
         it 'should return true if property value is defined', ->

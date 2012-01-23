@@ -1,84 +1,69 @@
-#reference "bo.coffee"
-
-createErrorKey = (propertyName, parent) ->
-    if parent != ''
-        "#{parent}.#{propertyName}"
-    else
-        propertyName
-
 hasValue = (value) ->
     value? and value != ''
 
 emptyValue = (value) ->
     not hasValue value
 
-getValidationFailureMessage = (propertyName, propertyValue, model, ruleName, ruleOptions) ->
+getMessageCreationFunction = (name, propertyRules, ruleName) ->
     messagePropertyName = "#{ruleName}Message"
 
-    if model.modelValidationRules?[propertyName]?[messagePropertyName]?
-        model.modelValidationRules[propertyName][messagePropertyName]
-    else if propertyValue?.validationRules?[messagePropertyName]?
-        propertyValue.validationRules[messagePropertyName]
+    if propertyRules[messagePropertyName]?
+        -> propertyRules[messagePropertyName]
     else if bo.validation.rules[ruleName]?.message?
-        bo.validation.rules[ruleName].message propertyName, model, ruleOptions
+        bo.validation.rules[ruleName].message
     else
-        "#{bo.utils.fromCamelToTitleCase propertyName} validation failed" 
+        -> "#{bo.utils.fromCamelToTitleCase name} validation failed" 
 
-validateValue = (propertyName, propertyValue, propertyRules, model) ->
+validateValue = (propertyName, propertyValue, model) ->    
     errors = []
-    propertyRules = propertyRules || propertyValue?.validationRules
-    unwrappedPropertyValue = ko.utils.unwrapObservable propertyValue
-    
-    if propertyRules
-        for ruleName, ruleOptions of propertyRules when !(ruleName.endsWith 'Message')
-            if not bo.validation.rules[ruleName]?
-                throw new Error "'#{ruleName}' is not a validator. Must be defined as method on bo.validation.rules"      
 
-            isValid = bo.validation.rules[ruleName].validator(unwrappedPropertyValue, model, ruleOptions)
+    if propertyValue?
+        propertyRules = propertyValue.validationRules
+        unwrappedPropertyValue = ko.utils.unwrapObservable propertyValue
+        
+        if propertyRules
+            for ruleName, ruleOptions of propertyRules when !(ruleName.endsWith 'Message')
+                if not bo.validation.rules[ruleName]?
+                    throw "'#{ruleName}' is not a validator. Must be defined as method on bo.validation.rules"      
 
-            if not isValid
-                errors.push getValidationFailureMessage propertyName, propertyValue, model, ruleName, ruleOptions 
+                isValid = bo.validation.rules[ruleName].validator(unwrappedPropertyValue, model, ruleOptions)
+
+                if not isValid
+                    msgCreator = getMessageCreationFunction propertyName, propertyRules, ruleName
+                    errors.push msgCreator propertyName, model, ruleOptions
 
     propertyValue.errors errors if propertyValue?.errors?
-    errors
+    
+    errors.length is 0
 
 bo.validation =
-    modelProperties: ['modelErrors', 'modelValidationRules', 'validationRules', 'isValid', 'errors', 'serverErrors', 'allErrors', 'validate']
+    modelProperties: ['clearServerErrors', 'setServerErrors', 'validationRules', 'isValid', 'errors', 'serverErrors', 'allErrors', 'validate']
 
-    validate: (modelToValidate, parentProperty = '') ->
-        errors = {}
+    validate: (modelToValidate) ->
+        valid = true
 
         # Use computed to allow observable properties to be automatically validated
-        # on change, updating the errors property of the model being validated.
+        # on change.
         ko.computed ->
             model = ko.utils.unwrapObservable modelToValidate
 
-            if model?
-                modelErrors = {}
-                rules = model.modelValidationRules || {}
-                
-                for propertyName, propertyValue of model when not _(bo.validation.modelProperties).contains(propertyName)
+            if model?                
+                for propertyName, propertyValue of model when _(bo.validation.modelProperties).contains(propertyName) is false                    
                     unwrappedPropertyValue = ko.utils.unwrapObservable propertyValue
-                    errorKey = createErrorKey propertyName, parentProperty
 
-                    valueValidationErrors = validateValue propertyName, propertyValue, rules[propertyName], model
-
-                    if valueValidationErrors.length > 0
-                        errors[errorKey] = valueValidationErrors
-                        modelErrors[propertyName] = valueValidationErrors
+                    if propertyValue.validationRules?
+                        valid = (validateValue propertyName, propertyValue, model) && valid
 
                     if _.isArray unwrappedPropertyValue
-                        for arrayItem, i in unwrappedPropertyValue
-                            _.extend errors, bo.validation.validate arrayItem, "#{errorKey}[#{i}]"
+                        for arrayItem in unwrappedPropertyValue
+                            valid = (bo.validation.validate arrayItem) && valid
                     else if jQuery.isPlainObject unwrappedPropertyValue
-                        _.extend errors, bo.validation.validate unwrappedPropertyValue, errorKey
+                        valid = (bo.validation.validate unwrappedPropertyValue) && valid
 
-                if ko.isWriteableObservable model.modelErrors
-                    model.modelErrors modelErrors
-                else
-                    model.modelErrors = modelErrors
-
-        errors
+                if ko.isWriteableObservable model.isValid
+                    model.isValid valid
+            
+        valid
     
     rules:
         required: 
@@ -151,17 +136,54 @@ bo.validation =
 #  * validate -> A function that can be executed to begin the validation process for this model.
 #                Once a model has been validated it will automatically update its errors status
 #                shuld any property that has been validated be an observable that changes it values.
-bo.validatableModel = (model, modelValidationRules = {}) ->
-    model.modelErrors = ko.observable {}
-    model.isValid = ko.computed -> _.isEmpty model.modelErrors()
-    model.modelValidationRules = modelValidationRules
+bo.validatableModel = (model) ->
+    # An array of errors that apply at the model level. This property is not updated as no model
+    # level-validation logic currently exists, but is provided for symmetry with the validatable
+    # observables so consumers that are only interested in errors messages and isValid state
+    # do not need to care whether they are given a model or property.
+    model.errors = ko.observable []
 
-    model.serverErrors = ko.observable {}
+    # A boolean indicating whether or not this model is valid, only taking into account the
+    # client-side validation errors that could be detected.
+    model.isValid = ko.observable()
 
-    model.allErrors = ko.computed ->
-        _.extend {}, model.modelErrors(), model.serverErrors()
+    # Contains an array of messages that indicate a validation failure for this
+    # model, but only through server validation. The presence of server validation
+    # errors does not make this model invalid.
+    model.serverErrors = ko.observable []
 
+    # A property that is present for consistency purposes with the `validatable`
+    # extender, allowing the `validated` binding handler (and others) that deal with
+    # validation errors to look only for a single property.
+    #
+    # This property simply delegates to the `serverErrors` property, being that a model
+    # itself has no validation.
+    model.allErrors = model.serverErrors
+
+    # A function that can be executed to begin the validation process for this model.
+    # 
+    # Once a model has been validated it will automatically update its errors status
+    # should any property that has been validated be an observable that changes it values.
     model.validate = -> bo.validation.validate model
+
+    # Sets any server validation errors, errors that could not be checked client
+    # side but will stop a form being submitted / action being taken and therefore
+    # the user must be informed.
+    #
+    # The `errors` argument is an object that contains property name to server errors
+    # mappings, with all unknown property errors being flattened into a single
+    # list within this model.
+    model.setServerErrors = (errors) ->
+        for own key, value of model
+            if value?.validationRules?
+                value.serverErrors errors[key] || []
+                delete errors[key]
+
+        model.serverErrors _.flatten _.values errors
+
+    # Clears the server validation errors from this model.
+    model.clearServerErrors = ->
+        model.setServerErrors {}
 
     model
 
@@ -174,10 +196,21 @@ bo.validatableModel = (model, modelValidationRules = {}) ->
 #               according to its errors
 #  * validationRules -> The rules passed as the options of this extender, used in the validation
 #                       of this observable property.
-ko.extenders.validatable = (target, validationRules) ->
+ko.extenders.validatable = (target, validationRules = {}) ->
     target.errors = ko.observable []
+
+    # A boolean indicating whether or not this observable is valid, only taking into account the
+    # client-side validation errors that could be detected.
     target.isValid = ko.computed -> target.errors().length is 0
     target.validationRules = validationRules
+
+    # Contains an array of messages that indicate a validation failure for this
+    # property, but only through server validation. The presence of server validation
+    # errors does not make this property invalid (see `isValid`).
+    target.serverErrors = ko.observable []
+
+    target.allErrors = ko.computed ->
+        [].concat(target.errors()).concat(target.serverErrors())
 
     target
 
@@ -197,7 +230,7 @@ ko.bindingHandlers.validated =
         value = valueAccessor()
         $element = jQuery element
 
-        if value?.errors?
+        if value?.allErrors?
             $validationElement = jQuery('<span />').insertAfter $element
             ko.utils.domData.set element, 'validationElement', $validationElement
 
@@ -209,7 +242,7 @@ ko.bindingHandlers.validated =
         $validationElement = ko.utils.domData.get element, 'validationElement'
         value = valueAccessor()
         
-        if value?.errors?        
+        if value?.allErrors?        
             isEnabled = bo.utils.isElementEnabled allBindings
         
             errorMessages = value.allErrors()
