@@ -2,7 +2,7 @@
 
 describe 'Messaging', ->
     describe 'Command:', ->
-        describe 'With an newly created command', ->
+        describe 'With a newly created command', ->
             it 'has a name property', ->
                 command = new bo.Command 'Command1'
                 expect(command.name).toEqual 'Command1'
@@ -36,72 +36,143 @@ describe 'Messaging', ->
                 # Assert
                 expect(properties).toEqual { 'property': 'My Value' }
 
-    describe 'When executing a query', ->
-        it 'Makes a GET request to the query URL with name of query', ->
-            # Arrange			
+    describe 'When executing a single query', ->
+        beforeEach ->       
             bo.messaging.config.query.url = "/ExecuteMyQuery/?query.name=$queryName&query.values=$queryValues"
             bo.messaging.config.query.optionsParameterName = "myOptions"
 
-            @server.respondWith "GET", "/ExecuteMyQuery/?query.name=My Query&query.values={}", [200, { "Content-Type": "application/json" },'{}']
+            @promise = bo.messaging.query 'My Query', { id: 3456 }
 
-            callback = @spy()
+            @successCallback = @spy()
+            @promise.then @successCallback
 
-            # Act
-            promise = bo.messaging.query 'My Query'
-            promise.then callback
+            @failureCallback = @spy()
+            @promise.fail @failureCallback
+                
+        describe 'that succeeds', ->
+            beforeEach ->  
+                @server.respondWith "GET", '/ExecuteMyQuery/?query.name=My Query&query.values={"id":3456}', [200, { "Content-Type": "application/json" },'{ "resultProperty": 5 }']
+                @server.respond()   
 
-            @server.respond()
+            it 'should resolve the promise with the result', ->
+                expect(@successCallback).toHaveBeenCalledWith { resultProperty: 5 }
 
-            # Assert
-            expect(callback).toHaveBeenCalled()
+            it 'should publish a queryExecuting message', ->
+                expect("queryExecuting:My Query").toHaveBeenPublishedWith
+                    name: 'My Query'
+                    values: { id: 3456 }          
 
-        it 'Should publish a message with the query on start of execution', ->
-            # Act
-            bo.messaging.query 'My Query'
+            it 'should publish a queryResultReceived message', ->
+                expect("queryResultReceived:My Query").toHaveBeenPublishedWith
+                    name: 'My Query'
+                    values: { id: 3456 }
+                    result: { resultProperty: 5 }
+                    hasFailed: false
 
-            # Assert
-            expect("queryExecuting:My Query").toHaveBeenPublishedWith
-                name: 'My Query'
-                options: {}
+            it 'should publish a queryExecuted message', ->
+                expect("queryExecuted:My Query").toHaveBeenPublishedWith
+                    name: 'My Query'
+                    values: { id: 3456 }
+                    result: { resultProperty: 5 }
+                    hasFailed: false
+                
+        describe 'that fails', ->
+            beforeEach ->  
+                @server.respondWith "GET", "/ExecuteMyQuery/?query.name=My Query&query.values={}", [500, { "Content-Type": "application/json" },'{}']
+                @server.respond()  
 
-        it 'Should publish a message with the query on successful completion of the query', ->
-            # Arrange
-            bo.messaging.config.query.url = "/ExecuteMyQuery/?query.name=$queryName&query.values=$queryValues"
-            bo.messaging.config.query.optionsParameterName = "myOptions"
+            it 'should reject the promise', ->
+                expect(@failureCallback).toHaveBeenCalled()
 
-            @server.respondWith "GET", "/ExecuteMyQuery/?query.name=My Query&query.values={}", [200, { "Content-Type": "application/json" },'{}']
+            it 'should publish a queryExecuting message', ->
+                expect("queryExecuting:My Query").toHaveBeenPublishedWith
+                    name: 'My Query'
+                    values: { id: 3456 }              
 
-            # Act
-            bo.messaging.query 'My Query'
-            @server.respond()
+            it 'should publish a queryResultReceived message indicating failure', ->
+                expect("queryResultReceived:My Query").toHaveBeenPublishedWith
+                    name: 'My Query'
+                    values: { id: 3456 }
+                    result: undefined
+                    hasFailed: true            
 
-            # Assert
-            expect("queryExecuted:My Query").toHaveBeenPublishedWith
-                name: 'My Query'
-                options: {}
+            it 'should publish a queryFailed message indicating failure', ->
+                expect("queryFailed:My Query").toHaveBeenPublishedWith
+                    name: 'My Query'
+                    values: { id: 3456 }
+                    result: undefined
+                    hasFailed: true
 
-    describe 'When executing a command', ->
-        it 'Should make a POST request to the command URL with name of command', ->
-            # Arrange			
+    describe 'When executing a single command', ->
+        beforeEach ->       
             bo.messaging.config.command.url = "/DoCommand/$commandName"
             bo.messaging.config.command.optionsParameterName = "myOptions"
 
-            @server.respondWith "POST", "/DoCommand/My Command", [200, { "Content-Type": "application/json" },'{}']
+            @command = new bo.Command 'My Command', { id: 3456 }
 
-            callback = @spy()
+            @promise = bo.messaging.command @command
 
-            command = new bo.Command 'My Command'
-            command.id = 3456
+            @successCallback = @spy()
+            @promise.then @successCallback
 
-            # Act
-            promise = bo.messaging.command command
-            promise.then callback
+            @failureCallback = @spy()
+            @promise.fail @failureCallback
+                
+        describe 'that succeeds', ->
+            beforeEach ->  
+                @server.respondWith "POST", "/DoCommand/My Command", [200, { "Content-Type": "application/json" },'{ "resultProperty": 5}']
+                @server.respond()   
 
-            @server.respond()
+            it 'should resolve the promise with the result', ->
+                expect(@successCallback).toHaveBeenCalledWith { resultProperty: 5 }
 
-            # Assert
-            expect(callback).toHaveBeenCalled()
+            it 'should publish a commandExecuting message', ->
+                expect("commandExecuting:My Command").toHaveBeenPublishedWith
+                    name: 'My Command'
+                    values: { id: 3456 }          
 
+            it 'should publish a commandResultReceieved message', ->
+                expect("commandResultReceived:My Command").toHaveBeenPublishedWith
+                    name: 'My Command'
+                    values: { id: 3456 },
+                    result: { resultProperty: 5 },
+                    hasFailed: false
+
+            it 'should publish a commandExecuted message', ->
+                expect("commandExecuted:My Command").toHaveBeenPublishedWith
+                    name: 'My Command', 
+                    values: { id: 3456 }
+                    result: { resultProperty: 5 },
+                    hasFailed: false
+                
+        describe 'that fails', ->
+            beforeEach ->  
+                @server.respondWith "POST", "/DoCommand/My Command", [500, { "Content-Type": "application/json" },'{}']
+                @server.respond()  
+
+            it 'should reject the promise', ->
+                expect(@failureCallback).toHaveBeenCalled()
+
+            it 'should publish a commandExecuting message', ->
+                expect("commandExecuting:My Command").toHaveBeenPublishedWith
+                    name: 'My Command'
+                    values: { id: 3456 }              
+
+            it 'should publish a commandResultReceieved message indicating failure', ->
+                expect("commandResultReceived:My Command").toHaveBeenPublishedWith
+                    name: 'My Command'
+                    values: { id: 3456 },
+                    result: undefined,
+                    hasFailed: true            
+
+            it 'should publish a commandFailed message indicating failure', ->
+                expect("commandFailed:My Command").toHaveBeenPublishedWith
+                    name: 'My Command'
+                    values: { id: 3456 },
+                    result: undefined,
+                    hasFailed: true
+
+    describe 'When executing a batch of commands', ->
         it 'Should make a POST request to the batch URL with all commands', ->
             bo.messaging.config.command.batchUrl = "/SendBatch"
             bo.messaging.config.command.optionsParameterName = "myOptions"
@@ -124,20 +195,3 @@ describe 'Messaging', ->
 
             # Assert
             expect(callback).toHaveBeenCalled()
-
-        it 'Should publish a message on successful completion of the command', ->
-            # Arrange
-            bo.messaging.config.command.url = "/DoCommand/$commandName"
-            bo.messaging.config.command.optionsParameterName = "myOptions"
-
-            @server.respondWith "POST", "/DoCommand/My Command", [200, { "Content-Type": "application/json" },'{}']
-
-            # Act
-            bo.messaging.command  new bo.Command 'My Command'
-
-            @server.respond()
-
-            # Assert
-            expect("commandExecuted:My Command").toHaveBeenPublishedWith
-                name: 'My Command', 
-                options: {}

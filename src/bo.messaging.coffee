@@ -34,7 +34,9 @@ bo.messaging.config =
 bo.messaging.query = (queryName, options = {}, ajaxOptions = {}) ->
     bo.arg.ensureDefined queryName, "queryName"
     
-    bo.bus.publish "queryExecuting:#{queryName}", { name: queryName, options: options }
+    bo.bus.publish "queryExecuting:#{queryName}", { name: queryName, values: options }
+
+    queryDeferred = new jQuery.Deferred()
 
     request = _.extend {}, ajaxOptions, 
                     url: bo.messaging.config.query.url.replace("$queryValues", ko.toJSON options).replace("$queryName", queryName)
@@ -44,10 +46,29 @@ bo.messaging.query = (queryName, options = {}, ajaxOptions = {}) ->
     
     ajaxPromise = jQuery.ajax request
 
-    ajaxPromise.done ->
-      bo.bus.publish "queryExecuted:#{queryName}", { name: queryName, options: options }
+    doResolve = (result, hasFailed) ->
+        messageArgs = 
+            name: queryName 
+            values: options
+            result: result
+            hasFailed: hasFailed
+      
+        shouldContinue = bo.bus.publish "queryResultReceived:#{queryName}", messageArgs 
 
-    ajaxPromise
+        if shouldContinue and messageArgs.hasFailed is false
+            bo.bus.publish "queryExecuted:#{queryName}", messageArgs
+            queryDeferred.resolve result
+        else
+            bo.bus.publish "queryFailed:#{queryName}", messageArgs
+            queryDeferred.reject result
+
+    ajaxPromise.done (result) ->
+        doResolve result, false
+
+    ajaxPromise.fail (result) ->
+        doResolve undefined, true
+
+    queryDeferred.promise()
 
 bo.messaging.queryDownload = (queryName, contentType, options = {}, ajaxOptions = {}) ->
     bo.arg.ensureDefined queryName, "queryName"
@@ -70,24 +91,46 @@ bo.messaging.queryDownload = (queryName, contentType, options = {}, ajaxOptions 
 
     document.body.removeChild form
 
-
 bo.messaging.command = (command) ->
     bo.arg.ensureDefined command, "command"
 
     commandName = command.name
-    commandProperties = command.properties()
+    commandValues = ko.toJS command.properties()
+
+    bo.bus.publish "commandExecuting:#{commandName}", { name: commandName, values: commandValues }
+
+    commandDeferred = new jQuery.Deferred()
 
     ajaxPromise = jQuery.ajax
                     url: bo.messaging.config.command.url.replace("$commandName", commandName)
                     type: "POST"
-                    data: ko.toJSON { command: { name: commandName, values: commandProperties } }
+                    data: ko.toJSON { command: { name: commandName, values: commandValues } }
                     dataType: "json"
                     contentType: "application/json; charset=utf-8"
 
-    ajaxPromise.done ->
-      bo.bus.publish "commandExecuted:#{commandName}", { name: commandName, options: commandProperties }
+    doResolve = (result, hasFailed) ->
+        messageArgs = 
+            name: commandName 
+            values: commandValues
+            result: result
+            hasFailed: hasFailed
+      
+        shouldContinue = bo.bus.publish "commandResultReceived:#{commandName}", messageArgs 
 
-    ajaxPromise
+        if shouldContinue and messageArgs.hasFailed is false
+            bo.bus.publish "commandExecuted:#{commandName}", messageArgs
+            commandDeferred.resolve result
+        else
+            bo.bus.publish "commandFailed:#{commandName}", messageArgs
+            commandDeferred.reject result
+
+    ajaxPromise.done (result) ->
+        doResolve result, false
+
+    ajaxPromise.fail (result) ->
+        doResolve undefined, true
+
+    commandDeferred.promise()
 
 bo.messaging.commands = (commands) ->
     bo.arg.ensureDefined commands, "commands"
