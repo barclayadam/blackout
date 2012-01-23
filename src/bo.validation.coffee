@@ -37,8 +37,6 @@ validateValue = (propertyName, propertyValue, model) ->
     errors.length is 0
 
 bo.validation =
-    modelProperties: ['clearServerErrors', 'setServerErrors', 'validationRules', 'isValid', 'errors', 'serverErrors', 'allErrors', 'validate']
-
     validate: (modelToValidate) ->
         valid = true
 
@@ -124,18 +122,6 @@ bo.validation =
 
 # Given a model and a set of (optional) model validation rules will add the necessary
 # methods and observables to make the model validatable.
-#
-# This method adds the following methods & properties to the passed in model:
-# 
-#  * modelErrors -> An observable object that will contain any errors of the properties
-#                   of this model (e.g. { 'myProperty' : ['Error 1', 'Error 2'] })
-#  * isValid -> An observable that indicates whether this model is valid, based on the model
-#               errors discussed previously.
-#  * modelValidationRules -> The validation rules passed as the second argument, used
-#                            as the rules for the properties of this model when validating.
-#  * validate -> A function that can be executed to begin the validation process for this model.
-#                Once a model has been validated it will automatically update its errors status
-#                shuld any property that has been validated be an observable that changes it values.
 bo.validatableModel = (model) ->
     # An array of errors that apply at the model level. This property is not updated as no model
     # level-validation logic currently exists, but is provided for symmetry with the validatable
@@ -158,7 +144,8 @@ bo.validatableModel = (model) ->
     #
     # This property simply delegates to the `serverErrors` property, being that a model
     # itself has no validation.
-    model.allErrors = model.serverErrors
+    model.allErrors = ko.computed ->
+        [].concat(model.errors()).concat(model.serverErrors())
 
     # A function that can be executed to begin the validation process for this model.
     # 
@@ -183,7 +170,7 @@ bo.validatableModel = (model) ->
 
     # Clears the server validation errors from this model.
     model.clearServerErrors = ->
-        model.setServerErrors {}
+        model.setServerErrors {}        
 
     model
 
@@ -217,6 +204,25 @@ ko.extenders.validatable = (target, validationRules = {}) ->
 ko.subscribable.fn.validatable = (validationRules) ->
     ko.extenders.validatable @, validationRules
     @
+
+ko.bindingHandlers.validationSummary =
+    init: (element, valueAccessor) ->
+        model = ko.utils.unwrapObservable valueAccessor()
+
+    update: (element, valueAccessor) ->
+        model = ko.utils.unwrapObservable valueAccessor()
+
+        errorsToShow = [].concat model.allErrors()
+
+        for own key, value of model
+            if value.allErrors?
+                if not value.__errorsShown__?
+                    value.__errorsShown__ = ko.observable()
+
+                if not value.__errorsShown__()
+                    ko.utils.arrayPushAll errorsToShow, value.allErrors()
+
+        element.innerHTML = errorsToShow.join '<br />'
                         
 ko.bindingHandlers.validated =
     options:
