@@ -23,7 +23,7 @@ bo.messaging.config =
         url: "/Query/?query.name=$queryName&query.values=$queryValues"
 
     queryDownload:
-        url: "/Query/Download?query.name=$queryName&query.values=$queryValues&contentType=$contentType"
+        url: "/Query/Download?query.name=$queryName&query.values=$queryValues&contentType=$contentType&fileName=$fileName"
     
     command:
         url: "/Command"
@@ -69,13 +69,17 @@ bo.messaging.query = (queryName, options = {}, ajaxOptions = {}) ->
 
     queryDeferred.promise()
 
-bo.messaging.queryDownload = (queryName, contentType, options = {}, ajaxOptions = {}) ->
+bo.messaging.queryDownload = (queryName, contentType, fileName, options = {}, ajaxOptions = {}) ->
     bo.arg.ensureDefined queryName, "queryName"
     bo.arg.ensureDefined queryName, "contentType"
     
-    bo.bus.publish "queryExecuting:#{queryName}", { name: queryName, options: options }
+    bo.bus.publish "queryExecuting:#{queryName}", { name: queryName, values: options }
 
-    url = bo.messaging.config.queryDownload.url.replace("$queryValues", ko.toJSON options).replace("$queryName", queryName).replace("$contentType", contentType)
+    url = bo.messaging.config.queryDownload.url
+        .replace("$queryValues", ko.toJSON options)
+        .replace("$queryName", queryName)
+        .replace("$contentType", contentType)
+        .replace("$fileName", fileName)
 
     form = document.createElement "form"
     document.body.appendChild form
