@@ -23,6 +23,7 @@ src\ui\bo.ui.indeterminateCheckbox.coffee
 src\ui\bo.ui.enable.coffee   
 src\ui\bo.ui.indeterminateCheckbox.coffee 
 src\ui\bo.ui.navigation.coffee
+src\ui\bo.ui.notifications.coffee
 src\ui\bo.ui.output.coffee
 src\ui\bo.ui.pager.coffee
 src\ui\bo.ui.splitter.coffee

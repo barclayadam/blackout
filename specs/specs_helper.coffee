@@ -51,17 +51,21 @@ beforeEach ->
 
     @addMatchers
         toHaveClass: (className) ->
-            @message = -> "Expected #{@actual.selector} to have CSS class '#{className}'."
+            @message = -> "Expected '#{@actual.selector}' to have CSS class '#{className}'."
             @actual.hasClass className
 
         toNotHaveClass: (className) ->
-            @message = -> "Expected #{@actual.selector} to not have CSS class '#{className}'."
+            @message = -> "Expected '#{@actual.selector}' to not have CSS class '#{className}'."
             (@actual.hasClass className) is false
 
         toBeVisible: ->
+            @message = -> "Expected '#{@actual.selector}' to be visible."
+
             @actual.is ":visible"
 
         toBeHidden: ->
+            @message = -> "Expected '#{@actual.selector}' to be hidden."
+
             @actual.is ":hidden"
 
         toBeSelected: ->
@@ -71,11 +75,11 @@ beforeEach ->
             @actual.is ":checked"
 
         toBeEmpty: ->
-            @message = -> "Expected #{@actual.selector} to be empty but was #{@actual.html()}."
+            @message = -> "Expected '#{@actual.selector}' to be empty but was #{@actual.html()}."
             @actual.is ":empty"
 
         toExist: ->
-            @message = -> "Expected #{@actual.selector} to exist."
+            @message = -> "Expected '#{@actual.selector}' to exist."
             @actual.size() > 0
 
         toHaveAttr: (attributeName, expectedAttributeValue) ->
@@ -90,6 +94,8 @@ beforeEach ->
             @actual.html() is browserTagCaseIndependentHtml html
 
         toHaveText: (text) ->
+            @message = -> "Expected #{@actual.selector} to be have text '#{text}', but was '#{@actual.text()}'."
+
             if text and jQuery.isFunction(text.test)
                 text.test @actual.text()
             else
