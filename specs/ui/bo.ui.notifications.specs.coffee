@@ -58,3 +58,16 @@ describe 'Notifications', ->
             it 'should make the element visible', ->
                 expect(@notificationElement).toBeVisible()
 
+        describe 'when a notification is published without text', ->
+            beforeEach ->
+                bo.notifications.success()
+
+            it 'should not add a success class', ->
+                expect(@notificationElement).toNotHaveClass 'success'
+
+            it 'should set the text of the notification area to the text of the notification', ->
+                expect(@notificationElement).toHaveText ''
+
+            it 'should not make the element visible', ->
+                expect(@notificationElement).toBeHidden()
+

@@ -46,9 +46,14 @@ ko.bindingHandlers.notification =
 
         bo.bus.subscribe 'notification', (msg) ->
             $element.removeClass lastNotification if lastNotification?
-            $element.addClass msg.level
 
-            $element.text(msg.text).hide().slideDown(350)
-            setTimeout (-> $element.fadeOut()), 3500
+            if msg.text
+                $element.addClass msg.level
 
-            lastNotification = msg.level
+                $element.text(msg.text).slideDown(350)
+                setTimeout (-> $element.fadeOut()), 3500
+
+                lastNotification = msg.level
+            else
+                $element.text('').hide()
+            
