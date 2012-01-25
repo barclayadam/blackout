@@ -29,22 +29,25 @@ class bo.Bus
     # subscription to the named event meaning no further events will be published
     # to the give function.
     subscribe: (messageName, func) ->
-        bo.arg.ensureString messageName, 'messageName'
-        bo.arg.ensureFunction func, 'func'
+        if _.isArray messageName
+            @subscribe(message, func) for message in messageName
+        else
+            bo.arg.ensureString messageName, 'messageName'
+            bo.arg.ensureFunction func, 'func'
 
-        @_initBus()
+            @_initBus()
 
-        @_subscribers[messageName] = {} if @_subscribers[messageName] is undefined
+            @_subscribers[messageName] = {} if @_subscribers[messageName] is undefined
 
-        @_currentToken = ++@_currentToken
-        tokenToUse = @_currentToken
+            @_currentToken = ++@_currentToken
+            tokenToUse = @_currentToken
 
-        @_subscribers[messageName][tokenToUse] = func
+            @_subscribers[messageName][tokenToUse] = func
 
-        {
-            unsubscribe: =>
-                delete @_subscribers[messageName][tokenToUse]
-        }
+            {
+                unsubscribe: =>
+                    delete @_subscribers[messageName][tokenToUse]
+            }
 
     # Publishes the given named message to any subscribed listeners, passing 
     # any arguments on to each subscriber as arguments to the subscription call

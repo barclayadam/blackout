@@ -13,6 +13,17 @@ describe 'Bus', ->
 
             expect(spy).toHaveBeenCalledOnce()
 
+        it 'Allows subscribing to multiple named events', ->
+            spy = @spy()
+
+            @bus.subscribe ["myEvent", "myOtherEvent"], spy
+
+            @bus.publish "myEvent"
+            expect(spy).toHaveBeenCalledOnce()
+
+            @bus.publish "myOtherEvent"
+            expect(spy).toHaveBeenCalledTwice()
+
         it 'Allows unsubscribing from named event using returned token', ->
             spy = @spy()
 
