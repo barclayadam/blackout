@@ -6,9 +6,7 @@ bo.utils.addTemplate 'pagerTemplate',
 	</ol>
 
     <ol class="pageLinks" data-bind="foreach: pages">
-        <li data-bind="click: select, css: { 'is-selected': isSelected, 'page': true }">
-         <a href="#" data-bind="text: pageNumber"></a>
-        </li>
+        <li data-bind="click: select, css: { 'is-selected': isSelected, 'page': true }"><a href="#" data-bind="text: pageNumber"></a></li>
     </ol>
 
     <ol class="nextLinks">
