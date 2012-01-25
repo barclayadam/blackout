@@ -47,6 +47,9 @@ beforeEach ->
         toHaveNotBeenPublished: ->
             not (publishSpy.calledWith @actual)
 
+        toHaveNotBeenPublishedWith: (args) ->
+            publishSpy.neverCalledWith @actual, args
+
     @fixture = jQuery('<div id="fixture" />').appendTo('body')
 
     @addMatchers

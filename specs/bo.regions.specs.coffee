@@ -101,7 +101,7 @@ describe 'RegionManager:', ->
             # Assert
             expect(@manager.isLoading()).toBe false
 
-    describe 'Route changed event for multiple registered part, when no current parts', ->
+    describe 'Activating multiple registered part, when no current parts', ->
         beforeEach ->
             @homePart = new bo.Part 'Home', { templateName: 'Dummy' }
             @helpPart = new bo.Part 'Help', { templateName: 'Dummy', region: 'help' }
@@ -179,7 +179,7 @@ describe 'RegionManager:', ->
             # Assert
             expect(@manager.isLoading()).toBe false
 
-    describe 'Route changed event for single registered part, when current parts exist', ->
+    describe 'Activating a single registered part, when current parts exist', ->
         beforeEach ->
             @homePart = new bo.Part 'Home', { viewModel: { isDirty: false }, templateName: 'Dummy' }
             @contactUsPart = new bo.Part 'Contact Us', { viewModel: { isDirty: false }, templateName: 'Dummy' }
@@ -251,6 +251,26 @@ describe 'RegionManager:', ->
             # Assert
             expect(contactUsActivateSpy).toHaveBeenCalled()
 
+    describe 'When a part activation results in region manager having differents parts activated', ->
+        beforeEach ->
+            @manager = new bo.RegionManager()
+
+            @errorPart = new bo.Part 'Error', { templateName: 'Dummy' }
+            @homePart = new bo.Part 'Home', 
+                templateName: 'Dummy'
+                viewModel:
+                    show: () =>
+                        @manager.activate [@errorPart]
+
+            @manager.activate [@homePart]
+
+        it 'should set the new parts as the current parts', ->
+            expect(@manager.currentParts()['main']).toBe @errorPart
+
+        it 'should not publish a partsActivated message for the original activation', ->
+            expect('partsActivated').toHaveNotBeenPublishedWith
+                parts: [@homePart]
+
     describe 'When reactivate event occurs when current parts exist', ->
         beforeEach ->
             @homePart = new bo.Part 'Home', { templateName: 'Dummy' }
@@ -261,7 +281,6 @@ describe 'RegionManager:', ->
             parameters = { id: 67 }
             homeActivateSpy = @spy @homePart, 'activate'
             @manager.activate [@homePart], parameters
-
             expect(homeActivateSpy).toHaveBeenCalled()
 
             # Act

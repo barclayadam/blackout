@@ -6,6 +6,8 @@ class bo.RegionManager
     @reactivateEvent: "reactivateParts"
 
     constructor: () ->
+        @_activatingParts = undefined
+
         @currentParts = ko.observable {}
         @isLoading = ko.observable false
 
@@ -27,6 +29,8 @@ class bo.RegionManager
 
     activate: (parts, parameters = {}) ->
         if @canDeactivate()
+            @_activatingParts = parts
+
             bo.bus.publish "partsActivating", { parts: parts }
             
             @isLoading true
@@ -40,11 +44,12 @@ class bo.RegionManager
                 currentPartsToSet[part.region] = part
 
             jQuery.when.apply(@, partPromises).done =>
-                @currentParts currentPartsToSet
-                @currentParameters = parameters
-                @isLoading false
+                if @_activatingParts is parts
+                    @currentParts currentPartsToSet
+                    @currentParameters = parameters
+                    @isLoading false
 
-                bo.bus.publish "partsActivated", { parts: parts }
+                    bo.bus.publish "partsActivated", { parts: parts }
 
     _deactivateAll: ->
         part.deactivate() for region, part of @currentParts()
