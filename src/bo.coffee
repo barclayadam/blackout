@@ -4,19 +4,19 @@ window.bo.ui = {}
 window.bo.arg =
     ensureDefined: (argument, argumentName) ->
         if argument is undefined
-            throw "Argument '#{argumentName}' must be defined."
+            throw new Error "Argument '#{argumentName}' must be defined."
 
     ensureFunction: (argument, argumentName) ->
        if _.isFunction argument is false
-            throw "Argument '#{argumentName}' must be a function. '#{argument}' was passed."
+            throw new Error "Argument '#{argumentName}' must be a function. '#{argument}' was passed."
             
     ensureString: (argument, argumentName) ->
         if typeof argument isnt 'string'
-            throw "Argument '#{argumentName}' must be a string. '#{argument}' was passed."
+            throw new Error "Argument '#{argumentName}' must be a string. '#{argument}' was passed."
             
     ensureNumber: (argument, argumentName) ->
         if typeof argument isnt 'number'
-            throw "Argument '#{argumentName}' must be a number. '#{argument}' was passed."
+            throw new Error "Argument '#{argumentName}' must be a number. '#{argument}' was passed."
 
 window.bo.exportSymbol = (path, object) ->
     tokens = path.split '.'

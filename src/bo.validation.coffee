@@ -24,7 +24,7 @@ validateValue = (propertyName, propertyValue, model) ->
         if propertyRules
             for ruleName, ruleOptions of propertyRules when !(ruleName.endsWith 'Message')
                 if not bo.validation.rules[ruleName]?
-                    throw "'#{ruleName}' is not a validator. Must be defined as method on bo.validation.rules"      
+                    throw new Error "'#{ruleName}' is not a validator. Must be defined as method on bo.validation.rules"      
 
                 isValid = bo.validation.rules[ruleName].validator(unwrappedPropertyValue, model, ruleOptions)
 

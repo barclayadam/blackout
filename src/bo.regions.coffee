@@ -75,7 +75,7 @@ ko.bindingHandlers.regionManager =
 
 ko.bindingHandlers.region =
     init: (element, valueAccessor, allBindingsAccessor, viewModel) ->
-        throw 'A region binding must be enclosed within a regionManager binding.' if not (viewModel instanceof bo.RegionManager)
+        throw new Error 'A region binding must be enclosed within a regionManager binding.' if not (viewModel instanceof bo.RegionManager)
 
         { "controlsDescendantBindings": true }
 
