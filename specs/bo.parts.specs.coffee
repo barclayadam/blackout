@@ -106,7 +106,7 @@ describe 'Parts:', ->
                 @server.respond()
 
                 # Assert
-                expect(addTemplateSpy).toHaveBeenCalledWith 'Part-Home', '<div id="test" />'
+                expect(addTemplateSpy).toHaveBeenCalledWith 'part-home', '<div id="test" />'
 
     describe 'When activating a part with a realised instance of a viewModel', ->   
         it 'should call the initialise function of the viewModel', ->
