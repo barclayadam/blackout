@@ -20,7 +20,7 @@ window.bo.utils =
         value = ko.utils.unwrapObservable value
 
         if value 
-            value = value.replace /\s/g, '-'
+            value = value.replace /[ /\\]/g, '-'
             value = value.toLowerCase()
             value
 

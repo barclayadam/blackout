@@ -23,6 +23,13 @@ describe 'Utils', ->
             # Assert
             expect(cssClass).toEqual 'my-class'
 
+        it 'should replace special characters with dashes', ->
+            # Act
+            cssClass = bo.utils.toCssClass 'My/Class\\Is Great'
+
+            # Assert
+            expect(cssClass).toEqual 'my-class-is-great'
+
     describe 'When joining observables', ->
         it 'should set all observables to be the value of the first parameter', ->
             # Arrange
