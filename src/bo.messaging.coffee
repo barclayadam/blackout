@@ -138,11 +138,36 @@ bo.messaging.command = (command) ->
 bo.messaging.commands = (commands) ->
     bo.arg.ensureDefined commands, "commands"
 
-    jQuery.ajax
-        url: bo.messaging.config.command.batchUrl
-        type: "POST"
-        data: ko.toJSON
-            commands: (ko.utils.arrayMap commands, (c) ->
-                { name: c.name, values: c.properties() })
-        dataType: "json"
-        contentType: "application/json; charset=utf-8"
+    commandDeferred = new jQuery.Deferred()
+    commandsToSend = ko.utils.arrayMap commands, (c) ->
+                        { name: c.name, values: c.properties() }
+
+    ajaxPromise = jQuery.ajax
+                    url: bo.messaging.config.command.batchUrl
+                    type: "POST"
+                    data: ko.toJSON { commands: commandsToSend }
+                    dataType: "json"
+                    contentType: "application/json; charset=utf-8"
+
+    doResolve = (result, hasFailed) ->
+        messageArgs = 
+            commands: commandsToSend
+            result: result
+            hasFailed: hasFailed
+      
+        shouldContinue = bo.bus.publish "commandResultReceived:Batch", messageArgs 
+
+        if shouldContinue and messageArgs.hasFailed is false
+            bo.bus.publish "commandExecuted:Batch", messageArgs
+            commandDeferred.resolve result
+        else
+            bo.bus.publish "commandFailed:Batch", messageArgs
+            commandDeferred.reject result
+
+    ajaxPromise.done (result) ->
+        doResolve result, false
+
+    ajaxPromise.fail (result) ->
+        doResolve undefined, true
+
+    commandDeferred.promise()
