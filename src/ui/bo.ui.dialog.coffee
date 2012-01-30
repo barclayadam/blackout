@@ -62,8 +62,20 @@ bo.utils.addTemplate 'confirmationDialog',  '''
 '''
 
 class ConfirmationDialog
-    constructor: (@questionText) ->
+    # Constructs a new confirmation dialog, using the title and question
+    # text provided.
+    #
+    # If only one parameter is passed then no title will be set, else the first
+    # parameter will be used as the dialog's title, and the second as the question
+    # text.
+    constructor: (title, questionText) ->
         @_deferred = new jQuery.Deferred()
+
+        if questionText?
+            @title = title
+            @questionText = questionText
+        else
+            @questionText = title
 
     promise: ->
         @_deferred.promise()
@@ -72,6 +84,11 @@ class ConfirmationDialog
         _this = @
 
         {
+            title: @title
+
+            width: 500,
+            height: 250
+
             buttons:
                 'Yes': ->
                     _this._deferred.resolve()
@@ -84,8 +101,8 @@ class ConfirmationDialog
                     jQuery(@).dialog "close" 
         }
 
-bo.Dialog.confirm = (questionText) ->
-    dialogModel = new ConfirmationDialog questionText
+bo.Dialog.confirm = (title, questionText) ->
+    dialogModel = new ConfirmationDialog title, questionText
 
     confirmationDialog = new bo.Dialog new bo.Part 'Confirmation', { templateName: 'confirmationDialog', viewModel: dialogModel }
     confirmationDialog.show()
