@@ -2,7 +2,7 @@
 # maintaining all 'parts' within the application and to provide the plumbing required
 # to support navigation throughout the application by using the routing mechanism
 # to load parts of the application.
-class bo.RegionManager
+class bo.RegionManager extends bo.Bus
     @reactivateEvent: "reactivateParts"
 
     constructor: () ->
@@ -31,7 +31,7 @@ class bo.RegionManager
         if @canDeactivate()
             @_activatingParts = parts
 
-            bo.bus.publish "partsActivating", { parts: parts }
+            @publish "partsActivating", { parts: parts }
             
             @isLoading true
             @_deactivateAll()
@@ -49,7 +49,7 @@ class bo.RegionManager
                     @currentParameters = parameters
                     @isLoading false
 
-                    bo.bus.publish "partsActivated", { parts: parts }
+                    @publish "partsActivated", { parts: parts }
 
     _deactivateAll: ->
         part.deactivate() for region, part of @currentParts()
@@ -67,17 +67,18 @@ ko.bindingHandlers.regionManager =
         regionManager.isLoading.subscribe (isLoading) ->
             ko.utils.toggleDomNodeCssClass element, 'is-loading', isLoading
 
-    update: (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) ->
-        regionManager = ko.utils.unwrapObservable valueAccessor()
-
-        valueAccessor = currentPartsValueAccessor regionManager
-        ko.bindingHandlers.template.update element, valueAccessor, allBindingsAccessor, regionManager, bindingContext
+        # Use message subscription instead of update as can reactivate same parts which does not
+        # cause update to be called as currentParts does not notify of changes.
+        regionManager.subscribe 'partsActivated', ->
+            ko.bindingHandlers.template.update element, valueAccessor, allBindingsAccessor, regionManager, bindingContext
+        
+        { "controlsDescendantBindings" : true }
 
 ko.bindingHandlers.region =
     init: (element, valueAccessor, allBindingsAccessor, viewModel) ->
         throw new Error 'A region binding must be enclosed within a regionManager binding.' if not (viewModel instanceof bo.RegionManager)
 
-        { "controlsDescendantBindings": true }
+        { "controlsDescendantBindings" : true }
 
     update: (element, valueAccessor, allBindingsAccessor, viewModel) ->
         region = valueAccessor()

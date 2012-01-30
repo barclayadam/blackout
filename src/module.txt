@@ -17,7 +17,8 @@ src\ui\bo.ui.breadcrumb.coffee
 src\ui\bo.ui.button.coffee   
 src\ui\bo.ui.columnSort.coffee   
 src\ui\bo.ui.context.coffee 
-src\ui\bo.ui.datepicker.coffee 
+src\ui\bo.ui.datepicker.coffee  
+src\ui\bo.ui.dialog.coffee
 src\ui\bo.ui.draganddrop.coffee
 src\ui\bo.ui.indeterminateCheckbox.coffee 
 src\ui\bo.ui.enable.coffee   

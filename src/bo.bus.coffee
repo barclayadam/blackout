@@ -50,17 +50,17 @@ class bo.Bus
             }
 
     # Publishes the given named message to any subscribed listeners, passing 
-    # any arguments on to each subscriber as arguments to the subscription call
+    # the `messageData` argument on to each subscriber as an arguments to the subscription call
     #
     # (e.g. 
-    #    subscribe "My Event", (x, y) ->
-    #    publish   "My Event", x, y
+    #    subscribe "My Event", (messageData) ->
+    #    publish   "My Event", messageData
     # )
     #
     # If any subscriber returns `false` then no further subscribers will be
     # notified of the event and `false` will be returned from this method, indicating
     # a failure.
-    publish: (messageName, args...) ->
+    publish: (messageName, args = {}) ->
         bo.arg.ensureString messageName, 'messageName'
 
         @_initBus()
@@ -81,7 +81,7 @@ class bo.Bus
 
         for msg in messages
             for t, subscriber of (@_subscribers[msg] || {})
-                canContinue = subscriber.apply @, args
+                canContinue = subscriber.call @, args
 
                 if canContinue is false
                     return false

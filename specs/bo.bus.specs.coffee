@@ -136,37 +136,34 @@ describe 'Bus', ->
             @bus.publish "myEvent", "My Data"
 
             expect(spy).toHaveBeenCalledWith "My Data"
-            
-        it 'Calls subscribers with multiple arguments passed to publish', ->
-            spy = @spy()
-
-            @bus.subscribe "myEvent", spy
-            @bus.publish "myEvent", "My Data", "My Other Data"
-
-            expect(spy).toHaveBeenCalledWith "My Data", "My Other Data"
 
     describe 'Given a class inheriting from Bus', ->
         class MyViewModel extends bo.Bus
-            doPublish: ->
-                @publish 'myEvent'
+            doPublish : (args) ->
+                @publish 'myEvent', args
 
         beforeEach ->
+            @localSpy = @spy()
             @viewModel = new MyViewModel()
 
-        it 'should publish to local listeners', ->
-            # Arrange
-            spy = @spy()
-            @viewModel.subscribe 'myEvent', spy
+            @viewModel.subscribe 'myEvent', @localSpy
 
-            # Act
-            @viewModel.doPublish()
+        describe 'when publishing without arguments', ->
+            beforeEach ->
+                @viewModel.doPublish()
 
-            # Arrange
-            expect(spy).toHaveBeenCalled()
+            it 'should publish to local listeners', ->
+                expect(@localSpy).toHaveBeenCalled()
 
-        it 'should publish to the global bus', ->
-            # Act
-            @viewModel.doPublish()
+            it 'should publish to the global bus', ->
+                expect('myEvent').toHaveBeenPublished() # To 'global' bus
 
-            # Arrange
-            expect('myEvent').toHaveBeenPublished() # To 'global' bus
+        describe 'when publishing with arguments', ->
+            beforeEach ->
+                @viewModel.doPublish { myProperty: 'a value'}
+
+            it 'should publish to local listeners', ->
+                expect(@localSpy).toHaveBeenCalledWith { myProperty: 'a value'}
+
+            it 'should publish to the global bus', ->
+                expect('myEvent').toHaveBeenPublishedWith { myProperty: 'a value'} # To 'global' bus

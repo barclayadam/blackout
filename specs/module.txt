@@ -12,6 +12,7 @@ specs\bo.utils.specs.coffee
 specs\bo.validation.specs.coffee   
 specs\bo.viewmodel.specs.coffee  
 specs\ui\bo.ui.columnSort.specs.coffee  
+specs\ui\bo.ui.dialog.specs.coffee
 specs\ui\bo.ui.enable.specs.coffee  
 specs\ui\bo.ui.notifications.specs.coffee    
 specs\ui\bo.ui.tree.specs.coffee     
