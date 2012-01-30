@@ -28,18 +28,32 @@ class bo.Dialog
 
         @_construct = ->
 
-    # Shows this dialog
-    show: ->
+    # Shows this dialog, passing the `parameters` (if any) on to the view model's
+    # `show` method, in the same manner as parameters passed as part of navigation.
+    show: (parameters) ->
         @_construct()
-        @_regionManager.activate [@part]
+        @_regionManager.activate [@part], parameters
 
         dialogOptions =
-            isModal: false
+            isModal: true
 
         if @part.viewModel.getDialogOptions?
             dialogOptions = _.extend dialogOptions, @part.viewModel.getDialogOptions()  
 
         jQuery(@_dialogElement).dialog dialogOptions
+
+    # Closes this dialog.
+    close: () ->
+        jQuery(@_dialogElement).dialog 'close'
+
+ko.bindingHandlers.closeDialog =
+    init: (element, valueAccessor) ->
+        $element = jQuery element
+        
+        $element.click ->
+            jQuery(element).parents('.bo-dialog').dialog 'close'
+
+            false
 
 bo.utils.addTemplate 'confirmationDialog',  '''
     <div class="bo-confirmation">
@@ -58,8 +72,6 @@ class ConfirmationDialog
         _this = @
 
         {
-            modal: true
-
             buttons:
                 'Yes': ->
                     _this._deferred.resolve()
@@ -71,7 +83,7 @@ class ConfirmationDialog
                     _this._deferred.reject()
                     jQuery(@).dialog "close" 
         }
-        
+
 bo.Dialog.confirm = (questionText) ->
     dialogModel = new ConfirmationDialog questionText
 

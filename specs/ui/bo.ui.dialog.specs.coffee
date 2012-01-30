@@ -1,6 +1,8 @@
 describe 'Dialog', ->
     describe 'when dialog shown with a single part', ->
         beforeEach ->
+            @parameters = { aProperty: 'my value' }
+
             @showSpy = @spy()
             @viewModel = 
                 myProperty: ko.observable ('A Value')
@@ -19,10 +21,13 @@ describe 'Dialog', ->
             '''
 
             # Act
-            @dialog.show()
+            @dialog.show @parameters
 
         it 'should call the show method of the view model', ->
             expect(@showSpy).toHaveBeenCalled()
+
+        it 'should pass the parameters to show to the show method of the view model', ->
+            expect(@showSpy).toHaveBeenCalledWith @parameters
 
         it 'should show the dialog on-screen', ->
             # This test is a little brittle, just checking dialog contents have been shown
