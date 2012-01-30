@@ -21,7 +21,7 @@ class bo.Part extends bo.Bus
 
         @title = @options.title || name
         @region = @options.region || Part.region
-        @templateName = @options.templateName || "Part-#{@name}"
+        @templateName = @options.templateName || bo.utils.toCssClass "part-#{@name}"
         @templatePath = @options.templatePath || "/Templates/Get/#{@name}" if @options.templateName is undefined
         @_isTemplateLoaded = false
 
