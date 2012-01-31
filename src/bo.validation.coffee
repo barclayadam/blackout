@@ -36,6 +36,8 @@ validateValue = (propertyName, propertyValue, model) ->
     
     errors.length is 0
 
+propertiesToIgnore = ['errors', 'isValid', 'serverErrors', 'allErrors']
+
 bo.validation =
     validate: (modelToValidate) ->
         valid = true
@@ -46,7 +48,7 @@ bo.validation =
             model = ko.utils.unwrapObservable modelToValidate
 
             if model?                
-                for propertyName, propertyValue of model when _(bo.validation.modelProperties).contains(propertyName) is false                    
+                for propertyName, propertyValue of model when _(propertiesToIgnore).contains(propertyName) is false                    
                     unwrappedPropertyValue = ko.utils.unwrapObservable propertyValue
 
                     if propertyValue.validationRules?
