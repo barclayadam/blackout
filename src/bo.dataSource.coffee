@@ -202,6 +202,9 @@ class bo.DataSource extends bo.Bus
             @_setData @options.provider
             @goTo 1
 
+        if @options.initialSortOrder?
+            @sortBy @options.initialSortOrder
+
     _setupPaging: ->
         @_lastProviderOptions = -1
         @clientPagesPerServerPage = @options.serverPaging / (@options.clientPaging || @options.serverPaging)

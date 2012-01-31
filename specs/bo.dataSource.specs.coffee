@@ -149,6 +149,31 @@ describe 'DataSource', ->
                 { value: 2 }
             ]
 
+    describe 'When a data source is created with a default sort order', ->
+        beforeEach ->
+            @loadedData = [
+                { myProperty: 1 }, 
+                { myProperty: 13 }, 
+                { myProperty: 7 }
+            ]
+
+            @dataSource = new bo.DataSource 
+                initialSortOrder: 'myProperty ascending'
+                provider: @loadedData
+
+        it 'should set the items observable to be the sorted dataset', ->
+            expect(@dataSource.items()).toEqual [
+                { myProperty: 1 }, 
+                { myProperty: 7 }, 
+                { myProperty: 13 }
+            ]
+
+        it 'should set the sorting observable to be a string representation of the ordering', ->
+            expect(@dataSource.sorting()).toEqual 'myProperty ascending'
+
+        it 'should indicate a columns ordering through getPropertySortOrder', ->
+            expect(@dataSource.getPropertySortOrder('myProperty')).toEqual 'ascending'
+
     describe 'When a data source is sorted ascending, with simple data set and no paging', ->
         beforeEach ->
             @dataSource = new bo.DataSource 
