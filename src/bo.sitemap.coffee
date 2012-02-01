@@ -17,9 +17,10 @@ class SitemapNode
         if definition.url
             new bo.routing.Route name, definition.url, { metadata: @definition.metadata}
 
-            bo.bus.subscribe "routeNavigated:#{name}", (data = {}) =>
+            bo.bus.subscribe "routeNavigated:#{name}", (msg) =>
                 sitemap.currentNode @
-                sitemap.regionManager.activate @definition.parts, data.parameters
+
+                sitemap.regionManager.activate @definition.parts, msg.parameters
 
         @hasRoute = definition.url?
 
@@ -66,6 +67,12 @@ class bo.Sitemap
 
         for pageName, pageDefinition of pages
             @nodes.push @_createNode pageName, pageDefinition
+
+        # TODO: Find a good place for this, bit of a dumping ground here! Probably need
+        # to introduce an `Application` concept.
+        bo.bus.subscribe "routeNavigating", (msg) =>
+            if msg.canVeto
+                sitemap.regionManager.canDeactivate()
 
     _createNode: (name, definition) ->
         node = new SitemapNode @, name, definition
