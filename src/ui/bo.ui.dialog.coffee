@@ -58,6 +58,11 @@ ko.bindingHandlers.closeDialog =
 bo.utils.addTemplate 'confirmationDialog',  '''
     <div class="bo-confirmation">
         <span class="text" data-bind="text: questionText" />
+
+        <div class="button-bar">
+            <button class="confirm" class="primary"  data-bind="button: _confirm, closeDialog: true">Yes</button>
+            <button class="cancel" class="secondary" data-bind="button: _cancel,  closeDialog: true">No</button>
+        </div>
     </div>
 '''
 
@@ -77,29 +82,22 @@ class ConfirmationDialog
         else
             @questionText = title
 
+    # Gets the `promise` that events can be attached to that will be resolved / rejected
+    # when the user clicks the `Yes` or `No` buttons.
     promise: ->
         @_deferred.promise()
 
     getDialogOptions: ->
-        _this = @
+        title: @title
 
-        {
-            title: @title
+        width: 500,
+        height: 250
 
-            width: 500,
-            height: 250
+    _confirm: ->
+        @_deferred.resolve()
 
-            buttons:
-                'Yes': ->
-                    _this._deferred.resolve()
-                    # TODO: This is horrible and too closely linked to jQuery UI dialog.
-                    # Need to allow closing of dialog without this knowledge.
-                    jQuery(@).dialog "close" 
-
-                'No': ->
-                    _this._deferred.reject()
-                    jQuery(@).dialog "close" 
-        }
+    _cancel: ->
+        @_deferred.reject()
 
 bo.Dialog.confirm = (title, questionText) ->
     dialogModel = new ConfirmationDialog title, questionText
