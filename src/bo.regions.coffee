@@ -23,7 +23,7 @@ class bo.RegionManager extends bo.Bus
             if options.showConfirmation is false
                 false
             else
-                window.confirm "Do you wish to lose your changes?"
+                window.confirm "Are you sure that you want to discard your changes?"
         else
             true
 
