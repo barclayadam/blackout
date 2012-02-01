@@ -28,28 +28,27 @@ class bo.RegionManager extends bo.Bus
             true
 
     activate: (parts, parameters = {}) ->
-        if @canDeactivate()
-            @_activatingParts = parts
+        @_activatingParts = parts
 
-            @publish "partsActivating", { parts: parts }
-            
-            @isLoading true
-            @_deactivateAll()
+        @publish "partsActivating", { parts: parts }
+        
+        @isLoading true
+        @_deactivateAll()
 
-            partPromises = []
-            currentPartsToSet = {}
+        partPromises = []
+        currentPartsToSet = {}
 
-            for part in parts
-                partPromises = partPromises.concat part.activate parameters
-                currentPartsToSet[part.region] = part
+        for part in parts
+            partPromises = partPromises.concat part.activate parameters
+            currentPartsToSet[part.region] = part
 
-            jQuery.when.apply(@, partPromises).done =>
-                if @_activatingParts is parts
-                    @currentParts currentPartsToSet
-                    @currentParameters = parameters
-                    @isLoading false
+        jQuery.when.apply(@, partPromises).done =>
+            if @_activatingParts is parts
+                @currentParts currentPartsToSet
+                @currentParameters = parameters
+                @isLoading false
 
-                    @publish "partsActivated", { parts: parts }
+                @publish "partsActivated", { parts: parts }
 
     _deactivateAll: ->
         part.deactivate() for region, part of @currentParts()
