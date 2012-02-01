@@ -70,9 +70,9 @@ class bo.Sitemap
 
         # TODO: Find a good place for this, bit of a dumping ground here! Probably need
         # to introduce an `Application` concept.
-        bo.bus.subscribe "routeNavigating", (msg) =>
+        bo.bus.subscribe "routeNavigating", (msg) ->
             if msg.canVeto
-                sitemap.regionManager.canDeactivate()
+                regionManager.canDeactivate()
 
     _createNode: (name, definition) ->
         node = new SitemapNode @, name, definition
