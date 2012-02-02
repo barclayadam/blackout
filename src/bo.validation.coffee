@@ -4,6 +4,10 @@ hasValue = (value) ->
 emptyValue = (value) ->
     not hasValue value
 
+parseDate = (value) ->
+    return value           if _.isDate value
+    return new Date(value) if _.isString value
+
 getMessageCreationFunction = (name, propertyRules, ruleName) ->
     messagePropertyName = "#{ruleName}Message"
 
@@ -121,6 +125,34 @@ bo.validation =
 
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must be between #{options[0]} and #{options[1]}."
+
+        maxDate:
+            validator: (value, model, options) ->
+                (emptyValue value) or (parseDate(value) <=  parseDate(options))
+
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} must be on or before #{options[0]}."
+
+        minDate:
+            validator: (value, model, options) ->
+                (emptyValue value) or (parseDate(value) >= parseDate(options))
+
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} must be on after #{options[0]}."
+
+        inFuture:
+            validator: (value, model, options) ->
+                (emptyValue value) or (parseDate(value) > new Date())
+
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} must be in the future."
+
+        inPast:
+            validator: (value, model, options) ->
+                (emptyValue value) or (parseDate(value) < new Date())
+
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} must be in the past."
 
 # Given a model and a set of (optional) model validation rules will add the necessary
 # methods and observables to make the model validatable.

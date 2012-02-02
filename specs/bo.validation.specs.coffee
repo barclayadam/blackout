@@ -1,5 +1,28 @@
 #reference '../../js/blackout/bo.validation.coffee'
 
+itShouldReturnTrueForEmptyValues = ((validator) ->
+    it 'should return true if property value is undefined', ->
+        # Act
+        isValid = bo.validation.rules[validator].validator undefined, {}, true
+
+        # Assert
+        expect(isValid).toBe true
+
+    it 'should return true if property value is null', ->
+        # Act
+        isValid = bo.validation.rules[validator].validator null, {}, true
+
+        # Assert
+        expect(isValid).toBe true
+
+    it 'should return true if property value is empty string', ->
+        # Act
+        isValid = bo.validation.rules[validator].validator '', {}, true
+
+        # Assert
+        expect(isValid).toBe true
+)
+
 describe 'Validation:', ->
     describe 'When validating', ->
         it 'should throw an exception if a validator is specified that does not exist', ->
@@ -319,26 +342,7 @@ describe 'Validation:', ->
             expect(isValid).toBe false
 
     describe 'With a regex validator', ->
-        it 'should return true if property value is undefined', ->
-            # Act
-            isValid = bo.validation.rules.regex.validator undefined, {}, true
-
-            # Assert
-            expect(isValid).toBe true
-
-        it 'should return true if property value is null', ->
-            # Act
-            isValid = bo.validation.rules.regex.validator null, {}, true
-
-            # Assert
-            expect(isValid).toBe true
-
-        it 'should return true if property value is empty string', ->
-            # Act
-            isValid = bo.validation.rules.regex.validator '', {}, true
-
-            # Assert
-            expect(isValid).toBe true
+        itShouldReturnTrueForEmptyValues 'regex'
 
         it 'should return true if property value matches regular expression', ->
             # Act
@@ -355,26 +359,7 @@ describe 'Validation:', ->
             expect(isValid).toBe false
 
     describe 'With a minLength validator', ->
-        it 'should return true if property value is undefined', ->
-            # Act
-            isValid = bo.validation.rules.minLength.validator undefined, {}, true
-
-            # Assert
-            expect(isValid).toBe true
-
-        it 'should return true if property value is null', ->
-            # Act
-            isValid = bo.validation.rules.minLength.validator null, {}, true
-
-            # Assert
-            expect(isValid).toBe true
-
-        it 'should return true if property value is empty string', ->
-            # Act
-            isValid = bo.validation.rules.minLength.validator '', {}, true
-
-            # Assert
-            expect(isValid).toBe true
+        itShouldReturnTrueForEmptyValues 'minLength'
 
         it 'should return true if property is string with required number of characters', ->
             # Act
@@ -405,26 +390,7 @@ describe 'Validation:', ->
             expect(isValid).toBe false
 
     describe 'With a maxLength validator', ->
-        it 'should return true if property value is undefined', ->
-            # Act
-            isValid = bo.validation.rules.maxLength.validator undefined, {}, true
-
-            # Assert
-            expect(isValid).toBe true
-
-        it 'should return true if property value is null', ->
-            # Act
-            isValid = bo.validation.rules.maxLength.validator null, {}, true
-
-            # Assert
-            expect(isValid).toBe true
-
-        it 'should return true if property value is empty string', ->
-            # Act
-            isValid = bo.validation.rules.maxLength.validator '', {}, true
-
-            # Assert
-            expect(isValid).toBe true
+        itShouldReturnTrueForEmptyValues 'maxLength'
 
         it 'should return true if property is string with maximum number of characters allowed', ->
             # Act
@@ -455,26 +421,7 @@ describe 'Validation:', ->
             expect(isValid).toBe false
 
     describe 'With a rangeLength validator', ->
-        it 'should return true if property value is undefined', ->
-            # Act
-            isValid = bo.validation.rules.rangeLength.validator undefined, {}, true
-
-            # Assert
-            expect(isValid).toBe true
-
-        it 'should return true if property value is null', ->
-            # Act
-            isValid = bo.validation.rules.rangeLength.validator null, {}, true
-
-            # Assert
-            expect(isValid).toBe true
-
-        it 'should return true if property value is empty string', ->
-            # Act
-            isValid = bo.validation.rules.rangeLength.validator '', {}, true
-
-            # Assert
-            expect(isValid).toBe true
+        itShouldReturnTrueForEmptyValues 'rangeLength'
 
         it 'should return true if property is string with minimum number of characters as defined by first element of options array', ->
             # Act
@@ -519,26 +466,7 @@ describe 'Validation:', ->
             expect(isValid).toBe false
 
     describe 'With a min validator', ->
-        it 'should return true if property value is undefined', ->
-            # Act
-            isValid = bo.validation.rules.min.validator undefined, {}, true
-
-            # Assert
-            expect(isValid).toBe true
-
-        it 'should return true if property value is null', ->
-            # Act
-            isValid = bo.validation.rules.min.validator null, {}, true
-
-            # Assert
-            expect(isValid).toBe true
-
-        it 'should return true if property value is empty string', ->
-            # Act
-            isValid = bo.validation.rules.min.validator '', {}, true
-
-            # Assert
-            expect(isValid).toBe true
+        itShouldReturnTrueForEmptyValues 'min'
 
         it 'should return true if property value is equal to minimum option value', ->
             # Act
@@ -569,26 +497,7 @@ describe 'Validation:', ->
             expect(isValid).toBe false
 
     describe 'With a max validator', ->
-        it 'should return true if property value is undefined', ->
-            # Act
-            isValid = bo.validation.rules.max.validator undefined, {}, true
-
-            # Assert
-            expect(isValid).toBe true
-
-        it 'should return true if property value is null', ->
-            # Act
-            isValid = bo.validation.rules.max.validator null, {}, true
-
-            # Assert
-            expect(isValid).toBe true
-
-        it 'should return true if property value is empty string', ->
-            # Act
-            isValid = bo.validation.rules.max.validator '', {}, true
-
-            # Assert
-            expect(isValid).toBe true
+        itShouldReturnTrueForEmptyValues 'max'
 
         it 'should return true if property value is equal to maximum option value', ->
             # Act
@@ -619,26 +528,7 @@ describe 'Validation:', ->
             expect(isValid).toBe false
 
     describe 'With a range validator', ->
-        it 'should return true if property value is undefined', ->
-            # Act
-            isValid = bo.validation.rules.range.validator undefined, {}, true
-
-            # Assert
-            expect(isValid).toBe true
-
-        it 'should return true if property value is null', ->
-            # Act
-            isValid = bo.validation.rules.range.validator null, {}, true
-
-            # Assert
-            expect(isValid).toBe true
-
-        it 'should return true if property value is empty string', ->
-            # Act
-            isValid = bo.validation.rules.range.validator '', {}, true
-
-            # Assert
-            expect(isValid).toBe true
+        itShouldReturnTrueForEmptyValues 'range'
 
         it 'should return true if property is minimum value as defined by first element of options array', ->
             # Act
@@ -678,6 +568,188 @@ describe 'Validation:', ->
         it 'should return false if property is not a number', ->
             # Act
             isValid = bo.validation.rules.range.validator "Not a Number", {}, [2, 4]
+
+            # Assert
+            expect(isValid).toBe false
+
+    describe 'With a min date validator', ->
+        itShouldReturnTrueForEmptyValues 'minDate'
+
+        it 'should return true if property value is equal to minimum date value', ->
+            # Act
+            isValid = bo.validation.rules.minDate.validator new Date(2011, 01, 01), {}, new Date(2011, 01, 01)
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if property value is after than minimum date value', ->
+            # Act
+            isValid = bo.validation.rules.minDate.validator new Date(2010, 01, 01), {}, new Date(2009, 01, 01)
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if property value is before than minimum option value', ->
+            # Act
+            isValid = bo.validation.rules.minDate.validator new Date(2010, 01, 01), {}, new Date(2011, 01, 01)
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if string property value is equal to minimum date value', ->
+            # Act
+            isValid = bo.validation.rules.minDate.validator '2011/01/01', {}, '2011/01/01'
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if string property value is after than minimum date value', ->
+            # Act
+            isValid = bo.validation.rules.minDate.validator '2011/01/01', {}, '2010/01/01'
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if string property value is before than minimum option value', ->
+            # Act
+            isValid = bo.validation.rules.minDate.validator '2011/01/01', {}, '2012/01/01'
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if property is not a date', ->
+            # Act
+            isValid = bo.validation.rules.minDate.validator "Not a Number", {}, 5
+
+            # Assert
+            expect(isValid).toBe false
+
+    describe 'With a max date validator', ->
+        itShouldReturnTrueForEmptyValues 'maxDate'
+
+        it 'should return true if property value is equal to maximum date value', ->
+            # Act
+            isValid = bo.validation.rules.maxDate.validator new Date(2011, 01, 01), {}, new Date(2011, 01, 01)
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if property value is less than maximum date value', ->
+            # Act
+            isValid = bo.validation.rules.maxDate.validator new Date(2010, 01, 01), {}, new Date(2011, 01, 01)
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if property value is greater than maximum option value', ->
+            # Act
+            isValid = bo.validation.rules.maxDate.validator new Date(2011, 01, 01), {}, new Date(2010, 01, 01)
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if string property value is equal to maximum date value', ->
+            # Act
+            isValid = bo.validation.rules.maxDate.validator '2011/01/01', {}, '2011/01/01'
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if string property value is less than maximum date value', ->
+            # Act
+            isValid = bo.validation.rules.maxDate.validator '2010/01/01', {}, '2011/01/01'
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if string property value is greater than maximum option value', ->
+            # Act
+            isValid = bo.validation.rules.maxDate.validator '2011/01/01', {}, '2010/01/01'
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if property is not a date', ->
+            # Act
+            isValid = bo.validation.rules.maxDate.validator "Not a Number", {}, 5
+
+            # Assert
+            expect(isValid).toBe false
+
+    describe 'With a in the future validator', ->
+        itShouldReturnTrueForEmptyValues 'inFuture'
+
+        it 'should return true if property value is tomorrow', ->
+            # Arrange
+            tomorrow = new Date()
+            tomorrow.setDate tomorrow.getDate() + 1
+
+            # Act
+            isValid = bo.validation.rules.inFuture.validator tomorrow, {}, undefined
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if property value is today', ->
+            # Act
+            isValid = bo.validation.rules.inFuture.validator new Date(), {}, undefined
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if property value is yesterday', ->
+            # Arrange
+            yesterday = new Date()
+            yesterday.setDate yesterday.getDate() - 1
+
+            # Act
+            isValid = bo.validation.rules.inFuture.validator yesterday, {}, undefined
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if property is not a date', ->
+            # Act
+            isValid = bo.validation.rules.inFuture.validator "Not a Number", {}, 5
+
+            # Assert
+            expect(isValid).toBe false
+
+    describe 'With a in the past validator', ->
+        itShouldReturnTrueForEmptyValues 'inFuture'
+
+        it 'should return false if property value is tomorrow', ->
+            # Arrange
+            tomorrow = new Date()
+            tomorrow.setDate tomorrow.getDate() + 1
+
+            # Act
+            isValid = bo.validation.rules.inPast.validator tomorrow, {}, undefined
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if property value is today', ->
+            # Act
+            isValid = bo.validation.rules.inPast.validator new Date(), {}, undefined
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if property value is yesterday', ->
+            # Arrange
+            yesterday = new Date()
+            yesterday.setDate yesterday.getDate() - 1
+
+            # Act
+            isValid = bo.validation.rules.inPast.validator yesterday, {}, undefined
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if property is not a date', ->
+            # Act
+            isValid = bo.validation.rules.inFuture.validator "Not a Number", {}, 5
 
             # Assert
             expect(isValid).toBe false
