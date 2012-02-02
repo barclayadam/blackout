@@ -716,7 +716,7 @@ describe 'Validation:', ->
             expect(isValid).toBe false
 
     describe 'With a in the past validator', ->
-        itShouldReturnTrueForEmptyValues 'inFuture'
+        itShouldReturnTrueForEmptyValues 'inPast'
 
         it 'should return false if property value is tomorrow', ->
             # Arrange
@@ -750,6 +750,84 @@ describe 'Validation:', ->
         it 'should return false if property is not a date', ->
             # Act
             isValid = bo.validation.rules.inFuture.validator "Not a Number", {}, 5
+
+            # Assert
+            expect(isValid).toBe false
+
+    describe 'With a not in the past validator', ->
+        itShouldReturnTrueForEmptyValues 'notInPast'
+
+        it 'should return true if property value is tomorrow', ->
+            # Arrange
+            tomorrow = new Date()
+            tomorrow.setDate tomorrow.getDate() + 1
+
+            # Act
+            isValid = bo.validation.rules.notInPast.validator tomorrow, {}, undefined
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if property value is today', ->
+            # Act
+            isValid = bo.validation.rules.notInPast.validator new Date(), {}, undefined
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if property value is yesterday', ->
+            # Arrange
+            yesterday = new Date()
+            yesterday.setDate yesterday.getDate() - 1
+
+            # Act
+            isValid = bo.validation.rules.notInPast.validator yesterday, {}, undefined
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if property is not a date', ->
+            # Act
+            isValid = bo.validation.rules.notInPast.validator "Not a Number", {}, 5
+
+            # Assert
+            expect(isValid).toBe false
+
+    describe 'With a not in future validator', ->
+        itShouldReturnTrueForEmptyValues 'notInFuture'
+
+        it 'should return false if property value is tomorrow', ->
+            # Arrange
+            tomorrow = new Date()
+            tomorrow.setDate tomorrow.getDate() + 1
+
+            # Act
+            isValid = bo.validation.rules.notInFuture.validator tomorrow, {}, undefined
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if property value is today', ->
+            # Act
+            isValid = bo.validation.rules.notInFuture.validator new Date(), {}, undefined
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if property value is yesterday', ->
+            # Arrange
+            yesterday = new Date()
+            yesterday.setDate yesterday.getDate() - 1
+
+            # Act
+            isValid = bo.validation.rules.notInFuture.validator yesterday, {}, undefined
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if property is not a date', ->
+            # Act
+            isValid = bo.validation.rules.notInFuture.validator "Not a Number", {}, 5
 
             # Assert
             expect(isValid).toBe false

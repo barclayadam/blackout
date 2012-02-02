@@ -154,6 +154,20 @@ bo.validation =
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must be in the past."
 
+        notInPast:
+            validator: (value, model, options) ->
+                (emptyValue value) or (parseDate(value) >= new Date())
+
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} must not be in the past."
+
+        notInFuture:
+            validator: (value, model, options) ->
+                (emptyValue value) or (parseDate(value) <= new Date())
+
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} must not be in the future."
+
 # Given a model and a set of (optional) model validation rules will add the necessary
 # methods and observables to make the model validatable.
 bo.validatableModel = (model) ->
