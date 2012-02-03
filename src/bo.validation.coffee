@@ -291,6 +291,10 @@ ko.bindingHandlers.validated =
         if value?.validationRules?.required?
             $element.attr "aria-required", true
 
+            id = element.id
+            jQuery("""label[for="#{id}"]""").addClass 'required'
+            $element.addClass 'required'
+
     update: (element, valueAccessor, allBindings, viewModel) ->
         $element = jQuery element
         $validationElement = ko.utils.domData.get element, 'validationElement'
