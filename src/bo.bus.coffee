@@ -67,9 +67,9 @@ class bo.Bus
 
         if @busOptions.log is true
             if @busOptions.global is false
-                console.log "Publishing #{messageName} (local)" 
+                console.log "Publishing #{messageName} (local)", args
             else
-                console.log "Publishing #{messageName}"
+                console.log "Publishing #{messageName}", args
 
         if @busOptions.global is false
             bo.bus.publish messageName, args
