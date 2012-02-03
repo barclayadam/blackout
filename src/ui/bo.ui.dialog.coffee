@@ -106,3 +106,50 @@ bo.Dialog.confirm = (title, questionText) ->
     confirmationDialog.show()
 
     dialogModel.promise()
+
+bo.utils.addTemplate 'warningDialog',  '''
+    <div class="bo-warning">
+        <span class="text" data-bind="text: warningText" />
+
+        <div class="button-bar">
+            <button class="ok" class="primary" data-bind="closeDialog: true">Ok</button>
+        </div>
+    </div>
+'''
+
+class WarningDialog
+    # Constructs a new warning dialog, using the title and warning
+    # text provided.
+    #
+    # If only one parameter is passed then no title will be set, else the first
+    # parameter will be used as the dialog's title, and the second as the warning
+    # text.
+    constructor: (title, warningText) ->
+        @_deferred = new jQuery.Deferred()
+
+        if warningText?
+            @title = title
+            @warningText = warningText
+        else
+            @warningText = title
+
+    # Gets the `promise` that events can be attached to that will be resolved / rejected
+    # when the user clicks the `Yes` or `No` buttons.
+    promise: ->
+        @_deferred.promise()
+
+    getDialogOptions: ->
+        title: @title
+
+        width: 500,
+        height: 250
+
+        modal: true
+
+bo.Dialog.warning = (title, warningText) ->
+    dialogModel = new WarningDialog title, warningText
+
+    confirmationDialog = new bo.Dialog new bo.Part 'Warning', { templateName: 'warningDialog', viewModel: dialogModel }
+    confirmationDialog.show()
+
+    dialogModel.promise()
