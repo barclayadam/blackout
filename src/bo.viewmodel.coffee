@@ -55,6 +55,8 @@ class bo.ViewModel
             unwrapped = (ko.utils.unwrapObservable obj)
             unwrapped.validate() if unwrapped?.validate?
 
+        @_areCommandsToSubmitValid()
+
     submit: ->
         @validate()
 
