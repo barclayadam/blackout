@@ -18,7 +18,7 @@ bo.utils.addTemplate 'navigationItem', '''
         '''
 
 bo.utils.addTemplate 'navigationTemplate', '''
-        <ul class="bo-navigation" data-bind="template: { name : 'navigationItem', foreach: nodes }"></ul>
+        <ul class="bo-navigation" role="navigation" data-bind="template: { name : 'navigationItem', foreach: nodes }"></ul>
         '''
 
 ko.bindingHandlers.navigation = 
