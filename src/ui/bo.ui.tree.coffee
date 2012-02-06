@@ -294,7 +294,7 @@ class TreeViewModel
                     { name: dataItem.type }
             }
             
-        @root = new TreeNode(@options.root, null, @)
+        @root = new TreeNode @options.root, null, @
 
     addChildren: (children) ->
         @root.setChildren children
@@ -380,7 +380,7 @@ bo.utils.addTemplate 'treeTemplate', '''
                                  { callback: selectNext, keyboard: 'down' }],"></ul>
         '''
 
-ko.bindingHandlers.boTree =
+ko.bindingHandlers.tree =
     init: (element, viewModelAccessor) ->
         value = viewModelAccessor()
 
