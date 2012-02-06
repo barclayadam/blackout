@@ -367,7 +367,7 @@ bo.utils.addTemplate 'treeNodeTemplate', '''
                           'aria-labelledby': nodeTextId,
                           'aria-selected': isSelected }, 
                        css: { 'tree-item': true, leaf: isLeaf, open: isOpen, rename: isRenaming },                       
-                       tabindex: isFocused">        
+                       tabIndex: isFocused">        
             <div class="tree-node" 
                  data-bind="draggable: isDraggable,
                             dropTarget: { canAccept : canAcceptDrop, onDropComplete: acceptDrop}, 
@@ -380,11 +380,11 @@ bo.utils.addTemplate 'treeNodeTemplate', '''
                                  style: { marginLeft: indent }">&nbsp;</span>
 
                 <!-- ko if: viewModel.options.checksEnabled -->
-                    <input type="checkbox" class="checked" data-bind="indeterminateCheckbox: checkState, visible: viewModel.options.checksEnabled" />
+                    <input type="checkbox" class="checked" data-bind="indeterminateCheckbox: checkState" />
                 <!-- /ko -->
                 
                 <span class="icon"></span>
-                <span data-bind="visible: !isRenaming(), text: name, event: { mousedown: select }, attr: { id: nodeTextId }" unselectable="on"></span>
+                <label data-bind="visible: !isRenaming(), text: name, event: { mousedown: select }, attr: { id: nodeTextId }" unselectable="on"></label>
                 
                 <input class="rename" type="text" data-bind="
                            visible: isRenaming, 
@@ -414,16 +414,6 @@ bo.utils.addTemplate 'treeTemplate', '''
                                  { callback: beginRenaming, keyboard: 'f2' },
                                  { callback: selectFocused, keyboard: 'space' }],"></ul>
         '''
-
-ko.bindingHandlers.tabindex =
-    update: (element, valueAccessor) ->
-        value = ko.utils.unwrapObservable valueAccessor()
-
-        if value is true
-            element.tabIndex = "0"
-            element.focus()
-        else 
-            element.tabIndex = "-1"
 
 ko.bindingHandlers.tree =
     init: (element, viewModelAccessor) ->
