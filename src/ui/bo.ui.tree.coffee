@@ -9,6 +9,7 @@ class TreeNode
 
         @parent = ko.observable parent
         @id = @data.id
+        @safeId = 'node-' + @id
         @name = ko.observable @data.name
         @isRoot = not parent?
         @contextMenu = @viewModel.contextMenu
@@ -55,7 +56,7 @@ class TreeNode
         @indent = ko.computed =>
             (@level() * 11) + 'px'
                         
-        @_setOption o for o in ["isDraggable", "isDropTarget", "canAddChildren", "childType", "renameAfterAdd", "canRename", "canDelete", "defaultChildName"]		
+        @_setOption o for o in ["isDraggable", "isDropTarget", "canAddChildren", "childType", "renameAfterAdd", "canRename", "canDelete", "defaultChildName"]       
 
         @setChildren (@data.children || []) if not @data.loadChildren
         @children.load() if @isOpen()
@@ -252,6 +253,38 @@ class TreeViewModel
         @selectedNode = ko.observable null
         @checkedNodes = ko.observableArray()
 
+        @activeDescendant = ko.computed =>
+            selectedNode = @selectedNode()
+
+            if selectedNode?
+                selectedNode.safeId
+            else
+                ''
+
+        # Up
+        @selectPrevious = ->
+            @selectedNode().selectPrevious()
+
+        # Right
+        @open = ->
+            if @selectedNode().isOpen()
+                if @selectedNode().children().length > 0
+                    @selectedNode().children()[0].select()
+            else
+                @selectedNode().open()
+
+        # Left
+        @close = ->
+            if @selectedNode().isOpen() and @selectedNode().children().length > 0
+                @selectedNode().close()
+            else 
+                if not @selectedNode().isRoot
+                    @selectedNode().parent().select()
+
+        # Down
+        @selectNext = ->
+            @selectedNode().selectNext()
+
         if @options.contextMenus
             @contextMenu = new bo.ui.ContextMenu {
                 contextMenus: @options.contextMenus
@@ -296,13 +329,9 @@ TreeViewModel.defaultOptions =
         onAcceptUnknownDrop: (node, droppable) ->
            
 bo.utils.addTemplate 'treeNodeTemplate', '''
-        <li data-bind="command: [{ callback: selectPrevious, keyboard: 'up' },
-                                 { callback: open, keyboard: 'right' },
-                                 { callback: close, keyboard: 'left' },
-                                 { callback: selectNext, keyboard: 'down' },
-                                 { callback: deleteSelf, keyboard: 'del' },
+        <li data-bind="command: [{ callback: deleteSelf, keyboard: 'del' },
                                  { callback: beginRenaming, keyboard: 'f2' }],
-                        attr: { 'class': cssClass }, 
+                        attr: { 'class': cssClass, id: safeId }, 
                         css: { 'tree-item': true, leaf: isLeaf, open: isOpen, rename: isRenaming }">        
             <div class="tree-node" 
                  data-bind="draggable: isDraggable,
@@ -340,7 +369,15 @@ bo.utils.addTemplate 'treeNodeTemplate', '''
         '''
 
 bo.utils.addTemplate 'treeTemplate', '''
-        <ul class="bo-tree" data-bind="template: { name : 'treeNodeTemplate', data: root }"></ul>
+        <ul 
+            class="bo-tree" 
+            aria-role="tree" 
+            data-bind="template: { name : 'treeNodeTemplate', data: root }, 
+                       attr: { 'aria-activedescendant': activeDescendant },
+                       command: [{ callback: selectPrevious, keyboard: 'up' },
+                                 { callback: open, keyboard: 'right' },
+                                 { callback: close, keyboard: 'left' },
+                                 { callback: selectNext, keyboard: 'down' }],"></ul>
         '''
 
 ko.bindingHandlers.boTree =
