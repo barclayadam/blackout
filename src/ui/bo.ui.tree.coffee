@@ -366,7 +366,8 @@ bo.utils.addTemplate 'treeNodeTemplate', '''
                           'aria-expanded': expanded,
                           'aria-labelledby': nodeTextId,
                           'aria-selected': isSelected }, 
-                       css: { 'tree-item': true, leaf: isLeaf, open: isOpen, rename: isRenaming },                       
+                       css: { 'tree-item': true, leaf: isLeaf, open: isOpen, rename: isRenaming },  
+                       event: { click: select },                      
                        tabIndex: isFocused">        
             <div class="tree-node" 
                  data-bind="draggable: isDraggable,
@@ -384,7 +385,7 @@ bo.utils.addTemplate 'treeNodeTemplate', '''
                 <!-- /ko -->
                 
                 <span class="icon"></span>
-                <label data-bind="visible: !isRenaming(), text: name, event: { mousedown: select }, attr: { id: nodeTextId }" unselectable="on"></label>
+                <label data-bind="visible: !isRenaming(), text: name, attr: { id: nodeTextId }" unselectable="on"></label>
                 
                 <input class="rename" type="text" data-bind="
                            visible: isRenaming, 
