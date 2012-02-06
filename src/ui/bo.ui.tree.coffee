@@ -3,13 +3,18 @@
 
 window.bo.ui = window.bo.ui || {}
 
+uniqueId = 0
+
 class TreeNode
     constructor: (@data, parent, @viewModel) ->
         @isTreeNode = true
 
         @parent = ko.observable parent
         @id = @data.id
-        @safeId = 'node-' + @id
+
+        @safeId = _.uniqueId('node-')
+        @nodeTextId = _.uniqueId('node-label-')
+
         @name = ko.observable @data.name
         @isRoot = not parent?
         @contextMenu = @viewModel.contextMenu
@@ -354,15 +359,15 @@ TreeViewModel.defaultOptions =
            
 bo.utils.addTemplate 'treeNodeTemplate', '''
         <li role="treeitem"
-            data-bind="attr: { 'class': cssClass, id: safeId, 'aria-level': level, 'aria-expanded': expanded }, 
-                       css: { 'tree-item': true, leaf: isLeaf, open: isOpen, rename: isRenaming },
+            data-bind="attr: { 'class': cssClass, id: safeId, 'aria-level': level, 'aria-expanded': expanded, 'aria-labelledby': nodeTextId }, 
+                       css: { 'tree-item': true, leaf: isLeaf, open: isOpen, rename: isRenaming },                       
                        tabindex: isFocused">        
             <div class="tree-node" 
                  data-bind="draggable: isDraggable,
                             dropTarget: { canAccept : canAcceptDrop, onDropComplete: acceptDrop}, 
                             contextMenu: contextMenu, 
                             hoverClass: 'ui-state-hover',
-                            css: { 'ui-state-active': isSelected, 'ui-state-focus': isFocused, children-loading: children.isLoading }">
+                            css: { 'ui-state-active': isSelected, 'ui-state-focus': isFocused, 'children-loading': children.isLoading }">
                 <span data-bind="click: toggleFolder, 
                                  css: { 'handle': true, 'ui-icon': true, 'ui-icon-triangle-1-se': isOpen, 'ui-icon-triangle-1-e': !isOpen() },
                                  bubble : false, 
@@ -373,7 +378,7 @@ bo.utils.addTemplate 'treeNodeTemplate', '''
                 <!-- /ko -->
                 
                 <span class="icon"></span>
-                <span data-bind="visible: !isRenaming(), text: name, event: { mousedown: select }" unselectable="on"></span>
+                <span data-bind="visible: !isRenaming(), text: name, event: { mousedown: select }, attr: { id: nodeTextId }" unselectable="on"></span>
                 
                 <input class="rename" type="text" data-bind="
                            visible: isRenaming, 
