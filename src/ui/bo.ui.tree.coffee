@@ -32,8 +32,14 @@ class TreeNode
         @checkState @parent().checkState() if parent
                 
         @isOpen = ko.observable @data.isOpen ? false
-        @isSelected = ko.observable false
-        @isFocused = ko.observable false
+        @expanded = ko.computed => @isOpen().toString()
+
+        @isSelected = ko.computed =>
+            @viewModel.selectedNode() is @
+
+        @isFocused = ko.computed =>
+            @viewModel.focusedNode() is @
+
         @isRenaming = ko.observable false
 
         @editingName = ko.observable()
@@ -51,10 +57,10 @@ class TreeNode
             @children.loaded() and @children().length is 0 and not @isRoot
 
         @level = ko.computed =>
-            if @isRoot then 0 else @parent().level() + 1
+            if @isRoot then 1 else @parent().level() + 1
 
         @indent = ko.computed =>
-            (@level() * 11) + 'px'
+            "#{(@level() - 1) * 11}px"
                         
         @_setOption o for o in ["isDraggable", "isDropTarget", "canAddChildren", "childType", "renameAfterAdd", "canRename", "canDelete", "defaultChildName"]       
 
@@ -73,10 +79,7 @@ class TreeNode
     setChildren: (childrenToConvert) ->
         @children (@_createChild n for n in childrenToConvert)
 
-    select: ->
-        @viewModel.selectedNode().isSelected false if @viewModel.selectedNode()?
-        
-        @isSelected true
+    select: ->        
         @viewModel.selectedNode @
 
         @focus()
@@ -164,37 +167,37 @@ class TreeNode
                 @parent().children()[nodeIndex + 1]
     
     focus: ->
-        @isFocused true
+        @viewModel.focusedNode @
 
-    selectPrevious: ->
+    focusPrevious: ->
         if not @isRoot
             previousSibling = @previousSibling()
 
             if previousSibling
                 previousSibling = previousSibling.children()[previousSibling.children().length - 1] while previousSibling.isOpen() and previousSibling.children().length > 0
                 
-                previousSibling.select()
+                previousSibling.focus()
             else
-                @parent().select()
+                @parent().focus()
 
-    selectNext: ->
+    focusNext: ->
         if @isRoot
             @children.load =>
-                @children()[0].select() if @children().length > 0
+                @children()[0].focus() if @children().length > 0
         else
             if @isOpen() and @children().length > 0
-                @children()[0].select()
+                @children()[0].focus()
             else
                 nextSibling = @nextSibling()
 
                 if nextSibling
-                    nextSibling.select()
+                    nextSibling.focus()
                 else
                     parent = @parent()
                     parent = parent.parent() while not parent.nextSibling() and not parent.isRoot
                     
                     if parent.nextSibling()
-                        parent.nextSibling().select()
+                        parent.nextSibling().focus()
 
     addNewChild: (options) ->
         if @canAddChildren
@@ -251,6 +254,7 @@ class TreeViewModel
         @options = jQuery.extend true, {}, TreeViewModel.defaultOptions, configuration
 
         @selectedNode = ko.observable null
+        @focusedNode = ko.observable null
         @checkedNodes = ko.observableArray()
 
         @activeDescendant = ko.computed =>
@@ -263,27 +267,47 @@ class TreeViewModel
 
         # Up
         @selectPrevious = ->
-            @selectedNode().selectPrevious()
+            focused = (@focusedNode() || @root)
+
+            focused.focusPrevious()
 
         # Right
         @open = ->
-            if @selectedNode().isOpen()
-                if @selectedNode().children().length > 0
-                    @selectedNode().children()[0].select()
+            focused = (@focusedNode() || @root)
+
+            if focused.isOpen()
+                if focused.children().length > 0
+                    focused.children()[0].focus()
             else
-                @selectedNode().open()
+                focused.open()
 
         # Left
         @close = ->
-            if @selectedNode().isOpen() and @selectedNode().children().length > 0
-                @selectedNode().close()
+            focused = (@focusedNode() || @root)
+
+            if focused.isOpen() and focused.children().length > 0
+                focused.close()
             else 
-                if not @selectedNode().isRoot
-                    @selectedNode().parent().select()
+                if not focused.isRoot
+                    focused.parent().focus()
 
         # Down
         @selectNext = ->
-            @selectedNode().selectNext()
+            focused = (@focusedNode() || @root)
+
+            focused.focusNext()
+
+        @deleteSelf = ->
+            if @focusedNode()
+                @focusedNode().deleteSelf()
+
+        @beginRenaming = ->
+            if @focusedNode()
+                @focusedNode().beginRenaming()
+
+        @selectFocused = ->
+            if @focusedNode()
+                @focusedNode().select()
 
         if @options.contextMenus
             @contextMenu = new bo.ui.ContextMenu {
@@ -329,32 +353,28 @@ TreeViewModel.defaultOptions =
         onAcceptUnknownDrop: (node, droppable) ->
            
 bo.utils.addTemplate 'treeNodeTemplate', '''
-        <li data-bind="command: [{ callback: deleteSelf, keyboard: 'del' },
-                                 { callback: beginRenaming, keyboard: 'f2' }],
-                        attr: { 'class': cssClass, id: safeId }, 
-                        css: { 'tree-item': true, leaf: isLeaf, open: isOpen, rename: isRenaming }">        
+        <li role="treeitem"
+            data-bind="attr: { 'class': cssClass, id: safeId, 'aria-level': level, 'aria-expanded': expanded }, 
+                       css: { 'tree-item': true, leaf: isLeaf, open: isOpen, rename: isRenaming },
+                       tabindex: isFocused">        
             <div class="tree-node" 
                  data-bind="draggable: isDraggable,
                             dropTarget: { canAccept : canAcceptDrop, onDropComplete: acceptDrop}, 
                             contextMenu: contextMenu, 
                             hoverClass: 'ui-state-hover',
-                            css: { 'ui-state-active': isSelected, 'ui-state-focus': isFocused, childrenLoading: children.isLoading }, 
-                            event: { mousedown: select }">
+                            css: { 'ui-state-active': isSelected, 'ui-state-focus': isFocused, children-loading: children.isLoading }">
                 <span data-bind="click: toggleFolder, 
                                  css: { 'handle': true, 'ui-icon': true, 'ui-icon-triangle-1-se': isOpen, 'ui-icon-triangle-1-e': !isOpen() },
                                  bubble : false, 
                                  style: { marginLeft: indent }">&nbsp;</span>
 
                 <!-- ko if: viewModel.options.checksEnabled -->
-                    <input type="checkbox" class="checked" data-bind="hasfocus: isFocused, indeterminateCheckbox: checkState, visible: viewModel.options.checksEnabled" />
-                    <span class="icon"></span>
-                    <a href="javascript:void(0)" data-bind="visible: !isRenaming(), text: name" unselectable="on"></a>
+                    <input type="checkbox" class="checked" data-bind="indeterminateCheckbox: checkState, visible: viewModel.options.checksEnabled" />
                 <!-- /ko -->
-                <!-- ko ifnot: viewModel.options.checksEnabled -->
-                    <span class="icon"></span>
-                    <a href="javascript:void(0)" data-bind="hasfocus: isFocused, visible: !isRenaming(), text: name" unselectable="on"></a>
-                <!-- /ko -->
-
+                
+                <span class="icon"></span>
+                <span data-bind="visible: !isRenaming(), text: name, event: { mousedown: select }" unselectable="on"></span>
+                
                 <input class="rename" type="text" data-bind="
                            visible: isRenaming, 
                            value: editingName, 
@@ -364,21 +384,35 @@ bo.utils.addTemplate 'treeNodeTemplate', '''
                                      { callback: cancelRenaming, keyboard: 'esc' }]" />
             </div>
             
-            <ul data-bind='visible: isOpen, template: { renderIf: isOpen, name: "treeNodeTemplate", foreach: children }'></ul>
+            <ul role="group" data-bind='visible: isOpen, template: { renderIf: isOpen, name: "treeNodeTemplate", foreach: children }'></ul>
         </li>
         '''
 
 bo.utils.addTemplate 'treeTemplate', '''
         <ul 
             class="bo-tree" 
-            aria-role="tree" 
+            role="tree" 
+            tabindex="0"
             data-bind="template: { name : 'treeNodeTemplate', data: root }, 
                        attr: { 'aria-activedescendant': activeDescendant },
                        command: [{ callback: selectPrevious, keyboard: 'up' },
                                  { callback: open, keyboard: 'right' },
                                  { callback: close, keyboard: 'left' },
-                                 { callback: selectNext, keyboard: 'down' }],"></ul>
+                                 { callback: selectNext, keyboard: 'down' },
+                                 { callback: deleteSelf, keyboard: 'del' },
+                                 { callback: beginRenaming, keyboard: 'f2' },
+                                 { callback: selectFocused, keyboard: 'space' }],"></ul>
         '''
+
+ko.bindingHandlers.tabindex =
+    update: (element, valueAccessor) ->
+        value = ko.utils.unwrapObservable valueAccessor()
+
+        if value is true
+            element.tabIndex = "0"
+            element.focus()
+        else 
+            element.tabIndex = "-1"
 
 ko.bindingHandlers.tree =
     init: (element, viewModelAccessor) ->
