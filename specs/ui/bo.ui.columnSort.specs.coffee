@@ -23,6 +23,9 @@ describe 'Column Sort', ->
 		it 'should not add ascending class', ->
 			expect(@columnSort).toNotHaveClass 'descending'
 
+		it 'should have an aria-role attribute set to none', ->
+			expect(@columnSort).toHaveAttr 'aria-sort', 'none'
+
 		describe 'When the user clicks on the column sort element', ->
 			beforeEach ->
 				@columnSort.click()
@@ -52,6 +55,9 @@ describe 'Column Sort', ->
 
 		it 'should add ascending class', ->
 			expect(@columnSort).toHaveClass 'ascending'
+
+		it 'should have an aria-role attribute set to ascending', ->
+			expect(@columnSort).toHaveAttr 'aria-sort', 'ascending'
 
 		it 'should not add descending class', ->
 			expect(@columnSort).toNotHaveClass 'descending'
@@ -88,6 +94,9 @@ describe 'Column Sort', ->
 
 		it 'should add descending class', ->
 			expect(@columnSort).toHaveClass 'descending'
+
+		it 'should have an aria-role attribute set to descending', ->
+			expect(@columnSort).toHaveAttr 'aria-sort', 'descending'
 
 		describe 'When the user clicks on the column sort element', ->
 			beforeEach ->

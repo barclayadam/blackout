@@ -22,3 +22,8 @@ ko.bindingHandlers.columnSort =
 
 		ko.utils.toggleDomNodeCssClass element, 'ascending', sortOrder is 'ascending'
 		ko.utils.toggleDomNodeCssClass element, 'descending', sortOrder is 'descending'
+
+		if sortOrder
+			jQuery(element).attr 'aria-sort', sortOrder
+		else
+			jQuery(element).attr 'aria-sort', 'none'
