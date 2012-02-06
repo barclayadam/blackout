@@ -359,7 +359,13 @@ TreeViewModel.defaultOptions =
            
 bo.utils.addTemplate 'treeNodeTemplate', '''
         <li role="treeitem"
-            data-bind="attr: { 'class': cssClass, id: safeId, 'aria-level': level, 'aria-expanded': expanded, 'aria-labelledby': nodeTextId }, 
+            data-bind="attr: {
+                          'class': cssClass, 
+                          'id': safeId, 
+                          'aria-level': level, 
+                          'aria-expanded': expanded,
+                          'aria-labelledby': nodeTextId,
+                          'aria-selected': isSelected }, 
                        css: { 'tree-item': true, leaf: isLeaf, open: isOpen, rename: isRenaming },                       
                        tabindex: isFocused">        
             <div class="tree-node" 
