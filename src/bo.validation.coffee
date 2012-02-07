@@ -43,6 +43,8 @@ validateValue = (propertyName, propertyValue, model) ->
 propertiesToIgnore = ['errors', 'isValid', 'serverErrors', 'allErrors']
 
 bo.validation =
+    addFormValidationAttribute: false,
+
     validate: (modelToValidate) ->
         valid = true
 
@@ -77,12 +79,22 @@ bo.validation =
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} is required."
 
+            modifyElement: (element) ->                
+                element.setAttribute "aria-required", "true"
+                element.setAttribute "required", "required" if bo.validation.addFormValidationAttribute
+                ko.utils.toggleDomNodeCssClass element, 'required', true
+
+                jQuery("""label[for="#{element.id}"]""").addClass 'required'
+
         regex:
             validator: (value, model, options) ->
                 (emptyValue value) or (options.test value)
 
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} is invalid."
+
+            modifyElement: (element, options) ->                
+                element.setAttribute "pattern", "" + options if bo.validation.addFormValidationAttribute
 
         minLength: 
             validator: (value, model, options) ->
@@ -97,6 +109,9 @@ bo.validation =
         
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must be no more than #{options} characters long."
+
+            modifyElement: (element, options) ->                
+                element.setAttribute "maxLength", "" + options
         
         rangeLength:
             validator: (value, model, options) ->
@@ -105,12 +120,18 @@ bo.validation =
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must be between #{options[0]} and #{options[1]} characters long."
 
+            modifyElement: (element, options) ->                
+                element.setAttribute "maxLength", "" + options[1]
+
         min:
             validator: (value, model, options) ->
                 (emptyValue value) or (value >= options)
 
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to or greater than #{options}."
+
+            modifyElement: (element, options) ->                
+                element.setAttribute "min", "" + options if bo.validation.addFormValidationAttribute
 
         max:
             validator: (value, model, options) ->
@@ -119,12 +140,19 @@ bo.validation =
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to or less than #{options}."
 
+            modifyElement: (element, options) ->                
+                element.setAttribute "max", "" + options if bo.validation.addFormValidationAttribute
+
         range:
             validator: (value, model, options) ->
                 (bo.validation.rules.min.validator value, model, options[0]) and (bo.validation.rules.max.validator value, model, options[1])
 
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must be between #{options[0]} and #{options[1]}."
+
+            modifyElement: (element, options) ->                
+                element.setAttribute "min", "" + options[0] if bo.validation.addFormValidationAttribute
+                element.setAttribute "max", "" + options[1] if bo.validation.addFormValidationAttribute
 
         maxDate:
             validator: (value, model, options) ->
@@ -284,20 +312,23 @@ ko.bindingHandlers.validated =
         value = valueAccessor()
         $element = jQuery element
 
-        if value?.allErrors?
-            $validationElement = jQuery('<span />').insertAfter $element
-            ko.utils.domData.set element, 'validationElement', $validationElement
+        if value?
+            if value.allErrors?
+                $validationElement = jQuery('<span />').insertAfter $element
+                ko.utils.domData.set element, 'validationElement', $validationElement
 
-        if value?.validationRules?.required?
-            $element.attr "aria-required", true
-
-            id = element.id
-            jQuery("""label[for="#{id}"]""").addClass 'required'
-            $element.addClass 'required'
+            if value.validationRules?
+                for rule, options of value.validationRules
+                    if bo.validation.rules[rule].modifyElement?
+                        bo.validation.rules[rule].modifyElement element, options
 
     update: (element, valueAccessor, allBindings, viewModel) ->
         $element = jQuery element
         $validationElement = ko.utils.domData.get element, 'validationElement'
+
+        if $validationElement is undefined
+            return
+
         value = valueAccessor()
         
         if value?.allErrors?        
