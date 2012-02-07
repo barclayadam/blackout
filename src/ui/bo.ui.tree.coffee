@@ -48,7 +48,6 @@ class TreeNode
             @viewModel.focusedNode() is @
 
         @isRenaming = ko.observable false
-
         @editingName = ko.observable()
 
         @isRenaming.subscribe (newValue) =>
@@ -97,6 +96,7 @@ class TreeNode
 
     beginRenaming: ->
         if @canRename
+            @select()
             @isRenaming true
 
     cancelRenaming: ->
@@ -381,19 +381,20 @@ bo.utils.addTemplate 'treeNodeTemplate', '''
                 <!-- /ko -->
                 
                 <span class="icon"></span>
-                <label data-bind="visible: !isRenaming(), text: name, attr: { id: nodeTextId }" unselectable="on"></label>
+                
+                <!-- ko if: isRenaming -->
+                    <input class="rename" type="text" data-bind="
+                               value: editingName, 
+                               valueUpdate: 'keyup', 
+                               hasfocus: isRenaming(), 
+                               command: [{ callback: commitRenaming, event: 'blur', keyboard: 'return' },
+                                         { callback: cancelRenaming, keyboard: 'esc' }]" />
+                <!-- /ko -->
 
                 <!-- ko if: !isRenaming() -->
+                    <label data-bind="visible: !isRenaming(), text: name, attr: { id: nodeTextId }" unselectable="on"></label>
                     <ul data-bind="inlineContextMenu: contextMenu" />
                 <!-- /ko -->
-                
-                <input class="rename" type="text" data-bind="
-                           visible: isRenaming, 
-                           value: editingName, 
-                           valueUpdate: 'keyup', 
-                           hasfocus: isRenaming(), 
-                           command: [{ callback: commitRenaming, event: 'blur', keyboard: 'return' },
-                                     { callback: cancelRenaming, keyboard: 'esc' }]" />
             </div>
             
             <ul role="group" data-bind='visible: isOpen, template: { renderIf: isOpen, name: "treeNodeTemplate", foreach: children }'></ul>
