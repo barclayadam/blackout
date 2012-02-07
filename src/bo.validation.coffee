@@ -84,6 +84,13 @@ bo.validation =
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} is invalid."
 
+        exactLength: 
+            validator: (value, model, options) ->
+                (emptyValue value) or (value.length? and value.length == options)
+
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} must be exactly #{options} characters long."
+
         minLength: 
             validator: (value, model, options) ->
                 (emptyValue value) or (value.length? and value.length >= options)

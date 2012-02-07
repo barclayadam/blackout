@@ -22,7 +22,6 @@ itShouldReturnTrueForEmptyValues = ((validator) ->
         # Assert
         expect(isValid).toBe true
 )
-
 describe 'Validation:', ->
     describe 'When validating', ->
         it 'should throw an exception if a validator is specified that does not exist', ->
@@ -382,9 +381,82 @@ describe 'Validation:', ->
             # Assert
             expect(isValid).toBe false
 
-        it 'should return false if property is not a string', ->
+        it 'should return true if property is an array with required number of items', ->
+            # Act
+            isValid = bo.validation.rules.minLength.validator ['0','1'], {}, 2
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if property is an array with more than required number of items', ->
+            # Act
+            isValid = bo.validation.rules.minLength.validator ['0','1', '2'], {}, 2
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if property is an array with too few items', ->
+            # Act
+            isValid = bo.validation.rules.minLength.validator ['c'], {}, 2
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if property does not have a length', ->
             # Act
             isValid = bo.validation.rules.minLength.validator false, {}, [2, 4]
+
+            # Assert
+            expect(isValid).toBe false
+
+    describe 'With an exactLength validator', ->
+        itShouldReturnTrueForEmptyValues 'exactLength'
+
+        it 'should return true if property is string with exact number of characters allowed', ->
+            # Act
+            isValid = bo.validation.rules.exactLength.validator '01', {}, 2
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if property is string with less than the exact number of characters allowed', ->
+            # Act
+            isValid = bo.validation.rules.exactLength.validator '0', {}, 2
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if property is string with greater than the exact number of characters allowed', ->
+            #Act
+            isValid = bo.validation.rules.exactLength.validator '012', {}, 2
+
+            #Assert
+            expect(isValid).toBe false
+
+        it 'should return true if property is an array with exact number of items allowed', ->
+            # Act
+            isValid = bo.validation.rules.exactLength.validator ['0','1'], {}, 2
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if property is an array with less than the exact number of items allowed', ->
+            # Act
+            isValid = bo.validation.rules.exactLength.validator ['0'], {}, 2
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if property is an array with greater than the exact number of items allowed', ->
+            #Act
+            isValid = bo.validation.rules.exactLength.validator ['0','1','2'], {}, 2
+
+            #Assert
+            expect(isValid).toBe false
+
+        it 'should return false if property does not have a length', ->
+            # Act
+            isValid = bo.validation.rules.exactLength.validator true, {}, 3
 
             # Assert
             expect(isValid).toBe false
@@ -413,7 +485,28 @@ describe 'Validation:', ->
             # Assert
             expect(isValid).toBe false
 
-        it 'should return false if property is not a string', ->
+        it 'should return true if property is an array with maximum number of items allowed', ->
+            # Act
+            isValid = bo.validation.rules.maxLength.validator ['0','1'], {}, 2
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if property is an array with less than maximum number of items', ->
+            # Act
+            isValid = bo.validation.rules.maxLength.validator ['0'], {}, 2
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if property is an array with too many items', ->
+            # Act
+            isValid = bo.validation.rules.maxLength.validator ['c','f','t','y'], {}, 2
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if property does not have a length', ->
             # Act
             isValid = bo.validation.rules.maxLength.validator false, {}, [2, 4]
 
