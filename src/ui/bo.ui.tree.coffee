@@ -3,8 +3,6 @@
 
 window.bo.ui = window.bo.ui || {}
 
-uniqueId = 0
-
 class TreeNode
     constructor: (@data, parent, @viewModel) ->
         @isTreeNode = true
@@ -17,10 +15,14 @@ class TreeNode
 
         @name = ko.observable @data.name
         @isRoot = not parent?
-        @contextMenu = @viewModel.contextMenu
-        
+                
         @type = @data.type || 'folder'
         @cssClass = @data.cssClass || bo.utils.toCssClass @type
+
+        @contextMenu = @viewModel.getContextMenu @type
+
+        @inlineMenus = _.filter @contextMenu, (i) ->
+            i.separator is undefined
 
         @checkState = ko.observable @data.isChecked || false
         @checkState.subscribe (newValue) =>
@@ -314,14 +316,8 @@ class TreeViewModel
             if @focusedNode()
                 @focusedNode().select()
 
-        if @options.contextMenus
-            @contextMenu = new bo.ui.ContextMenu {
-                contextMenus: @options.contextMenus
-                build: (event, dataItem) ->
-                    dataItem.select()
-
-                    { name: dataItem.type }
-            }
+        @getContextMenu = (nodeType) =>
+            @options.contextMenus[nodeType] if @options.contextMenus
             
         @root = new TreeNode @options.root, null, @
 
@@ -386,6 +382,10 @@ bo.utils.addTemplate 'treeNodeTemplate', '''
                 
                 <span class="icon"></span>
                 <label data-bind="visible: !isRenaming(), text: name, attr: { id: nodeTextId }" unselectable="on"></label>
+
+                <!-- ko if: !isRenaming() -->
+                    <ul data-bind="inlineContextMenu: contextMenu" />
+                <!-- /ko -->
                 
                 <input class="rename" type="text" data-bind="
                            visible: isRenaming, 

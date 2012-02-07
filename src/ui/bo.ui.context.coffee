@@ -3,7 +3,7 @@
 # reference "bo.coffee"
 
 class MenuItem
-    constructor: (@data, @container) ->
+    constructor: (@data) ->
         @dataItem = {}
         @text = ko.observable @data.text || ''
         @iconCssClass = ko.observable @data.iconCssClass || ''
@@ -12,7 +12,7 @@ class MenuItem
 
         @run = if _.isFunction @data.run then @data.run else eval(@data.run)
         
-        @subMenu = new Menu { items: @data.items }, @container if @data.items?.length > 0
+        @subMenu = new Menu { items: @data.items } if @data.items?.length > 0
 
     hasChildren: ->
         @subMenu?
@@ -27,21 +27,12 @@ class MenuItem
         if @disabled() || not @run
             false
         
-        @run(@dataItem)
+        @run @dataItem
 
 class Menu
-    constructor: (@data, @viewModel) ->
-        @cssClass = ko.observable @data.cssClass || @viewModel.cssClass
-        @name = ko.observable @data.name
-
-        @items = ko.observableArray (new MenuItem i, @ for i in @data.items)
+    constructor: (@items) ->
+        @items = ko.observableArray (new MenuItem i, @ for i in @items)
         
-class bo.ui.ContextMenu
-    constructor: (configuration) ->
-        @cssClass = ko.observable configuration.cssClass || 'ui-context'
-        @build = if _.isFunction configuration.build then configuration.build else eval(configuration.build)
-        @contextMenus = ko.observableArray (new Menu menu, @ for menu in configuration.contextMenus)
-
 bo.utils.addTemplate 'contextItemTemplate', '''
         <li data-bind="click: execute, bubble: false, css: { separator : separator, disabled : disabled }">
             <!-- ko ifnot: separator -->
@@ -52,7 +43,7 @@ bo.utils.addTemplate 'contextItemTemplate', '''
             <!-- /ko -->
 
             <!-- ko if: hasChildren() -->
-                <div style="position:absolute;">
+                <div style="position: absolute">
                     <ul data-bind='template: { name: "contextItemTemplate", foreach: subMenu.items }'></ul>
                 </div>
             <!-- /ko -->
@@ -60,55 +51,58 @@ bo.utils.addTemplate 'contextItemTemplate', '''
         '''
 
 bo.utils.addTemplate 'contextMenuTemplate', '''
-        <div class="ui-context" style="position:absolute;" data-bind="position: { of: mousePosition }">
+        <div class="ui-context" style="position: absolute" data-bind="position: { of: mousePosition }">
             <div class="gutterLine"></div>
             <ul data-bind='template: { name: "contextItemTemplate", foreach: menu.items }'></ul>
         </div>
         '''
 
+bo.utils.addTemplate 'inlineContextMenuTemplate', '''
+        <ul class="inline-context-menu" data-bind="foreach: $data.items">
+            <li data-bind="click: execute, attr: { 'class': bo.utils.toCssClass(text) }">
+                <span class="icon-wrapper" data-bind="hoverClass: 'ui-state-hover'">
+                    <span class="ui-icon"></span>
+                </span>
+
+                <span class="name" data-bind="text: text"></span>
+            </li>
+        </ul>
+        '''
+
 ko.bindingHandlers.contextMenu = 
     'init': (element, valueAccessor, allBindingsAccessor, viewModel) ->            
-        value = ko.utils.unwrapObservable valueAccessor()
+        menuItems = ko.utils.unwrapObservable valueAccessor()
 
-        if !value
+        if !menuItems
             return
+
+        menu = new Menu menuItems
 
         $element = jQuery element
         parentVM = viewModel
-        builder = value.build
 
-        showContextMenu = (evt) ->
-            config = value.build evt, parentVM
+        showContextMenu = (evt) ->    
+            jQuery('.ui-context').remove()
 
-            if not config?
-                return
+            config =
+                menu: menu
+                mousePosition: evt
 
-            menu = value.contextMenus().filter((x) ->
-                return x.name() == config.name
-            )[0]
-                    
-            if (menu?)
-                jQuery('.ui-context').remove()
+            menuContainer = jQuery('<div></div>').appendTo 'body'
+                                                
+            # assign the data item
+            item.setDataItem parentVM for item in menu.items()
 
-                config.menu = menu
-                config.mousePosition = evt
-                menuContainer = jQuery('<div></div>').appendTo 'body'
-                                                    
-                # assign the data item
-                menuItem.setDataItem parentVM for menuItem in config.menu.items()
-
-                ko.renderTemplate "contextMenuTemplate", config, { }, menuContainer, "replaceNode"
-
-                true
-            else
-                false
+            ko.renderTemplate "contextMenuTemplate", config, {}, menuContainer, "replaceNode"
 
         $element.mousedown (evt) ->
             if evt.which == 3
-                !(showContextMenu evt)
+                showContextMenu evt
+                false
             
         $element.bind 'contextmenu', (evt) -> 
-            !(showContextMenu evt)
+            showContextMenu evt
+            false
 
         jQuery('.ui-context').live 'contextmenu', ->
             false
@@ -118,6 +112,20 @@ ko.bindingHandlers.contextMenu =
 
         jQuery('html').click ->
             jQuery('.ui-context').remove()
+
+ko.bindingHandlers.inlineContextMenu = 
+    'init': (element, valueAccessor, allBindingsAccessor, viewModel) ->            
+        menuItems = ko.utils.unwrapObservable valueAccessor()
+
+        if !menuItems
+            return
+
+        menu = new Menu _.filter menuItems, (i) ->
+            i.separator is undefined
+
+        item.setDataItem viewModel for item in menu.items()
+
+        ko.renderTemplate "inlineContextMenuTemplate", menu, {}, element, "replaceNode"
 
 ko.bindingHandlers.subContext = 
     'init': (element, valueAccessor, allBindingsAccessor, viewModel) ->
