@@ -96,12 +96,26 @@ bo.validation =
             modifyElement: (element, options) ->                
                 element.setAttribute "pattern", "" + options if bo.validation.addFormValidationAttribute
 
+        exactLength: 
+            validator: (value, model, options) ->
+                (emptyValue value) or (value.length? and value.length == options)
+
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} must be exactly #{options} characters long."
+
+            modifyElement: (element, options) ->        
+                element.setAttribute "minLength", "" + options[0]        
+                element.setAttribute "maxLength", "" + options[0]
+
         minLength: 
             validator: (value, model, options) ->
                 (emptyValue value) or (value.length? and value.length >= options)
 
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must be at least #{options} characters long."
+
+            modifyElement: (element, options) ->        
+                element.setAttribute "minLength", "" + options
         
         maxLength:
             validator: (value, model, options) ->
@@ -120,7 +134,8 @@ bo.validation =
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must be between #{options[0]} and #{options[1]} characters long."
 
-            modifyElement: (element, options) ->                
+            modifyElement: (element, options) ->        
+                element.setAttribute "minLength", "" + options[0]        
                 element.setAttribute "maxLength", "" + options[1]
 
         min:
