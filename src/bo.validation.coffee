@@ -104,8 +104,8 @@ bo.validation =
                 "#{bo.utils.fromCamelToTitleCase propertyName} must be exactly #{options} characters long."
 
             modifyElement: (element, options) ->        
-                element.setAttribute "minLength", "" + options[0]        
-                element.setAttribute "maxLength", "" + options[0]
+                element.setAttribute "minLength", "" + options      
+                element.setAttribute "maxLength", "" + options
 
         minLength: 
             validator: (value, model, options) ->
