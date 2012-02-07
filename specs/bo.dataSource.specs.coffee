@@ -40,10 +40,55 @@ describe 'DataSource', ->
             @loader = @spy (o, callback, dataSource) => 
                 @isLoadingDuringProvider = dataSource.isLoading()
                 callback @dataToReturn
+
             @dataSource = new bo.DataSource 
                 provider: @loader
 
             @dataSource.load()
+
+        it 'should have a pagingEnabled property set to false', ->
+            expect(@dataSource.pagingEnabled).toEqual false
+
+        it 'should call the loader with an empty object as first parameter', ->
+            expect(@loader).toHaveBeenCalledWith {}
+
+        it 'should set the items observable to the value passed back from the loader', ->
+            expect(@dataSource.items()).toEqual @dataToReturn
+
+        it 'should set the pageItems observable to the value passed back from the loader', ->
+            expect(@dataSource.pageItems()).toEqual @dataToReturn
+
+        it 'should set the pageNumber observable to 1', ->
+            expect(@dataSource.pageNumber()).toEqual 1
+
+        it 'should set the pageCount observable to 1', ->
+            expect(@dataSource.pageCount()).toEqual 1
+
+        it 'should set the totalCount observable to the length of the loaded data', ->
+            expect(@dataSource.totalCount()).toEqual @dataToReturn.length
+
+        it 'should set the pageSize observable to the length of the loaded data', ->
+            expect(@dataSource.pageSize()).toEqual @dataToReturn.length
+
+        it 'should set isLoading to true during the provider callback', ->
+            expect(@isLoadingDuringProvider).toEqual true
+
+        it 'should set isLoading to false once data has been loaded', ->
+            expect(@dataSource.isLoading()).toEqual false
+
+    describe 'When a data source is auto loaded', ->
+        beforeEach ->
+            @isLoadingDuringProvider = null
+
+            @dataToReturn = [1, 4, 7, 8, 9, 13]
+            @loader = @spy (o, callback, dataSource) => 
+                @isLoadingDuringProvider = dataSource.isLoading()
+                callback @dataToReturn
+                
+            @dataSource = new bo.DataSource 
+                provider: @loader
+
+                autoLoad: true
 
         it 'should have a pagingEnabled property set to false', ->
             expect(@dataSource.pagingEnabled).toEqual false
