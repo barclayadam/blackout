@@ -69,7 +69,11 @@ class bo.ViewModel
             ajaxPromise.done =>
                 @reset()
                 @onSubmitSuccess() if @onSubmitSuccess?
-            
+
+            ajaxPromise
+        else
+            bo.utils.failedPromise()
+
     _areCommandsToSubmitValid: ->
         _.all @commandsToSubmit(), (c) -> c.isValid()
 

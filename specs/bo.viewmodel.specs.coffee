@@ -44,6 +44,24 @@ describe 'ViewModels', ->
             expect(commandSpy).toHaveNotBeenCalled()
             expect(commandBatchSpy).toHaveNotBeenCalled()
 
+        it 'should return a failed promise if isDirty is false', ->
+            # Arrange
+            viewModel = new bo.ViewModel()
+            viewModel.isDirty false
+            failed = false
+
+            validateStub = @stub viewModel, "validate", -> # Do nothing, keep viewModel valid
+            commandSpy = @spy bo.messaging, 'command'
+            commandBatchSpy = @spy bo.messaging, 'commands'
+
+            # Act
+            promise = viewModel.submit()
+            promise.fail ->
+                  failed = true
+
+            # Assert
+            expect(failed).toBe true
+
         it 'should validate values that have been "set"', ->
             # Arrange
             command = new bo.Command 'My Command', 
@@ -116,6 +134,50 @@ describe 'ViewModels', ->
 
             # Assert
             expect(commandStub).toHaveBeenCalledWith command
+
+        it 'should resolve the returned promise when command succeeds if only one exists and isDirty is true', ->
+            # Arrange
+            command = new bo.Command 'Command 1', {}
+            successful = false
+                        
+            class TestVM extends bo.ViewModel
+                getCommandsToSubmit: -> [command]
+
+            viewModel = new TestVM()
+            viewModel.isDirty true
+            viewModel.set 'command', command
+
+            commandStub = @stub bo.messaging, 'command', -> return bo.utils.resolvedPromise()
+
+            # Act
+            promise = viewModel.submit()
+            promise.done ->
+                  successful = true
+
+            # Assert
+            expect(successful).toBe true
+
+        it 'should reject the returned promise when command fails if only one exists and isDirty is true', ->
+            # Arrange
+            command = new bo.Command 'Command 1', {}
+            failed = false
+                        
+            class TestVM extends bo.ViewModel
+                getCommandsToSubmit: -> [command]
+
+            viewModel = new TestVM()
+            viewModel.isDirty true
+            viewModel.set 'command', command
+
+            commandStub = @stub bo.messaging, 'command', -> new bo.utils.failedPromise()
+
+            # Act
+            promise = viewModel.submit()
+            promise.fail ->
+                  failed = true
+
+            # Assert
+            expect(failed).toBe true
 
         it 'should send single batched command set if multiple commands in commandToSubmit and isDirty is true', ->
             # Arrange

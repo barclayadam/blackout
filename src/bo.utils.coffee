@@ -50,6 +50,11 @@ window.bo.utils =
         deferred.resolve()
         deferred
 
+    failedPromise: () ->
+        deferred = new jQuery.Deferred()
+        deferred.reject()
+        deferred
+
     # Given the 'allBindingsAccessor' parameter of a binding handler will
     # determine whether or not the element is enabled, based on both the enabled
     # and disabled binding handlers that exist.
