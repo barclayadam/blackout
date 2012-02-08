@@ -691,21 +691,21 @@ describe 'Validation:', ->
 
         it 'should return true if string property value is equal to minimum date value', ->
             # Act
-            isValid = bo.validation.rules.minDate.validator '2011/01/01', {}, '2011/01/01'
+            isValid = bo.validation.rules.minDate.validator '01/01/2011', {}, '01/01/2011'
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if string property value is after than minimum date value', ->
             # Act
-            isValid = bo.validation.rules.minDate.validator '2011/01/01', {}, '2010/01/01'
+            isValid = bo.validation.rules.minDate.validator '01/01/2011', {}, '01/01/2010'
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return false if string property value is before than minimum option value', ->
             # Act
-            isValid = bo.validation.rules.minDate.validator '2011/01/01', {}, '2012/01/01'
+            isValid = bo.validation.rules.minDate.validator '01/01/2011', {}, '01/01/2012'
 
             # Assert
             expect(isValid).toBe false
@@ -743,21 +743,21 @@ describe 'Validation:', ->
 
         it 'should return true if string property value is equal to maximum date value', ->
             # Act
-            isValid = bo.validation.rules.maxDate.validator '2011/01/01', {}, '2011/01/01'
+            isValid = bo.validation.rules.maxDate.validator '01/01/2011', {}, '01/01/2011'
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if string property value is less than maximum date value', ->
             # Act
-            isValid = bo.validation.rules.maxDate.validator '2010/01/01', {}, '2011/01/01'
+            isValid = bo.validation.rules.maxDate.validator '01/01/2010', {}, '01/01/2011'
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return false if string property value is greater than maximum option value', ->
             # Act
-            isValid = bo.validation.rules.maxDate.validator '2011/01/01', {}, '2010/01/01'
+            isValid = bo.validation.rules.maxDate.validator '01/01/2011', {}, '01/01/2010'
 
             # Assert
             expect(isValid).toBe false

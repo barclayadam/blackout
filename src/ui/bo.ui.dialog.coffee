@@ -47,11 +47,20 @@ class bo.Dialog
         jQuery(@_dialogElement).dialog 'close'
 
 ko.bindingHandlers.closeDialog =
-    init: (element, valueAccessor) ->
+    init: (element, valueAccessor, allBindingsAccessor, viewModel) ->
+        value = valueAccessor()
         $element = jQuery element
         
         $element.click ->
-            jQuery(element).parents('.bo-dialog').dialog 'close'
+            if _.isFunction value
+                promise = value.apply viewModel, [viewModel]
+                if promise?.done?
+                    promise.done ->
+                        $element.parents('.bo-dialog').dialog 'close'
+                else
+                    $element.parents('.bo-dialog').dialog 'close'
+            else
+                $element.parents('.bo-dialog').dialog 'close'
 
             false
 

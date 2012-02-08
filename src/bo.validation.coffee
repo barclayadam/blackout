@@ -6,7 +6,12 @@ emptyValue = (value) ->
 
 parseDate = (value) ->
     return value           if _.isDate value
-    return new Date(value) if _.isString value
+    
+    if _.isString value
+        try
+            return $.datepicker.parseDate 'dd/mm/yy', value 
+        catch e
+            undefined
 
 getMessageCreationFunction = (name, propertyRules, ruleName) ->
     messagePropertyName = "#{ruleName}Message"
