@@ -143,7 +143,7 @@ class HistoryManager
         @transientQueryParameters = {}
         
         if @initialising
-            @historyjs.replaceState null, routeMessage.route.title, @_generateUrl()
+            document.title = routeMessage.route.title
         else
             @historyjs.pushState null, routeMessage.route.title, @_generateUrl()
 
