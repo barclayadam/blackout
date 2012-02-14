@@ -142,7 +142,10 @@ class HistoryManager
         @currentRouteUrl = routeMessage.url
         @transientQueryParameters = {}
         
-        @historyjs.pushState null, routeMessage.route.title, @_generateUrl()
+        if @initialising
+            @historyjs.replaceState null, routeMessage.route.title, @_generateUrl()
+        else
+            @historyjs.pushState null, routeMessage.route.title, @_generateUrl()
 
         @navigating = false
 
@@ -157,6 +160,7 @@ class HistoryManager
 
     _handleExternalChange: ->
         if not @navigating
+            @initialising = true
             fullUrl = @_getNormalisedHash()
             queryStringDelimiterIndex = fullUrl.indexOf('?')
 
@@ -168,6 +172,8 @@ class HistoryManager
                 bo.bus.publish 'urlChanged', 
                     url: fullUrl.substring(0, queryStringDelimiterIndex)
                     fullUrl: fullUrl 
+            
+            @initialising = false
 
     # Gets a normalised hash value, a string that can be used to determine what route is
     # currently being accessed. This will strip any leading periods and remove the query string,
