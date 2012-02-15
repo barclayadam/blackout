@@ -85,6 +85,7 @@ ko.bindingHandlers.region =
         part = regionManager.currentParts()[region]
 
         if part?
+            element.id = "#{bo.utils.toCssClass part.name}-part"
             ko.renderTemplate part.templateName, part.viewModel, {}, element, "replaceChildren"
         else
             ko.removeNode element

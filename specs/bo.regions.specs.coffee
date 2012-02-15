@@ -487,7 +487,7 @@ describe 'Region Binding Handler', ->
             @manager.activate [@homePart]
 
             # Assert
-            expect(managerDiv.find("#regionManagerContainer")).toHaveHtml """<div data-bind="region: 'main'">#{homePartTemplate}</div>"""
+            expect(managerDiv.find("#regionManagerContainer")).toHaveHtml """<div data-bind="region: 'main'" id="home-part">#{homePartTemplate}</div>"""
 
         it 'should render the part template with the part viewModel', ->
             # Arrange
@@ -510,3 +510,24 @@ describe 'Region Binding Handler', ->
 
             # Assert
             expect(boundViewModel).toBe @homePartViewModel
+
+        it 'should add an id to the region element using the name of the part', ->
+            # Arrange
+            boundViewModel = null
+
+            ko.bindingHandlers.testRegion =
+                init: (element, valueAccessor, allBindingAccessor, viewModel) ->
+                    boundViewModel = viewModel
+
+            managerDiv = jQuery("""<div id="HomePartTemplate"></div>
+                                   <div data-bind="regionManager: regionManager">
+                                     <div class="region-to-check" data-bind="region: 'main'" />
+                                   </div>""").appendTo(@fixture)
+
+            ko.applyBindings({ regionManager: @manager }, @fixture[0])
+
+            # Act
+            @manager.activate [@homePart]
+
+            # Assert
+            expect(@fixture.find(".region-to-check")).toHaveId 'home-part'

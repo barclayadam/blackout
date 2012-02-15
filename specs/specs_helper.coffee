@@ -90,6 +90,7 @@ beforeEach ->
             @actual.attr(attributeName) is expectedAttributeValue
 
         toHaveId: (id) ->
+            @message = -> "Expected #{@actual.selector} to have id '#{id}' was '#{@actual.attr("id")}'."
             @actual.attr("id") is id
 
         toHaveHtml: (html) ->
