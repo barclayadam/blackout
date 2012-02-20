@@ -10,7 +10,10 @@ beforeEach ->
 
     publishSpy = window.sinonSandbox.spy bo.bus, "publish"
 
+    @fixture = jQuery('<div id="fixture" />').appendTo('body')
+
     @setHtmlFixture = (html) =>
+        @fixture.empty()
         jQuery(html).appendTo(@fixture)
 
     @applyBindingsToHtmlFixture = (viewModel) =>
@@ -49,8 +52,6 @@ beforeEach ->
 
         toHaveNotBeenPublishedWith: (args) ->
             publishSpy.neverCalledWith @actual, args
-
-    @fixture = jQuery('<div id="fixture" />').appendTo('body')
 
     @addMatchers
         toHaveClass: (className) ->

@@ -13,9 +13,11 @@ ko.bindingHandlers.tabIndex =
         value = ko.utils.unwrapObservable valueAccessor()
         previousValue = element.tabIndex is 0
 
-        if value is not previousValue
-	        if value is true
-	            element.tabIndex = "0"
-	            element.focus()
-	        else 
-	            element.tabIndex = "-1"
+        if not element.tabIndexAdded or value is not previousValue            
+            element.tabIndexAdded = true
+
+            if value is true
+                element.tabIndex = "0"
+                element.focus()
+            else 
+                element.tabIndex = "-1"

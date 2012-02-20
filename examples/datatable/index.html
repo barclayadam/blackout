@@ -1,0 +1,73 @@
+<!doctype html>
+<!--[if lt IE 7]> <html class="ie6" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8" />
+    <title>Blackout - Datatable</title>
+
+    <script type="text/javascript" src="../lib/json2.js"></script>
+    <script type="text/javascript" src="../lib/jquery.js"></script>
+    <script type="text/javascript" src="../lib/underscore.js"></script>
+    <script type="text/javascript" src="../lib/history.js"></script>
+    <script type="text/javascript" src="../lib/history.html4.js"></script>
+    <script type="text/javascript" src="../lib/history.adapter.jquery.js"></script>
+    <script type="text/javascript" src="../lib/jquery.hotkeys.js"></script>
+    <script type="text/javascript" src="../lib/jquery.ui.js"></script>
+    <script type="text/javascript" src="../lib/knockout.js"></script>
+    <script type="text/javascript" src="../lib/blackout.js"></script>
+
+    <style type="text/css">
+        .selected {
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Or:  <table data-bind="dataTable: dt"> -->
+<table data-bind="dataTable: ds, selected: selected">
+    <thead>
+        <th data-bind="header: 'username'">Username</th>
+        <th data-bind="header: 'name'">Name</th>
+        <th data-bind="header: 'userType'">User Type</th>
+        <th data-bind="header: 'expiryDate'">Expiry Date</th>
+        <th data-bind="header: 'status'">Status</th>
+    </thead>
+
+    <tbody data-bind="tableBody: true">
+        <tr data-bind="tableRow: true">
+            <td data-bind="column: 'username'" />
+            <td data-bind="column: 'name'" />
+            <td data-bind="column: 'userType'" />
+            <td data-bind="column: 'expiryDate'" />
+            <td data-bind="column: 'status'" />
+        </tr>
+    </tbody>
+</table>
+
+<div data-bind="pager: ds" />
+
+<script type="text/javascript">
+    var dataSource = new bo.DataSource({
+            initialSortOrder: 'username',
+
+            clientPaging: 4,
+
+            provider: [
+                {"expiryDate":"11/02/2012","status":"Expired","userType":"Administrator","name":"John Barclay"  ,"username":"John.Barclay@taylorsclothing.com"},
+                {"expiryDate":null        ,"status":"Active" ,"userType":"User"         ,"name":"Adrian Ballard","username":"Adrian.Ballard@taylorsclothing.com"},
+                {"expiryDate":null        ,"status":"Active" ,"userType":"Administrator","name":"Alex Smith"    ,"username":"Alex.Smith@taylorsclothing.com"},
+                {"expiryDate":"06/03/2012","status":"Active" ,"userType":"User"         ,"name":"Becky Jones"   ,"username":"Becky.Jones@taylorsclothing.com"},
+                {"expiryDate":null        ,"status":"Active" ,"userType":"User"         ,"name":"Bill Taylor"   ,"username":"Bill.Taylor@taylorsclothing.com"},
+                {"expiryDate":"29/02/2012","status":"Active" ,"userType":"Administrator","name":"Duncan Smith"  ,"username":"Duncan.Smith@taylorsclothing.com"}
+        ]}),
+        dataTable = new bo.DataTable(dataSource, {
+            selectable: true
+        }),
+        selected = ko.observable();
+
+    ko.applyBindings({ dt: dataTable, ds: dataSource, selected: selected });
+</script>
+
+</body>
+</html>
