@@ -77,9 +77,10 @@ ko.bindingHandlers.dataTable =
         ko.utils.domData.set element, '$dataTable', dataTable
 
         ko.utils.toggleDomNodeCssClass element, 'data-table', true
-
+                
         if dataTable.options.selectable is true
             element.tabIndex = 0
+            ko.utils.toggleDomNodeCssClass element, 'selectable', true
 
         ko.bindingHandlers.command.init element, (->
             [
@@ -110,13 +111,15 @@ ko.bindingHandlers.dataTable =
 # A binding handler that should be applied to the th elements of a data table to provide column sorting
 # features.
 #
-# This binding handler delegates all work to the `columnSort` binding handler, providing a simpler syntax 
+# This binding handler delegates much work to the `columnSort` binding handler, providing a simpler syntax 
 # by creating the required data structure (e.g. automatically setting the `dataSource` property) by only requiring
 # the name of the column being sorted.       
 ko.bindingHandlers.header =
     init: (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) ->
         columnName = ko.utils.unwrapObservable valueAccessor()
         dataTable = viewModel
+
+        ko.utils.toggleDomNodeCssClass element, (bo.utils.toCssClass columnName), true
 
         if allBindingsAccessor()['notSortable'] is undefined
             ko.bindingHandlers.columnSort.init element, -> { dataSource: dataTable.dataSource, property: columnName }
@@ -163,4 +166,6 @@ ko.bindingHandlers.tableRow =
 ko.bindingHandlers.column =
     update: (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) ->
         columnName = ko.utils.unwrapObservable valueAccessor()
+
+        ko.utils.toggleDomNodeCssClass element, (bo.utils.toCssClass columnName), true
         ko.bindingHandlers.text.update element, -> viewModel[columnName]

@@ -5,14 +5,14 @@ dataItemInnerTemplate = '''
     <thead>
         <th data-bind="header: 'id', notSortable: true">Id</th>
         <th data-bind="header: 'name'">Name</th>
-        <th data-bind="header: 'status'">Status</th>
+        <th data-bind="header: 'userType'">User Type</th>
     </thead>
 
     <tbody data-bind="tableBody: true">
         <tr data-bind="tableRow: true">
             <td data-bind="column: 'id'" />
             <td data-bind="column: 'name'" />
-            <td data-bind="column: 'status'" />
+            <td data-bind="column: 'userType'" />
         </tr>
     </tbody>  
 '''
@@ -122,12 +122,12 @@ describe 'Data Table', ->
             beforeEach ->
                 @dataSource = new bo.DataSource
                     provider: [{ 
-                            "status": "Expired"
+                            "userType": "Administrator"
                             "name":"Adam Barclay"
                             "id":"93d3726e-182f-43f7-b50d-dcc5e86e6fe5"
                         },
                         { 
-                            "status": "Active"
+                            "userType": "Editor"
                             "name":"John Smith"
                             "id":"1553726e-180f-3e27-b50d-dc8646e6ac14"
                         }]  
@@ -147,7 +147,7 @@ describe 'Data Table', ->
             it 'should render the text of the items using the column binding handler', ->
                 expect(@grid.find("tbody tr:first td:eq(0)")).toHaveText "93d3726e-182f-43f7-b50d-dcc5e86e6fe5"
                 expect(@grid.find("tbody tr:first td:eq(1)")).toHaveText "Adam Barclay"
-                expect(@grid.find("tbody tr:first td:eq(2)")).toHaveText "Expired" 
+                expect(@grid.find("tbody tr:first td:eq(2)")).toHaveText "Administrator" 
 
             describe 'and a selected binding handler defined on the table, with a selected row', ->
                 beforeEach ->
@@ -214,12 +214,12 @@ describe 'Data Table', ->
             beforeEach ->
                 @dataSource = new bo.DataSource
                     provider: [{ 
-                            "status": "Expired"
+                            "userType": "Administrator"
                             "name":"Adam Barclay"
                             "id":"93d3726e-182f-43f7-b50d-dcc5e86e6fe5"
                         },
                         { 
-                            "status": "Active"
+                            "userType": "Editor"
                             "name":"John Smith"
                             "id":"1553726e-180f-3e27-b50d-dc8646e6ac14"
                         }]  
@@ -246,13 +246,23 @@ describe 'Data Table', ->
                 expect(@grid.find("th:eq(1)")).toHaveClass 'sortable'
                 expect(@grid.find("th:eq(2)")).toHaveClass 'sortable'
 
+            it 'should add a class to headers based on column name', ->
+                expect(@grid.find("th:eq(0)")).toHaveClass 'id'
+                expect(@grid.find("th:eq(1)")).toHaveClass 'name'
+                expect(@grid.find("th:eq(2)")).toHaveClass 'user-type'
+
+            it 'should add a class to columns based on column name', ->
+                expect(@grid.find("tr td:eq(0)")).toHaveClass 'id'
+                expect(@grid.find("tr td:eq(1)")).toHaveClass 'name'
+                expect(@grid.find("tr td:eq(2)")).toHaveClass 'user-type'
+
             it 'should render a table row for every item in the page being shown', ->
                 expect(@grid.find("tbody tr").length).toBe 2
 
             it 'should render the text of the items using the column binding handler', ->
                 expect(@grid.find("tbody tr:first td:eq(0)")).toHaveText "93d3726e-182f-43f7-b50d-dcc5e86e6fe5"
                 expect(@grid.find("tbody tr:first td:eq(1)")).toHaveText "Adam Barclay"
-                expect(@grid.find("tbody tr:first td:eq(2)")).toHaveText "Expired"
+                expect(@grid.find("tbody tr:first td:eq(2)")).toHaveText "Administrator"
 
             describe 'and onNoRecords element defined', ->
                 beforeEach ->  
@@ -327,7 +337,10 @@ describe 'Data Table', ->
                     @grid = @fixture.find("table")
 
                 it 'should set the tabindex attribute of the table to 0', ->
-                    expect(@grid[0].tabIndex).toBe 0
+                    expect(@grid[0].tabIndex).toBe 
+
+                it 'should add a selectable class to the table', ->
+                    expect(@grid).toHaveClass 'selectable'
 
                 it 'should not include a row with the selected class when no item selected', ->
                     expect(@grid.find("tbody tr.selected").length).toBe 0

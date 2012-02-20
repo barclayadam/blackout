@@ -55,7 +55,7 @@ beforeEach ->
 
     @addMatchers
         toHaveClass: (className) ->
-            @message = -> "Expected '#{@actual.selector}' to have CSS class '#{className}'."
+            @message = -> "Expected '#{@actual.selector}' to have CSS class '#{className}'. Has '#{@actual.attr('class')}'."
             @actual.hasClass className
 
         toNotHaveClass: (className) ->

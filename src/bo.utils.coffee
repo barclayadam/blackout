@@ -17,9 +17,10 @@ window.bo.utils =
         if _.isArray value then ko.observableArray value else ko.observable value
 
     toCssClass: (value) ->
-        value = ko.utils.unwrapObservable value
+        value = (ko.utils.unwrapObservable value)
 
-        if value 
+        if value
+            value = bo.utils.fromCamelToTitleCase value 
             value = value.replace /[ /\\]/g, '-'
             value = value.toLowerCase()
             value
