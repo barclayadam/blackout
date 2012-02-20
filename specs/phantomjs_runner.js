@@ -34,7 +34,8 @@ if ( phantom.args.length !== 2 ) {
             }, function () { // or, once it times out...
                 console.log("Tests have timed out.");
                 phantom.exit(1);
-            });
+            },
+            25000); // Timeout in ms);
         } else {
             console.log("phantomjs> Could not load '" + htmlrunner + "'.");
             phantom.exit(1);

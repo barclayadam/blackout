@@ -168,4 +168,4 @@ ko.bindingHandlers.column =
         columnName = ko.utils.unwrapObservable valueAccessor()
 
         ko.utils.toggleDomNodeCssClass element, (bo.utils.toCssClass columnName), true
-        ko.bindingHandlers.text.update element, -> viewModel[columnName], allBindingsAccessor, viewModel, bindingContext
+        ko.bindingHandlers.text.update element, (-> viewModel[columnName]), allBindingsAccessor, viewModel, bindingContext
