@@ -339,7 +339,7 @@ ko.bindingHandlers.validated =
 
             if value.validationRules?
                 for rule, options of value.validationRules
-                    if bo.validation.rules[rule].modifyElement?
+                    if bo.validation.rules[rule]?.modifyElement?
                         bo.validation.rules[rule].modifyElement element, options
 
     update: (element, valueAccessor, allBindings, viewModel) ->
