@@ -140,6 +140,17 @@ describe 'Sitemap', ->
             # Assert
             expect(sitemap.nodes[0].isVisible()).toEqual false
 
+        it 'creates a node with isVisible observable set to value of isInNavigation function', ->
+            # Act
+            sitemap = new bo.Sitemap new bo.RegionManager(),
+                'Home':
+                    url: '/'
+                    parts: [new bo.Part 'My Shiny Part' ]
+                    isInNavigation: -> false
+
+            # Assert
+            expect(sitemap.nodes[0].isVisible()).toEqual false
+
         it 'creates a node with isVisible observable set to isInNavigation observable', ->
             # Arrange
             inNavigationObservable = ko.observable true

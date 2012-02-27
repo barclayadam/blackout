@@ -27,7 +27,9 @@ class SitemapNode
         if definition.isInNavigation?
             if ko.isObservable definition.isInNavigation 
                 @isVisible = definition.isInNavigation 
-            else 
+            else if _.isFunction definition.isInNavigation
+                @isVisible = ko.computed definition.isInNavigation
+            else
                 @isVisible = ko.observable definition.isInNavigation
         else
             @isVisible = ko.observable true
