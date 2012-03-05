@@ -29,5 +29,7 @@ src\ui\bo.ui.navigation.coffee
 src\ui\bo.ui.notifications.coffee
 src\ui\bo.ui.output.coffee
 src\ui\bo.ui.pager.coffee
+src\ui\bo.ui.pagerSummary.coffee
+src\ui\bo.ui.recordCount.coffee
 src\ui\bo.ui.splitter.coffee
 src\ui\bo.ui.tree.coffee

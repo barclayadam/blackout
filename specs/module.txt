@@ -14,7 +14,9 @@ specs\bo.viewmodel.specs.coffee
 specs\ui\bo.ui.columnSort.specs.coffee    
 specs\ui\bo.ui.dataTable.specs.coffee
 specs\ui\bo.ui.dialog.specs.coffee
-specs\ui\bo.ui.enable.specs.coffee  
-specs\ui\bo.ui.notifications.specs.coffee    
-specs\ui\bo.ui.tree.specs.coffee     
-specs\ui\bo.ui.pager.specs.coffee 
+specs\ui\bo.ui.enable.specs.coffee
+specs\ui\bo.ui.notifications.specs.coffee
+specs\ui\bo.ui.tree.specs.coffee    
+specs\ui\bo.ui.pager.specs.coffee
+specs\ui\bo.ui.pagerSummary.specs.coffee
+specs\ui\bo.ui.recordCount.specs.coffee
