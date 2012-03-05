@@ -5,7 +5,7 @@
 #reference "bo.routing.coffee"
 #reference "bo.bus.coffee"
 
-class bo.ViewModel
+class bo.ViewModel extends bo.Bus
     constructor: ->
         @_toValidate = ko.observableArray()
 
