@@ -226,48 +226,6 @@ describe 'Routing:', ->
 
                 # Assert
                 expect('routeNavigated').toHaveNotBeenPublished()
-                
-    describe 'Routing Manager', ->
-        bo.routing.manager.initialise()
-
-        describe 'When statechange window event is triggered', ->
-            describe 'and no query string parameters exist', ->
-                it 'raises urlChanged event with current hash', ->
-                    # Arrange
-                    @stub window.History, 'getState', -> { hash: '/My Navigated URL' }
-
-                    # Act
-                    jQuery(window).trigger 'statechange'
-
-                    # Assert
-                    expect('urlChanged').toHaveBeenPublishedWith 
-                        url: '/My Navigated URL'
-                        fullUrl: '/My Navigated URL'
-
-                it 'raises urlChanged event with current hash having period prefix removed', ->
-                    # Arrange
-                    @stub window.History, 'getState', -> { hash: './My Navigated URL' }
-
-                    # Act
-                    jQuery(window).trigger 'statechange'
-
-                    # Assert
-                    expect('urlChanged').toHaveBeenPublishedWith 
-                        url: '/My Navigated URL'
-                        fullUrl: '/My Navigated URL'
-
-            describe 'and query string parameters exist', ->
-                it 'raises urlChanged event with url without query string and full url', ->
-                    # Arrange
-                    @stub window.History, 'getState', -> { hash: '/My Navigated URL?value=true' }
-
-                    # Act
-                    jQuery(window).trigger 'statechange'
-
-                    # Assert
-                    expect('urlChanged').toHaveBeenPublishedWith 
-                        url: '/My Navigated URL'
-                        fullUrl: '/My Navigated URL?value=true'
             
     describe 'navigateTo binding handler', ->
         it 'should publish a navigateToRoute message when clicked', ->

@@ -94,13 +94,31 @@ class Route
     toString: ->
         "#{@name}: #{@definition}"
 
+# Cached regex for cleaning leading hashes and slashes .
+routeStripper = /^[#\/]/
+
+# Cached regex for detecting MSIE.
+isExplorer = /msie [\w.]+/
+
+# The default interval to poll for hash changes, if necessary, is
+# twenty times a second.
+interval = 50
+
+# Gets the true hash value. Cannot use location.hash directly due to bug
+# in Firefox where location.hash will always be decoded.
+getHash = (windowOverride) ->
+    loc = (if windowOverride then windowOverride.location else window.location)
+    match = loc.href.match(/#(.*)$/)
+    (if match then match[1] else "")
+
+# History manager shamelessly borrowed (and reworked) from backbone.js (https://github.com/documentcloud/backbone/blob/master/backbone.js)
 class HistoryManager
-    constructor: () ->
-        @historyjs = window.History
+    constructor: (options) ->
+        @options          = _.extend {}, { root: '/' }, options
+        @_hasPushState    = !!(window.history && window.history.pushState)
+
         @persistedQueryParameters = {}
         @transientQueryParameters = {}
-
-        @currentRouteUrl = ''
 
     # Sets a query string paramater, making it a navigatable feature such that
     # the back button will load the URL before this query string parameter
@@ -117,71 +135,115 @@ class HistoryManager
         @persistedQueryParameters[name] = value if isPersisted
         @transientQueryParameters[name] = value if not isPersisted
         
-        @historyjs.pushState null, document.title, @_generateUrl()
-
-        @navigating = false
-            
-    # Initialises this router, registering the necessary events to provide URL updating based
-    # on the current route (see `routeNavigated` message), in addition to publishing the initial
-    # `urlChanged` message to start an application based on the current URL.
-    #
-    # This method should be called after all routes have been registered and event handlers
-    # subscribed so when it is called those subscribers can react accordingly to the initial route.
-    initialise: ->
-        bo.bus.subscribe 'routeNavigated', (d) =>
-            @_updateFromRoute d
-
-        jQuery(window).bind 'statechange', => 
-            @_handleExternalChange()
-
-        @_handleExternalChange()
-          
-    _updateFromRoute: (routeMessage) ->
-        @navigating = true
-
-        @currentRouteUrl = routeMessage.url
-        @transientQueryParameters = {}
-        
-        if @initialising
-            document.title = routeMessage.route.title
-        else
-            @historyjs.pushState null, routeMessage.route.title, @_generateUrl()
+        #@historyjs.pushState null, document.title, @_generateUrl()
 
         @navigating = false
 
-    # Given a 'route URL' will generate the full URL that should be pushed as the new state, including
-    # any current query string paramaters.
-    _generateUrl: () ->
-        queryString = new bo.QueryString()
-        queryString.setAll @transientQueryParameters
-        queryString.setAll @persistedQueryParameters
-
-        @currentRouteUrl + queryString.toString() 
-
-    _handleExternalChange: ->
-        if not @navigating
-            @initialising = true
-            fullUrl = @_getNormalisedHash()
-            queryStringDelimiterIndex = fullUrl.indexOf('?')
-
-            if queryStringDelimiterIndex is -1
-                bo.bus.publish 'urlChanged', 
-                    url: fullUrl, 
-                    fullUrl: fullUrl
+    # Get the cross-browser normalized URL fragment, either from the URL,
+    # the hash, or the override.
+    getFragment: (fragment, forcePushState) ->
+        unless fragment?
+            if @_hasPushState or forcePushState
+                fragment = window.location.pathname
+                fragment += window.location.search || ''
             else
-                bo.bus.publish 'urlChanged', 
-                    url: fullUrl.substring(0, queryStringDelimiterIndex)
-                    fullUrl: fullUrl 
-            
-            @initialising = false
+                fragment = getHash()
 
-    # Gets a normalised hash value, a string that can be used to determine what route is
-    # currently being accessed. This will strip any leading periods and remove the query string,
-    # leaving a root-level URL that should match a route definition.
-    _getNormalisedHash: () ->
-        currentHash = @historyjs.getState().hash
-        currentHash = currentHash.substring(1) if currentHash.startsWith('.')
-        currentHash = currentHash.replace bo.query.current().toString(), ''
+        fragment = fragment.substr(@options.root.length) unless fragment.indexOf @options.root
+        fragment.replace routeStripper, ""
+
+    initialise: ->
+        fragment = @getFragment()
+        docMode  = document.documentMode
+        oldIE    = isExplorer.exec(navigator.userAgent.toLowerCase()) && (!docMode || docMode <= 7)
+  
+        if oldIE
+            @iframe = jQuery('<iframe src="javascript:0" tabindex="-1" />').hide().appendTo('body')[0].contentWindow;
+            @navigate(fragment);
+      
+        # Depending on whether we're using pushState or hashes, and whether
+        # 'onhashchange' is supported, determine how we check the URL state.
+        if this._hasPushState
+            jQuery(window).bind 'popstate', => @_checkUrl()
+        else if ('onhashchange' in window) && !oldIE
+            jQuery(window).bind 'hashchange', => @_checkUrl()
+        else 
+            setInterval (=> @_checkUrl()), interval
+      
+        # Determine if we need to change the base url, for a pushState link
+        # opened by a non-pushState browser.
+        @fragment = fragment;
+      
+        loc = window.location;
+        atRoot  = loc.pathname == @options.root;
+  
+        if !this._hasPushState && !atRoot
+            # If we've started off with a route from a `pushState`-enabled browser,
+            # but we're currently in a browser that doesn't support it...
+            @fragment = @getFragment(null, true);
+            window.location.replace @options.root + '#' + @fragment;
+  
+            # Return immediately as browser will do redirect to new url
+            return true;
+        else if this._hasPushState && atRoot && loc.hash
+            # Or if we've started out with a hash-based route, but we're currently
+            # in a browser where it could be `pushState`-based instead...
+            @fragment = getHash().replace routeStripper, ''
+            window.history.replaceState {}, document.title, loc.protocol + '//' + loc.host + @options.root + @fragment
+        
+        bo.bus.subscribe 'routeNavigated', (d) =>
+            @_updateFromRoute d.url, d.route.title
+
+        @_publishCurrent()
+  
+    # Checks the current URL to see if it has changed, and if it has,
+    # calls `_publishCurrent`, normalizing across the hidden iframe.
+    _checkUrl: (e) ->
+        current = @getFragment()
+        current = @getFragment(getHash(@iframe)) if current is @fragment and @iframe
+  
+        return false if current is @fragment
+  
+        @_updateFromRoute current if @iframe
+        @_publishCurrent()
+  
+    # Attempt to load the current URL fragment. If a route succeeds with a
+    # match, returns `true`. If no defined routes matches the fragment,
+    # returns `false`.
+    _publishCurrent: (fragmentOverride) ->
+        fragment = @fragment = @getFragment fragmentOverride
+  
+        # Publish message?        
+        bo.bus.publish 'urlChanged', 
+            url: fragment, 
+            fullUrl: fragment
+  
+    # Save a fragment into the hash history, or replace the URL state if the
+    # 'replace' option is passed. You are responsible for properly URL-encoding
+    # the fragment in advance.
+    _updateFromRoute: (fragment, title) ->  
+        document.title = title
+
+        frag = (fragment or "").replace(routeStripper, "")
+  
+        return  if @fragment is frag
+  
+        if @_hasPushState
+            frag = @options.root + frag  unless frag.indexOf(@options.root) is 0
+            @fragment = frag
+            window.history.pushState {}, title, frag
+        else
+            @fragment = frag
+            @_updateHash window.location, frag
+
+            if @iframe and (frag isnt @getFragment(@getHash(@iframe)))
+                @iframe.document.open().close()
+                @_updateHash @iframe.location, frag
+  
+    # Update the hash location, either replacing the current entry, or adding
+    # a new one to the browser history.
+    _updateHash: (location, fragment, replace) ->
+        location.hash = fragment
 
 bo.routing =
     Route: Route    
