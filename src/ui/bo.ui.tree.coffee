@@ -86,9 +86,10 @@ class TreeNode
         @children (@_createChild n for n in childrenToConvert)
 
     select: ->        
-        @viewModel.selectedNode @
+        @_executeHandler 'onSelect', =>
+            @viewModel.selectedNode @
 
-        @focus()
+            @focus()
         
     toggleFolder: ->
         @children.load =>
@@ -345,11 +346,11 @@ TreeViewModel.defaultOptions =
         defaultChildName: 'New Node'
 
     handlers:
-        onSelect: (onSuccess) -> onSuccess()
-        onAddNewChild: (type, name, onSuccess) -> onSuccess()
-        onRename: (from, to, onSuccess) -> onSuccess()
-        onDelete: (action, onSuccess) -> onSuccess()
-        onMove: (newParent, onSuccess) -> onSuccess()
+        onSelect: (node, onSuccess) -> onSuccess()
+        onAddNewChild: (node, type, name, onSuccess) -> onSuccess()
+        onRename: (node, from, to, onSuccess) -> onSuccess()
+        onDelete: (node, onSuccess) -> onSuccess()
+        onMove: (node, newParent, onSuccess) -> onSuccess()
         canAcceptDrop: (node, droppable, defaultAcceptance) -> defaultAcceptance droppable
         onAcceptUnknownDrop: (node, droppable) ->
            
