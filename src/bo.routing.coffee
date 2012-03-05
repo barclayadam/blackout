@@ -159,7 +159,7 @@ class HistoryManager
   
         if oldIE
             @iframe = jQuery('<iframe src="javascript:0" tabindex="-1" />').hide().appendTo('body')[0].contentWindow;
-            @navigate(fragment);
+            @_updateFromRoute fragment, document.title
       
         # Depending on whether we're using pushState or hashes, and whether
         # 'onhashchange' is supported, determine how we check the URL state.
@@ -236,7 +236,7 @@ class HistoryManager
             @fragment = frag
             @_updateHash window.location, frag
 
-            if @iframe and (frag isnt @getFragment(@getHash(@iframe)))
+            if @iframe and (frag isnt @getFragment getHash @iframe)
                 @iframe.document.open().close()
                 @_updateHash @iframe.location, frag
   
