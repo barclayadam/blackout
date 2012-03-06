@@ -108,7 +108,7 @@ class TreeNode
         if @isRenaming()
             @isRenaming false
 
-            if @name() != @editingName()
+            if @editingName() and @name() != @editingName()
                 @_executeHandler 'onRename', @name(), @editingName(), =>
                     @name(@editingName())
 
