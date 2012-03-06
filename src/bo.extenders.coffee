@@ -38,31 +38,6 @@ ko.extenders.publishable = (target, messageOrOptions) ->
                 
     result
 
-# Extends an observable to be linked to a query string parameter of a URL, allowing
-# deep links and back button support to interact with values of an observable.
-ko.extenders.addressable = (target, paramNameOrOptions) ->
-    if typeof paramNameOrOptions is "string"
-        paramName = paramNameOrOptions
-        isPersistent = false
-    else
-        paramName = paramNameOrOptions.name
-        isPersistent = paramNameOrOptions.persistent
-
-    target.subscribe (newValue) ->
-        bo.routing.manager.setQueryParameter paramName, newValue, isPersistent
-
-    # If URL is changed, update observable
-    jQuery(window).bind "statechange", ->
-        newValue = bo.query.get paramName
-
-        if target() != newValue
-            target newValue
-
-    # Set value to value of query string immediately
-    target bo.query.get paramName
-
-    target
-
 # An extender that will make an observable 'on demand'
 ko.extenders.onDemand = (target, loader) ->
     target.subscribe ->

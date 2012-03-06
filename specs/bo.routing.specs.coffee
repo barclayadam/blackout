@@ -78,23 +78,20 @@ describe 'Routing:', ->
                 # Assert
                 expect(navigateSubscriber).toHaveBeenCalledOnce()
 
-            it 'should raise a route navigated event with generated URL and itself as data if routeNavigating publish is true', ->
+            it 'should raise a route navigated event with generated URL and itself as data', ->
                 # Arrange
                 homeRoute = new bo.routing.Route 'Home', '/'
-                navigateSubscriber = @spy()
-
-                bo.bus.subscribe 'routeNavigated:Home', navigateSubscriber
 
                 # Act
                 homeRoute.navigateTo()
 
                 # Assert
-                expect(navigateSubscriber).toHaveBeenCalledWith
+                expect('routeNavigated:Home').toHaveBeenPublishedWith
                     url: '/'
                     route: homeRoute
                     parameters: {}
 
-            it 'should not raise a route navigated event if routeNavigating publish is false', ->
+            it 'should not raise a route navigated event if routeNavigating subscriber returns false', ->
                 # Arrange
                 homeRoute = new bo.routing.Route 'Home', '/'
                 navigateSubscriber = @spy()
@@ -151,6 +148,16 @@ describe 'Routing:', ->
                     url: '/Home', 
                     route: homeRoute
                     parameters: { }
+
+            it 'should not publish a routeNotFound event if URL matches', ->
+                # Arrange
+                homeRoute = new bo.routing.Route 'Home', '/Home'
+
+                # Act
+                bo.bus.publish 'urlChanged', { url: '/Home' }
+
+                # Assert
+                expect('routeNotFound').toHaveNotBeenPublishedWith()
 
             it 'should publish a routeNavigated event if URL matches definition with single parameter', ->
                 # Arrange
@@ -217,7 +224,7 @@ describe 'Routing:', ->
                     route: fileRoute
                     parameters: { filePath: 'A/Long/File/Path/Name.png' }
 
-            it 'should not publish a routeNavigated event if URL does not match definition', ->
+            it 'should not publish a routeNavigated message when no routes match', ->
                 # Arrange
                 homeRoute = new bo.routing.Route 'Controllers', '/Home'
 
@@ -226,6 +233,14 @@ describe 'Routing:', ->
 
                 # Assert
                 expect('routeNavigated').toHaveNotBeenPublished()
+
+            it 'should publish a routeNotFound message when no routes match', ->
+                # Act
+                bo.bus.publish 'urlChanged', { url: '/Contact Us' }
+
+                # Assert
+                expect('routeNotFound').toHaveBeenPublishedWith
+                    url: '/Contact Us'
             
     describe 'navigateTo binding handler', ->
         it 'should publish a navigateToRoute message when clicked', ->
@@ -239,6 +254,7 @@ describe 'Routing:', ->
 
             # Assert
             expect("navigateToRoute:Home").toHaveBeenPublishedWith
+                name: 'Home'
                 parameters: {}
                 canVeto: true
 
@@ -277,6 +293,7 @@ describe 'Routing:', ->
 
             # Assert
             expect("navigateToRoute:Home").toHaveBeenPublishedWith
+                name: 'Home'
                 canVeto: false
                 parameters: {}
 
@@ -291,5 +308,6 @@ describe 'Routing:', ->
 
             # Assert
             expect("navigateToRoute:Home").toHaveBeenPublishedWith
+                name: 'Home'
                 canVeto: true
                 parameters: { id : 6 }

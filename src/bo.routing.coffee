@@ -1,6 +1,40 @@
 #reference "bo.coffee"
 #reference "bo.bus.coffee"
 
+class RouteTable
+    constructor: ->
+        @current = undefined
+        @routes = []
+
+        bo.bus.subscribe 'routeCreated', (route) =>
+            @_add route
+
+        bo.bus.subscribe 'urlChanged', (msg) =>
+            foundRoute = @_find msg.url
+
+            if foundRoute is undefined
+                bo.bus.publish 'routeNotFound', { url: msg.url }
+            else if @current isnt foundRoute
+                foundRoute.route.navigateTo foundRoute.params
+
+    _add: (route) ->
+        @routes.push route
+
+        bo.bus.subscribe "navigateToRoute:#{route.title}", (options = {}) =>
+            route.navigateTo options.parameters || {}, options.canVeto
+
+        bo.bus.subscribe "routeNavigated:#{route.title}", (options = {}) =>
+            @current = route
+
+    _find: (url) ->
+        for r in @routes
+            matchedParams = r.match url
+
+            if matchedParams?
+                return { route: r, params: matchedParams }
+
+routeTable = new RouteTable()
+
 # Represents a single route within an application, the definition of a URL
 # that may contain a set of parameters that can be used to navigate
 # between screens within the application.
@@ -45,14 +79,6 @@ class Route
         routeDefinitionAsRegex = routeDefinitionAsRegex.substring 1 if routeDefinitionAsRegex[0] is '/'
 
         @incomingMatcher = new RegExp "^/?#{routeDefinitionAsRegex}/?$"
-
-        bo.bus.subscribe "navigateToRoute:#{@name}", (options = {}) =>
-            @navigateTo options.parameters || {}, options.canVeto
-
-        bo.bus.subscribe 'urlChanged', (data) =>
-            if Route.current isnt @
-                if (args = @_match data.url) isnt undefined
-                    @navigateTo args
         
         bo.bus.publish "routeCreated:#{@name}", @
 
@@ -68,12 +94,11 @@ class Route
     navigateTo: (args = {}, canVeto = true) ->
         url = @_create args
 
-        if Route.current isnt @
+        if routeTable.current isnt @
             if (bo.bus.publish "routeNavigating:#{@name}", { url: url, route: @, canVeto: canVeto }) or !canVeto
-                Route.current = @
                 bo.bus.publish "routeNavigated:#{@name}", { url: url, route: @, parameters: args }        
 
-    _match: (incoming) ->
+    match: (incoming) ->
         bo.arg.ensureString incoming, 'incoming'
 
         matches = incoming.match @incomingMatcher
@@ -94,6 +119,9 @@ class Route
     toString: ->
         "#{@name}: #{@definition}"
 
+
+# Core of history management shamelessly borrowed (and reworked) from backbone.js (https://github.com/documentcloud/backbone/blob/master/backbone.js)
+
 # Cached regex for cleaning leading hashes and slashes .
 routeStripper = /^[#\/]/
 
@@ -111,7 +139,6 @@ getHash = (windowOverride) ->
     match = loc.href.match(/#(.*)$/)
     (if match then match[1] else "")
 
-# History manager shamelessly borrowed (and reworked) from backbone.js (https://github.com/documentcloud/backbone/blob/master/backbone.js)
 class HistoryManager
     constructor: (options) ->
         @options          = _.extend {}, { root: '/' }, options
@@ -159,7 +186,7 @@ class HistoryManager
   
         if oldIE
             @iframe = jQuery('<iframe src="javascript:0" tabindex="-1" />').hide().appendTo('body')[0].contentWindow;
-            @_updateFromRoute fragment, document.title
+            @_updateUrlFromFragment fragment, document.title
       
         # Depending on whether we're using pushState or hashes, and whether
         # 'onhashchange' is supported, determine how we check the URL state.
@@ -192,7 +219,7 @@ class HistoryManager
             window.history.replaceState {}, document.title, loc.protocol + '//' + loc.host + @options.root + @fragment
         
         bo.bus.subscribe 'routeNavigated', (d) =>
-            @_updateFromRoute d.url, d.route.title
+            @_handleRouteNavigated d
 
         @_publishCurrent()
   
@@ -204,7 +231,7 @@ class HistoryManager
   
         return false if current is @fragment
   
-        @_updateFromRoute current if @iframe
+        @_updateUrlFromFragment current if @iframe
         @_publishCurrent()
   
     # Attempt to load the current URL fragment. If a route succeeds with a
@@ -213,15 +240,29 @@ class HistoryManager
     _publishCurrent: (fragmentOverride) ->
         fragment = @fragment = @getFragment fragmentOverride
   
-        # Publish message?        
-        bo.bus.publish 'urlChanged', 
-            url: fragment, 
-            fullUrl: fragment
+        queryStringDelimiterIndex = fragment.indexOf('?')
+
+        if queryStringDelimiterIndex is -1
+            bo.bus.publish 'urlChanged', 
+                url: fragment, 
+                fullUrl: fragment
+        else
+            bo.bus.publish 'urlChanged', 
+                url: fragment.substring(0, queryStringDelimiterIndex)
+                fullUrl: fragment 
   
+    _handleRouteNavigated: (msg) -> 
+        queryString = new bo.QueryString()
+        queryString.setAll @transientQueryParameters
+        queryString.setAll @persistedQueryParameters
+       
+        @_updateUrlFromFragment msg.url + queryString.toString(), msg.route.title 
+        @fragment = msg.url
+
     # Save a fragment into the hash history, or replace the URL state if the
     # 'replace' option is passed. You are responsible for properly URL-encoding
-    # the fragment in advance.
-    _updateFromRoute: (fragment, title) ->  
+    # the fragment in advance.    
+    _updateUrlFromFragment: (fragment, title) ->
         document.title = title
 
         frag = (fragment or "").replace(routeStripper, "")
@@ -246,13 +287,43 @@ class HistoryManager
         location.hash = fragment
 
 bo.routing =
+    # Resets the routing infrastructure, required for testing purposes.
+    reset: ->
+        routeTable = new RouteTable()
+
     Route: Route    
     manager: new HistoryManager()
 
     navigateTo: (routeName, parameters, canVeto = true) ->
         bo.bus.publish "navigateToRoute:#{routeName}", 
+            name: routeName
             parameters: parameters
             canVeto: canVeto
+
+
+# Extends an observable to be linked to a query string parameter of a URL, allowing
+# deep links and back button support to interact with values of an observable.
+ko.extenders.addressable = (target, paramNameOrOptions) ->
+    if typeof paramNameOrOptions is "string"
+        paramName = paramNameOrOptions
+        isPersistent = false
+    else
+        paramName = paramNameOrOptions.name
+        isPersistent = paramNameOrOptions.persistent
+
+    target.subscribe (newValue) ->
+        bo.routing.manager.setQueryParameter paramName, newValue, isPersistent
+
+    bo.bus.subscribe 'urlChanged', ->
+        newValue = bo.query.get paramName
+
+        if target() != newValue
+            target newValue
+
+    # Set value to value of query string immediately
+    target bo.query.get paramName
+
+    target
 
 ko.bindingHandlers.navigateTo =
     init: (element, valueAccessor, allBindingsAccessor) ->
