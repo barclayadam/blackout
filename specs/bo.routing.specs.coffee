@@ -135,6 +135,32 @@ describe 'Routing:', ->
                 # Assert
                 expect(navigateSubscriber).toHaveBeenCalledWith { url: '/', route: homeRoute, canVeto: false }
 
+            it 'should use single parameter when creating URL representation when navigateTo called', ->
+                # Arrange
+                homeRoute = new bo.routing.Route 'Home', '/{aParam}'
+
+                # Act
+                homeRoute.navigateTo { aParam: 'A Value' }
+
+                # Assert
+                expect('routeNavigating:Home').toHaveBeenPublishedWith 
+                    url: '/A Value', 
+                    route: homeRoute, 
+                    canVeto: true
+
+            it 'should use single observable parameter when creating URL representation when navigateTo called', ->
+                # Arrange
+                homeRoute = new bo.routing.Route 'Home', '/{aParam}'
+
+                # Act
+                homeRoute.navigateTo { aParam: ko.observable('A Value') }
+
+                # Assert
+                expect('routeNavigating:Home').toHaveBeenPublishedWith 
+                    url: '/A Value', 
+                    route: homeRoute, 
+                    canVeto: true
+
         describe 'when a urlChanged message is published', ->
             it 'should publish a routeNavigated event if URL matches definition with no parameters', ->
                 # Arrange

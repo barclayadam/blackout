@@ -111,7 +111,7 @@ class Route
     _create: (args = {}) ->
         if @_allParametersPresent args        
             @definition.replace paramRegex, (_, mode, name) =>
-                args[name]
+                ko.utils.unwrapObservable args[name]
 
     _allParametersPresent: (args) ->
         _.all(@paramNames, (p) -> args[p]?)
