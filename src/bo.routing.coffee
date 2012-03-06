@@ -141,6 +141,9 @@ getHash = (windowOverride) ->
 
 class HistoryManager
     constructor: (options) ->
+        @fragment = undefined
+        @lastRouteNavigatedMessage = undefined
+
         @options          = _.extend {}, { root: '/' }, options
         @_hasPushState    = !!(window.history && window.history.pushState)
 
@@ -157,14 +160,10 @@ class HistoryManager
     # be removed when navigating away from the page on which the paramater
     # was set.
     setQueryParameter: (name, value, isPersisted = false) ->
-        @navigating = true
-
         @persistedQueryParameters[name] = value if isPersisted
         @transientQueryParameters[name] = value if not isPersisted
         
-        #@historyjs.pushState null, document.title, @_generateUrl()
-
-        @navigating = false
+        @_updateFromRouteUrl()
 
     # Get the cross-browser normalized URL fragment, either from the URL,
     # the hash, or the override.
@@ -179,6 +178,8 @@ class HistoryManager
         fragment = fragment.substr(@options.root.length) unless fragment.indexOf @options.root
         fragment.replace routeStripper, ""
 
+        decodeURI fragment
+
     initialise: ->
         fragment = @getFragment()
         docMode  = document.documentMode
@@ -191,11 +192,11 @@ class HistoryManager
         # Depending on whether we're using pushState or hashes, and whether
         # 'onhashchange' is supported, determine how we check the URL state.
         if this._hasPushState
-            jQuery(window).bind 'popstate', => @_checkUrl()
+            jQuery(window).bind 'popstate', => @_updateFromCurrentUrl()
         else if ('onhashchange' in window) && !oldIE
-            jQuery(window).bind 'hashchange', => @_checkUrl()
+            jQuery(window).bind 'hashchange', => @_updateFromCurrentUrl()
         else 
-            setInterval (=> @_checkUrl()), interval
+            setInterval (=> @_updateFromCurrentUrl()), interval
       
         # Determine if we need to change the base url, for a pushState link
         # opened by a non-pushState browser.
@@ -218,14 +219,15 @@ class HistoryManager
             @fragment = getHash().replace routeStripper, ''
             window.history.replaceState {}, document.title, loc.protocol + '//' + loc.host + @options.root + @fragment
         
-        bo.bus.subscribe 'routeNavigated', (d) =>
-            @_handleRouteNavigated d
+        bo.bus.subscribe 'routeNavigated', (msg) =>
+            @lastRouteNavigatedMessage = msg
+            @_updateFromRouteUrl()
 
         @_publishCurrent()
   
     # Checks the current URL to see if it has changed, and if it has,
     # calls `_publishCurrent`, normalizing across the hidden iframe.
-    _checkUrl: (e) ->
+    _updateFromCurrentUrl: () ->
         current = @getFragment()
         current = @getFragment(getHash(@iframe)) if current is @fragment and @iframe
   
@@ -234,11 +236,8 @@ class HistoryManager
         @_updateUrlFromFragment current if @iframe
         @_publishCurrent()
   
-    # Attempt to load the current URL fragment. If a route succeeds with a
-    # match, returns `true`. If no defined routes matches the fragment,
-    # returns `false`.
-    _publishCurrent: (fragmentOverride) ->
-        fragment = @fragment = @getFragment fragmentOverride
+    _publishCurrent: () ->
+        fragment = @fragment = @getFragment()
   
         queryStringDelimiterIndex = fragment.indexOf('?')
 
@@ -251,13 +250,13 @@ class HistoryManager
                 url: fragment.substring(0, queryStringDelimiterIndex)
                 fullUrl: fragment 
   
-    _handleRouteNavigated: (msg) -> 
-        queryString = new bo.QueryString()
-        queryString.setAll @transientQueryParameters
-        queryString.setAll @persistedQueryParameters
-       
-        @_updateUrlFromFragment msg.url + queryString.toString(), msg.route.title 
-        @fragment = msg.url
+    _updateFromRouteUrl: () -> 
+        if @lastRouteNavigatedMessage
+            queryString = new bo.QueryString()
+            queryString.setAll @transientQueryParameters
+            queryString.setAll @persistedQueryParameters
+           
+            @_updateUrlFromFragment @lastRouteNavigatedMessage.url + queryString.toString(), @lastRouteNavigatedMessage.route.title 
 
     # Save a fragment into the hash history, or replace the URL state if the
     # 'replace' option is passed. You are responsible for properly URL-encoding
