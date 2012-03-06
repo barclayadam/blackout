@@ -209,6 +209,27 @@ describe 'Data Table', ->
                     
                 it 'should make the element identified by onNoRecords option visible ', ->
                     expect(@fixture.find("#emptyElementPlaceholder")).toBeVisible()
+
+            describe 'and onRecords element defined', ->
+                beforeEach ->  
+                    @dataTable = new bo.DataTable @dataSource
+
+                    @setHtmlFixture """
+                        <table data-bind="dataTable: dataTable, onRecords: 'elementPlaceholder'">
+                            #{dataItemInnerTemplate}
+                        </table>
+
+                        <div id="elementPlaceholder">
+                            Records found
+                        </div>
+                    """
+
+                    @applyBindingsToHtmlFixture { dataTable: @dataTable }
+
+                    @grid = @fixture.find("table")  
+
+                it 'should make the element identified by onRecords option hidden ', ->
+                    expect(@fixture.find("#elementPlaceholder")).toBeHidden() 
         
         describe 'with a loaded data source', ->
             beforeEach ->
@@ -284,6 +305,27 @@ describe 'Data Table', ->
 
                 it 'should make the element identified by onNoRecords option hidden ', ->
                     expect(@fixture.find("#emptyElementPlaceholder")).toBeHidden()      
+
+            describe 'and onRecords element defined', ->
+                beforeEach ->  
+                    @dataTable = new bo.DataTable @dataSource
+
+                    @setHtmlFixture """
+                        <table data-bind="dataTable: dataTable, onRecords: 'elementPlaceholder'">
+                            #{dataItemInnerTemplate}
+                        </table>
+
+                        <div id="elementPlaceholder">
+                            Records found
+                        </div>
+                    """
+
+                    @applyBindingsToHtmlFixture { dataTable: @dataTable }
+
+                    @grid = @fixture.find("table")  
+
+                it 'should make the element identified by onRecords option visible ', ->
+                    expect(@fixture.find("#elementPlaceholder")).toBeVisible()      
 
             describe 'and selectable = false', ->
                 beforeEach ->  
