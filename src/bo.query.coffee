@@ -6,6 +6,7 @@
 class bo.QueryString
     # Creates a QueryString instance from the given string representation.
     @from: (qs) ->
+        qs = qs.replace /^[^?]*\?/, '' # Remove up to ?
         qs = qs.replace /&$/, ''   # Remove trailing &
         qs = qs.replace /\+/g, ' ' # Replace + with space
 

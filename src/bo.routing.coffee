@@ -239,16 +239,19 @@ class HistoryManager
     _publishCurrent: () ->
         fragment = @fragment = @getFragment()
   
+        queryString = bo.QueryString.from fragment
         queryStringDelimiterIndex = fragment.indexOf('?')
 
         if queryStringDelimiterIndex is -1
             bo.bus.publish 'urlChanged', 
-                url: fragment, 
+                url: fragment
                 fullUrl: fragment
+                queryString: queryString
         else
             bo.bus.publish 'urlChanged', 
                 url: fragment.substring(0, queryStringDelimiterIndex)
                 fullUrl: fragment 
+                queryString: queryString
   
     _updateFromRouteUrl: () -> 
         if @lastRouteNavigatedMessage
@@ -306,21 +309,25 @@ ko.extenders.addressable = (target, paramNameOrOptions) ->
     if typeof paramNameOrOptions is "string"
         paramName = paramNameOrOptions
         isPersistent = false
+        readOnly = false
     else
-        paramName = paramNameOrOptions.name
-        isPersistent = paramNameOrOptions.persistent
+        paramName = paramNameOrOptions.name || paramNameOrOptions.key
+        isPersistent = paramNameOrOptions.persistent || false
+        readOnly = paramNameOrOptions.readOnly || false
 
-    target.subscribe (newValue) ->
-        bo.routing.manager.setQueryParameter paramName, newValue, isPersistent
+    if not readOnly
+        target.subscribe (newValue) ->
+            bo.routing.manager.setQueryParameter paramName, newValue, isPersistent
 
-    bo.bus.subscribe 'urlChanged', ->
-        newValue = bo.query.get paramName
-
-        if target() != newValue
+    set = (newValue) ->
+        if newValue? and target() != newValue
             target newValue
 
+    bo.bus.subscribe 'urlChanged', (msg) ->
+        set msg.queryString.get paramName
+
     # Set value to value of query string immediately
-    target bo.query.get paramName
+    set bo.query.get paramName
 
     target
 
