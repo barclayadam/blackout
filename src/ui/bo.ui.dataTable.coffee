@@ -96,6 +96,7 @@ ko.bindingHandlers.dataTable =
 
         isEmpty = dataTable.dataSource.totalCount() is 0
         emptyTemplate = allBindingsAccessor()['onNoRecords']
+        populatedTemplate = allBindingsAccessor()['onRecords']
 
         dataTable.dataSource.isLoading.subscribe ->
             ko.utils.toggleDomNodeCssClass element, 'is-loading', dataTable.dataSource.isLoading()
@@ -105,8 +106,8 @@ ko.bindingHandlers.dataTable =
         else
             ko.bindingHandlers.template.update element, (-> data: dataTable), allBindingsAccessor, viewModel, bindingContext
 
-        if emptyTemplate?
-            jQuery("##{emptyTemplate}").toggle isEmpty
+        jQuery("##{emptyTemplate}").toggle isEmpty if emptyTemplate?
+        jQuery("##{populatedTemplate}").toggle !isEmpty if populatedTemplate?
 
 # A binding handler that should be applied to the th elements of a data table to provide column sorting
 # features.
