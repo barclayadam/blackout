@@ -142,7 +142,6 @@ getHash = (windowOverride) ->
 class HistoryManager
     constructor: (options) ->
         @fragment = undefined
-        @lastRouteNavigatedMessage = undefined
 
         @options          = _.extend {}, { root: '/' }, options
         @_hasPushState    = !!(window.history && window.history.pushState)
@@ -159,11 +158,21 @@ class HistoryManager
     # replaced on navigation. Non persistent values on the other hand will
     # be removed when navigating away from the page on which the paramater
     # was set.
-    setQueryParameter: (name, value, isPersisted = false) ->
-        @persistedQueryParameters[name] = value if isPersisted
-        @transientQueryParameters[name] = value if not isPersisted
+    setQueryParameter: (name, value, options = { persistent: false, createHistory: true }) ->
+        if options.persistent
+            @persistedQueryParameters[name] = value
+        else
+            @transientQueryParameters[name] = value
         
-        @_updateFromRouteUrl()
+        currentUrl = @getFragment().replace bo.query.current().toString(), ''
+        
+        queryString = new bo.QueryString()
+        queryString.setAll @transientQueryParameters
+        queryString.setAll @persistedQueryParameters
+       
+        @_updateUrlFromFragment currentUrl + queryString.toString(), 
+            title: document.title
+            replace: options.createHistory is false
 
     # Get the cross-browser normalized URL fragment, either from the URL,
     # the hash, or the override.
@@ -178,7 +187,7 @@ class HistoryManager
         fragment = fragment.substr(@options.root.length) unless fragment.indexOf @options.root
         fragment.replace routeStripper, ""
 
-        decodeURI fragment
+        decodeURI fragment 
 
     initialise: ->
         fragment = @getFragment()
@@ -187,7 +196,9 @@ class HistoryManager
   
         if oldIE
             @iframe = jQuery('<iframe src="javascript:0" tabindex="-1" />').hide().appendTo('body')[0].contentWindow;
-            @_updateUrlFromFragment fragment, document.title
+            @_updateUrlFromFragment fragment, 
+                title: document.title
+                replace: true
       
         # Depending on whether we're using pushState or hashes, and whether
         # 'onhashchange' is supported, determine how we check the URL state.
@@ -208,7 +219,7 @@ class HistoryManager
         if !this._hasPushState && !atRoot
             # If we've started off with a route from a `pushState`-enabled browser,
             # but we're currently in a browser that doesn't support it...
-            @fragment = @getFragment(null, true);
+            @fragment = @getFragment null, true
             window.location.replace @options.root + '#' + @fragment;
   
             # Return immediately as browser will do redirect to new url
@@ -219,11 +230,16 @@ class HistoryManager
             @fragment = getHash().replace routeStripper, ''
             window.history.replaceState {}, document.title, loc.protocol + '//' + loc.host + @options.root + @fragment
         
+        bo.bus.subscribe 'routeNavigating', (msg) =>
+            console.log "transientQueryParameters = {}"
+            @transientQueryParameters = {}
+
         bo.bus.subscribe 'routeNavigated', (msg) =>
-            @lastRouteNavigatedMessage = msg
-            @_updateFromRouteUrl()
+            if @initialised
+                @_updateFromRouteUrl msg
 
         @_publishCurrent()
+        @initialised = true
   
     # Checks the current URL to see if it has changed, and if it has,
     # calls `_publishCurrent`, normalizing across the hidden iframe.
@@ -233,14 +249,20 @@ class HistoryManager
   
         return false if current is @fragment
   
-        @_updateUrlFromFragment current if @iframe
+        @transientQueryParameters = bo.query.current().getAll()
+
+        if @iframe
+            @_updateUrlFromFragment current,
+                title: document.title
+                replace: false
+
         @_publishCurrent()
   
     _publishCurrent: () ->
         fragment = @fragment = @getFragment()
   
         queryString = bo.QueryString.from fragment
-        queryStringDelimiterIndex = fragment.indexOf('?')
+        queryStringDelimiterIndex = fragment.indexOf '?'
 
         if queryStringDelimiterIndex is -1
             bo.bus.publish 'urlChanged', 
@@ -253,31 +275,32 @@ class HistoryManager
                 fullUrl: fragment 
                 queryString: queryString
   
-    _updateFromRouteUrl: () -> 
-        if @lastRouteNavigatedMessage
-            queryString = new bo.QueryString()
-            queryString.setAll @transientQueryParameters
-            queryString.setAll @persistedQueryParameters
-           
-            @_updateUrlFromFragment @lastRouteNavigatedMessage.url + queryString.toString(), @lastRouteNavigatedMessage.route.title 
+    _updateFromRouteUrl: (msg) ->    
+        queryString = new bo.QueryString()
+        queryString.setAll @transientQueryParameters
+        queryString.setAll @persistedQueryParameters
+       
+        @_updateUrlFromFragment msg.url + queryString.toString(), 
+            title: msg.route.title 
+            replace: false
 
     # Save a fragment into the hash history, or replace the URL state if the
     # 'replace' option is passed. You are responsible for properly URL-encoding
     # the fragment in advance.    
-    _updateUrlFromFragment: (fragment, title) ->
-        document.title = title
+    _updateUrlFromFragment: (fragment, options) ->
+        document.title = options.title
 
         frag = (fragment or "").replace(routeStripper, "")
   
-        return  if @fragment is frag
+        return if @fragment is frag
   
+        @fragment = frag
+
         if @_hasPushState
-            frag = @options.root + frag  unless frag.indexOf(@options.root) is 0
-            @fragment = frag
-            window.history.pushState {}, title, frag
+            frag = @options.root + frag unless frag.indexOf(@options.root) is 0
+            window.history[if options.replace then 'replaceState' else 'pushState'] {}, document.title, frag
         else
-            @fragment = frag
-            @_updateHash window.location, frag
+            @_updateHash window.location, frag, options.replace
 
             if @iframe and (frag isnt @getFragment getHash @iframe)
                 @iframe.document.open().close()
@@ -286,7 +309,10 @@ class HistoryManager
     # Update the hash location, either replacing the current entry, or adding
     # a new one to the browser history.
     _updateHash: (location, fragment, replace) ->
-        location.hash = fragment
+        if replace
+            location.replace location.toString().replace(/(javascript:|#).*$/, '') + '#' + fragment
+        else
+            location.hash = fragment
 
 bo.routing =
     # Resets the routing infrastructure, required for testing purposes.
@@ -302,29 +328,35 @@ bo.routing =
             parameters: parameters
             canVeto: canVeto
 
-
 # Extends an observable to be linked to a query string parameter of a URL, allowing
 # deep links and back button support to interact with values of an observable.
 ko.extenders.addressable = (target, paramNameOrOptions) ->
     if typeof paramNameOrOptions is "string"
         paramName = paramNameOrOptions
-        isPersistent = false
-        readOnly = false
+        persistent = false
+        createHistory = true
     else
-        paramName = paramNameOrOptions.name || paramNameOrOptions.key
-        isPersistent = paramNameOrOptions.persistent || false
-        readOnly = paramNameOrOptions.readOnly || false
+        paramName = paramNameOrOptions.name ? paramNameOrOptions.key
+        persistent = paramNameOrOptions.persistent ? false
+        createHistory = paramNameOrOptions.createHistory ? true
 
-    if not readOnly
-        target.subscribe (newValue) ->
-            bo.routing.manager.setQueryParameter paramName, newValue, isPersistent
+    setQueryParameter = (value) ->
+        bo.routing.manager.setQueryParameter paramName, value,
+            persistent: persistent
+            createHistory: createHistory
 
     set = (newValue) ->
         if newValue? and target() != newValue
             target newValue
 
+    target.subscribe (newValue) ->
+        setQueryParameter newValue
+
     bo.bus.subscribe 'urlChanged', (msg) ->
         set msg.queryString.get paramName
+
+    currentVal = target()
+    setQueryParameter currentVal if currentVal?
 
     # Set value to value of query string immediately
     set bo.query.get paramName

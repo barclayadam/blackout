@@ -36,6 +36,9 @@ class bo.QueryString
     get: (key) ->
         @values[key]
 
+    getAll: ->
+        @values
+
     # Converts this QueryString into a string representation, including
     # the leading question mark used to delineate a URL and its
     # query string.
