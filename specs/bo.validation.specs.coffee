@@ -778,14 +778,14 @@ describe 'Validation:', ->
             tomorrow.setDate tomorrow.getDate() + 1
 
             # Act
-            isValid = bo.validation.rules.inFuture.validator tomorrow, {}, undefined
+            isValid = bo.validation.rules.inFuture.validator tomorrow, {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return false if property value is today', ->
             # Act
-            isValid = bo.validation.rules.inFuture.validator new Date(), {}, undefined
+            isValid = bo.validation.rules.inFuture.validator new Date(), {}, true
 
             # Assert
             expect(isValid).toBe false
@@ -796,14 +796,109 @@ describe 'Validation:', ->
             yesterday.setDate yesterday.getDate() - 1
 
             # Act
-            isValid = bo.validation.rules.inFuture.validator yesterday, {}, undefined
+            isValid = bo.validation.rules.inFuture.validator yesterday, {}, true
 
             # Assert
             expect(isValid).toBe false
 
         it 'should return false if property is not a date', ->
             # Act
-            isValid = bo.validation.rules.inFuture.validator "Not a Number", {}, 5
+            isValid = bo.validation.rules.inFuture.validator "Not a Number", {}, true
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if date is in the future and temporal check type is DateTime', ->
+            # Arrange
+            tomorrow = new Date()
+            tomorrow.setDate tomorrow.getDate() + 1
+
+            # Act
+            isValid = bo.validation.rules.inFuture.validator tomorrow, {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if date is in the past and temporal check type is DateTime', ->
+            # Arrange
+            yesterday = new Date()
+            yesterday.setDate yesterday.getDate() - 1
+
+            # Act
+            isValid = bo.validation.rules.inFuture.validator yesterday, {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if date is one second in the future and temporal check type is DateTime', ->
+            # Arrange
+            future = new Date()
+            future.setSeconds future.getSeconds() + 1
+
+            # Act
+            isValid = bo.validation.rules.inFuture.validator future, {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if date is one second in the past and temporal check type is DateTime', ->
+            # Arrange
+            past = new Date()
+            past.setSeconds past.getSeconds() - 1
+
+            # Act
+            isValid = bo.validation.rules.inFuture.validator past, {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if property is not a date and temporal check type is DateTime', ->
+            # Act
+            isValid = bo.validation.rules.inFuture.validator "Not a Number", {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if date is in the future and temporal check type is Date', ->
+            # Arrange
+            tomorrow = new Date()
+            tomorrow.setDate tomorrow.getDate() + 1
+
+            # Act
+            isValid = bo.validation.rules.inFuture.validator tomorrow, {}, { type: "Date" }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if date is in the past and temporal check type is Date', ->
+            # Arrange
+            yesterday = new Date()
+            yesterday.setDate yesterday.getDate() - 1
+
+            # Act
+            isValid = bo.validation.rules.inFuture.validator yesterday, {}, { type: "Date" }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if date is one second in the future and temporal check type is Date', ->
+            # Arrange
+            future = new Date()
+            future.setSeconds future.getSeconds() + 1
+
+            # Act
+            isValid = bo.validation.rules.inFuture.validator future, {}, { type: "Date" }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if date is one second in the past and temporal check type is Date', ->
+            # Arrange
+            past = new Date()
+            past.setSeconds past.getSeconds() - 1
+
+            # Act
+            isValid = bo.validation.rules.inFuture.validator past, {}, { type: "Date" }
 
             # Assert
             expect(isValid).toBe false
@@ -817,14 +912,14 @@ describe 'Validation:', ->
             tomorrow.setDate tomorrow.getDate() + 1
 
             # Act
-            isValid = bo.validation.rules.inPast.validator tomorrow, {}, undefined
+            isValid = bo.validation.rules.inPast.validator tomorrow, {}, true
 
             # Assert
             expect(isValid).toBe false
 
         it 'should return false if property value is today', ->
             # Act
-            isValid = bo.validation.rules.inPast.validator new Date(), {}, undefined
+            isValid = bo.validation.rules.inPast.validator new Date(), {}, true
 
             # Assert
             expect(isValid).toBe false
@@ -835,14 +930,109 @@ describe 'Validation:', ->
             yesterday.setDate yesterday.getDate() - 1
 
             # Act
-            isValid = bo.validation.rules.inPast.validator yesterday, {}, undefined
+            isValid = bo.validation.rules.inPast.validator yesterday, {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return false if property is not a date', ->
             # Act
-            isValid = bo.validation.rules.inFuture.validator "Not a Number", {}, 5
+            isValid = bo.validation.rules.inPast.validator "Not a Number", {}, true
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if date is in the future and temporal check type is DateTime', ->
+            # Arrange
+            tomorrow = new Date()
+            tomorrow.setDate tomorrow.getDate() + 1
+
+            # Act
+            isValid = bo.validation.rules.inPast.validator tomorrow, {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if date is in the past and temporal check type is DateTime', ->
+            # Arrange
+            yesterday = new Date()
+            yesterday.setDate yesterday.getDate() - 1
+
+            # Act
+            isValid = bo.validation.rules.inPast.validator yesterday, {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if date is one second in the future and temporal check type is DateTime', ->
+            # Arrange
+            future = new Date()
+            future.setSeconds future.getSeconds() + 1
+
+            # Act
+            isValid = bo.validation.rules.inPast.validator future, {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if date is one second in the past and temporal check type is DateTime', ->
+            # Arrange
+            past = new Date()
+            past.setSeconds past.getSeconds() - 1
+
+            # Act
+            isValid = bo.validation.rules.inPast.validator past, {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if property is not a date and temporal check type is DateTime', ->
+            # Act
+            isValid = bo.validation.rules.inFuture.validator "Not a Number", {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if date is in the future and temporal check type is Date', ->
+            # Arrange
+            tomorrow = new Date()
+            tomorrow.setDate tomorrow.getDate() + 1
+
+            # Act
+            isValid = bo.validation.rules.inPast.validator tomorrow, {}, { type: "Date" }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if date is in the past and temporal check type is Date', ->
+            # Arrange
+            yesterday = new Date()
+            yesterday.setDate yesterday.getDate() - 1
+
+            # Act
+            isValid = bo.validation.rules.inPast.validator yesterday, {}, { type: "Date" }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if date is one second in the future and temporal check type is Date', ->
+            # Arrange
+            future = new Date()
+            future.setSeconds future.getSeconds() + 1
+
+            # Act
+            isValid = bo.validation.rules.inPast.validator future, {}, { type: "Date" }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if date is one second in the past and temporal check type is Date', ->
+            # Arrange
+            past = new Date()
+            past.setSeconds past.getSeconds() - 1
+
+            # Act
+            isValid = bo.validation.rules.inPast.validator past, {}, { type: "Date" }
 
             # Assert
             expect(isValid).toBe false
@@ -856,14 +1046,14 @@ describe 'Validation:', ->
             tomorrow.setDate tomorrow.getDate() + 1
 
             # Act
-            isValid = bo.validation.rules.notInPast.validator tomorrow, {}, undefined
+            isValid = bo.validation.rules.notInPast.validator tomorrow, {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is today', ->
             # Act
-            isValid = bo.validation.rules.notInPast.validator new Date(), {}, undefined
+            isValid = bo.validation.rules.notInPast.validator new Date(), {}, true
 
             # Assert
             expect(isValid).toBe true
@@ -874,17 +1064,112 @@ describe 'Validation:', ->
             yesterday.setDate yesterday.getDate() - 1
 
             # Act
-            isValid = bo.validation.rules.notInPast.validator yesterday, {}, undefined
+            isValid = bo.validation.rules.notInPast.validator yesterday, {}, true
 
             # Assert
             expect(isValid).toBe false
 
         it 'should return false if property is not a date', ->
             # Act
-            isValid = bo.validation.rules.notInPast.validator "Not a Number", {}, 5
+            isValid = bo.validation.rules.notInPast.validator "Not a Number", {}, true
 
             # Assert
             expect(isValid).toBe false
+
+        it 'should return true if date is in the future and temporal check type is DateTime', ->
+            # Arrange
+            tomorrow = new Date()
+            tomorrow.setDate tomorrow.getDate() + 1
+
+            # Act
+            isValid = bo.validation.rules.notInPast.validator tomorrow, {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if date is in the past and temporal check type is DateTime', ->
+            # Arrange
+            yesterday = new Date()
+            yesterday.setDate yesterday.getDate() - 1
+
+            # Act
+            isValid = bo.validation.rules.notInPast.validator yesterday, {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if date is one second in the future and temporal check type is DateTime', ->
+            # Arrange
+            future = new Date()
+            future.setSeconds future.getSeconds() + 1
+
+            # Act
+            isValid = bo.validation.rules.notInPast.validator future, {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if date is one second in the past and temporal check type is DateTime', ->
+            # Arrange
+            past = new Date()
+            past.setSeconds past.getSeconds() - 1
+
+            # Act
+            isValid = bo.validation.rules.notInPast.validator past, {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if property is not a date and temporal check type is DateTime', ->
+            # Act
+            isValid = bo.validation.rules.notInPast.validator "Not a Number", {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if date is in the future and temporal check type is Date', ->
+            # Arrange
+            tomorrow = new Date()
+            tomorrow.setDate tomorrow.getDate() + 1
+
+            # Act
+            isValid = bo.validation.rules.notInPast.validator tomorrow, {}, { type: "Date" }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if date is in the past and temporal check type is Date', ->
+            # Arrange
+            yesterday = new Date()
+            yesterday.setDate yesterday.getDate() - 1
+
+            # Act
+            isValid = bo.validation.rules.notInPast.validator yesterday, {}, { type: "Date" }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if date is one second in the future and temporal check type is Date', ->
+            # Arrange
+            future = new Date()
+            future.setSeconds future.getSeconds() + 1
+
+            # Act
+            isValid = bo.validation.rules.notInPast.validator future, {}, { type: "Date" }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if date is one second in the past and temporal check type is Date', ->
+            # Arrange
+            past = new Date()
+            past.setSeconds past.getSeconds() - 1
+
+            # Act
+            isValid = bo.validation.rules.notInPast.validator past, {}, { type: "Date" }
+
+            # Assert
+            expect(isValid).toBe true
 
     describe 'With a not in future validator', ->
         itShouldReturnTrueForEmptyValues 'notInFuture'
@@ -895,14 +1180,14 @@ describe 'Validation:', ->
             tomorrow.setDate tomorrow.getDate() + 1
 
             # Act
-            isValid = bo.validation.rules.notInFuture.validator tomorrow, {}, undefined
+            isValid = bo.validation.rules.notInFuture.validator tomorrow, {}, true
 
             # Assert
             expect(isValid).toBe false
 
         it 'should return true if property value is today', ->
             # Act
-            isValid = bo.validation.rules.notInFuture.validator new Date(), {}, undefined
+            isValid = bo.validation.rules.notInFuture.validator new Date(), {}, true
 
             # Assert
             expect(isValid).toBe true
@@ -913,14 +1198,109 @@ describe 'Validation:', ->
             yesterday.setDate yesterday.getDate() - 1
 
             # Act
-            isValid = bo.validation.rules.notInFuture.validator yesterday, {}, undefined
+            isValid = bo.validation.rules.notInFuture.validator yesterday, {}, true
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return false if property is not a date', ->
             # Act
-            isValid = bo.validation.rules.notInFuture.validator "Not a Number", {}, 5
+            isValid = bo.validation.rules.notInFuture.validator "Not a Number", {}, true
 
             # Assert
             expect(isValid).toBe false
+
+        it 'should return false if date is in the future and temporal check type is DateTime', ->
+            # Arrange
+            tomorrow = new Date()
+            tomorrow.setDate tomorrow.getDate() + 1
+
+            # Act
+            isValid = bo.validation.rules.notInFuture.validator tomorrow, {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if date is in the past and temporal check type is DateTime', ->
+            # Arrange
+            yesterday = new Date()
+            yesterday.setDate yesterday.getDate() - 1
+
+            # Act
+            isValid = bo.validation.rules.notInFuture.validator yesterday, {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if date is one second in the future and temporal check type is DateTime', ->
+            # Arrange
+            future = new Date()
+            future.setSeconds future.getSeconds() + 1
+
+            # Act
+            isValid = bo.validation.rules.notInFuture.validator future, {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if date is one second in the past and temporal check type is DateTime', ->
+            # Arrange
+            past = new Date()
+            past.setSeconds past.getSeconds() - 1
+
+            # Act
+            isValid = bo.validation.rules.notInFuture.validator past, {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if property is not a date and temporal check type is DateTime', ->
+            # Act
+            isValid = bo.validation.rules.notInFuture.validator "Not a Number", {}, { type: "DateTime" }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if date is in the future and temporal check type is Date', ->
+            # Arrange
+            tomorrow = new Date()
+            tomorrow.setDate tomorrow.getDate() + 1
+
+            # Act
+            isValid = bo.validation.rules.notInFuture.validator tomorrow, {}, { type: "Date" }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if date is in the past and temporal check type is Date', ->
+            # Arrange
+            yesterday = new Date()
+            yesterday.setDate yesterday.getDate() - 1
+
+            # Act
+            isValid = bo.validation.rules.notInFuture.validator yesterday, {}, { type: "Date" }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if date is one second in the future and temporal check type is Date', ->
+            # Arrange
+            future = new Date()
+            future.setSeconds future.getSeconds() + 1
+
+            # Act
+            isValid = bo.validation.rules.notInFuture.validator future, {}, { type: "Date" }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if date is one second in the past and temporal check type is Date', ->
+            # Arrange
+            past = new Date()
+            past.setSeconds past.getSeconds() - 1
+
+            # Act
+            isValid = bo.validation.rules.notInFuture.validator past, {}, { type: "Date" }
+
+            # Assert
+            expect(isValid).toBe true

@@ -5,13 +5,19 @@ emptyValue = (value) ->
     not hasValue value
 
 parseDate = (value) ->
-    return value           if _.isDate value
+    return value if _.isDate value
     
     if _.isString value
         try
             return $.datepicker.parseDate 'dd/mm/yy', value 
         catch e
             undefined
+
+withoutTime = (dateTime) ->
+    new Date dateTime.getYear(), dateTime.getMonth(), dateTime.getDate() if dateTime?
+
+today = () ->
+    withoutTime new Date()
 
 getMessageCreationFunction = (name, propertyRules, ruleName) ->
     messagePropertyName = "#{ruleName}Message"
@@ -190,28 +196,40 @@ bo.validation =
 
         inFuture:
             validator: (value, model, options) ->
-                (emptyValue value) or (parseDate(value) > new Date())
+                if options is true or options.type is "Date"
+                    (emptyValue value) or (withoutTime(parseDate(value)) > today())
+                else
+                    (emptyValue value) or (parseDate(value) > new Date())
 
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must be in the future."
 
         inPast:
             validator: (value, model, options) ->
-                (emptyValue value) or (parseDate(value) < new Date())
+                if options is true or options.type is "Date"
+                    (emptyValue value) or (withoutTime(parseDate(value)) < today())
+                else
+                    (emptyValue value) or (parseDate(value) < new Date())
 
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must be in the past."
 
         notInPast:
             validator: (value, model, options) ->
-                (emptyValue value) or (parseDate(value) >= new Date())
+                if options is true or options.type is "Date"
+                    (emptyValue value) or (withoutTime(parseDate(value)) >= today())
+                else
+                    (emptyValue value) or (parseDate(value) >= new Date())
 
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must not be in the past."
 
         notInFuture:
             validator: (value, model, options) ->
-                (emptyValue value) or (parseDate(value) <= new Date())
+                if options is true or options.type is "Date"
+                    (emptyValue value) or (withoutTime(parseDate(value)) <= today())
+                else
+                    (emptyValue value) or (parseDate(value) <= new Date())
 
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must not be in the future."
