@@ -231,7 +231,6 @@ class HistoryManager
             window.history.replaceState {}, document.title, loc.protocol + '//' + loc.host + @options.root + @fragment
         
         bo.bus.subscribe 'routeNavigating', (msg) =>
-            console.log "transientQueryParameters = {}"
             @transientQueryParameters = {}
 
         bo.bus.subscribe 'routeNavigated', (msg) =>

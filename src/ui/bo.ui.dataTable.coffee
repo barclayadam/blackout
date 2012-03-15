@@ -50,6 +50,7 @@ class bo.DataTable
 # not), `tableBody`, `tableRow` and `column`.
 #
 # Expected HTML:
+#
 # <table data-bind="dataTable: dataTableInViewModel">
 #    <thead>
 #        <th data-bind="header: 'id', notSortable: true">Id</th>
