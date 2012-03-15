@@ -32,4 +32,5 @@ src\ui\bo.ui.pager.coffee
 src\ui\bo.ui.pagerSummary.coffee
 src\ui\bo.ui.recordCount.coffee
 src\ui\bo.ui.splitter.coffee
+src\ui\bo.ui.toggleFor.coffee
 src\ui\bo.ui.tree.coffee

@@ -20,3 +20,4 @@ specs\ui\bo.ui.tree.specs.coffee
 specs\ui\bo.ui.pager.specs.coffee
 specs\ui\bo.ui.pagerSummary.specs.coffee
 specs\ui\bo.ui.recordCount.specs.coffee
+specs\ui\bo.ui.toggleFor.specs.coffee
