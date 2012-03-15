@@ -2,7 +2,7 @@ browserTagCaseIndependentHtml = (html) ->
     jQuery('<div/>').append(html).html()
 
 beforeEach ->
-    window.sinonSandbox = sinon.sandbox.create sinon.getConfig { injectInto: this }
+    window.sinonSandbox = sinon.sandbox.create sinon.getConfig { injectInto: this, useFakeTimers: false }
 
     bo.bus.clearAll()
     window.sessionStorage.clear()
