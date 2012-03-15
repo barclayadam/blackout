@@ -16,7 +16,7 @@ bo.utils.addTemplate 'pagerTemplate',
    </div>'''
 
 class PagerModel
-	constructor: (dataSource, maximumPagesShown) ->
+	constructor: (dataSource, maximumPagesShown, domNode) ->
         @isFirstPage = dataSource.isFirstPage
         @isLastPage = dataSource.isLastPage
 
@@ -32,26 +32,29 @@ class PagerModel
         @goToLastPage = ->
             dataSource.goToLastPage()
 
-        @pages = ko.computed =>
-            pageCount = dataSource.pageCount()
+        @pages = ko.computed
+            read: =>
+                pageCount = dataSource.pageCount()
 
-            if pageCount > 0
-                pageNumber = dataSource.pageNumber()
+                if pageCount > 0
+                    pageNumber = dataSource.pageNumber()
 
-                startPage = pageNumber - (maximumPagesShown / 2)
-                startPage = Math.max 1, Math.min pageCount - maximumPagesShown + 1, startPage
+                    startPage = pageNumber - (maximumPagesShown / 2)
+                    startPage = Math.max 1, Math.min pageCount - maximumPagesShown + 1, startPage
 
-                endPage = startPage + maximumPagesShown
-                endPage = Math.min endPage, pageCount + 1
+                    endPage = startPage + maximumPagesShown
+                    endPage = Math.min endPage, pageCount + 1
 
-                pages = _.range startPage, endPage
+                    pages = _.range startPage, endPage
 
-                _(pages).map (p) =>
-                    pageNumber: p
-                    isSelected: p is pageNumber
-                    select: => dataSource.pageNumber p
-            else
-                []    
+                    _(pages).map (p) =>
+                        pageNumber: p
+                        isSelected: p is pageNumber
+                        select: => dataSource.pageNumber p
+                else
+                    []    
+                    
+            disposeWhenNodeIsRemoved: domNode  
 
 ko.bindingHandlers.pager = 
     init: (element, valueAccessor, allBindingsAccessor) ->
@@ -59,6 +62,6 @@ ko.bindingHandlers.pager =
         maximumPagesShown = allBindingsAccessor().maximumPagesShown ? 10
 
         if dataSource.pagingEnabled is true
-        	ko.renderTemplate 'pagerTemplate', new PagerModel(dataSource, maximumPagesShown), {}, element, 'replaceChildren'
+        	ko.renderTemplate 'pagerTemplate', new PagerModel(dataSource, maximumPagesShown, element), {}, element, 'replaceChildren'
 
         	{ "controlsDescendantBindings" : true }
