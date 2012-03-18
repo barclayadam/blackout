@@ -35,7 +35,8 @@ class bo.Dialog
         @_regionManager.activate [@part], parameters
 
         dialogOptions =
-            isModal: true
+            resizable: false
+            modal: true
 
         if @part.viewModel.getDialogOptions?
             dialogOptions = _.extend dialogOptions, @part.viewModel.getDialogOptions()  
