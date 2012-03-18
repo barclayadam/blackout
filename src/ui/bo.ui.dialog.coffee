@@ -26,8 +26,6 @@ class bo.Dialog
         @_dialogElement = injectDialogTemplate @part.name
         ko.applyBindings @, @_dialogElement
 
-        @_construct = ->
-
     # Shows this dialog, passing the `parameters` (if any) on to the view model's
     # `show` method, in the same manner as parameters passed as part of navigation.
     show: (parameters) ->
