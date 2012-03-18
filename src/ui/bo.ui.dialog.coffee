@@ -99,8 +99,10 @@ class ConfirmationDialog
     getDialogOptions: ->
         title: @title
 
-        width: 500,
-        height: 250
+        width: 400,
+        height: 200,
+
+        modal: true
 
     _confirm: ->
         @_deferred.resolve()
