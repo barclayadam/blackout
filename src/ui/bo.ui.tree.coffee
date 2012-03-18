@@ -68,7 +68,7 @@ class TreeNode
         @indent = ko.computed =>
             "#{(@level() - 1) * 11}px"
                         
-        @_setOption o for o in ["isDraggable", "isDropTarget", "canAddChildren", "childType", "renameAfterAdd", "canRename", "canDelete", "defaultChildName"]       
+        @_setOption o for o in ["isDraggable", "isDropTarget", "canAddChildren", "childType", "renameAfterAdd", "canRename", "canDelete", "defaultChildName", "dragTemplate"]       
 
         @setChildren (@data.children || []) if not @data.loadChildren
         @children.load() if @isOpen()
@@ -249,6 +249,8 @@ class TreeNode
         @viewModel.options.handlers[name].apply(@, [@, others...])                    
 
     _setOption: (optionName) ->
+        @[optionName] = undefined
+        
         for o in [@data[optionName], @viewModel.options.nodeDefaults[@type]?[optionName], @viewModel.options.nodeDefaults[optionName]]
             if o?
                 @[optionName] = o
@@ -367,7 +369,7 @@ bo.utils.addTemplate 'treeNodeTemplate', '''
                        event: { click: select },                      
                        tabIndex: isFocused">        
             <div class="tree-node" 
-                 data-bind="draggable: isDraggable,
+                 data-bind="draggable: { enabled: isDraggable, template: dragTemplate },
                             dropTarget: { canAccept : canAcceptDrop, onDropComplete: acceptDrop}, 
                             contextMenu: contextMenu, 
                             hoverClass: 'ui-state-hover',

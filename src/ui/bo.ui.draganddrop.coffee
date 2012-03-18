@@ -13,10 +13,10 @@ ko.bindingHandlers.draggable =
 
         if value.template
             value.helper = ->
-                helper = jQuery('<div id="custom-draggable-helper" />')
+                helper = jQuery("""<div data-bind='css: { "can-drop": canDrop }, template: "#{value.template}"' />""")
 
                 _.defer ->
-                    ko.renderTemplate value.template, draggableModel, {}, helper[0], "replaceChildren"
+                    ko.applyBindings draggableModel, helper[0]
 
                 helper
 
