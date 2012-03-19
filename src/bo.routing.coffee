@@ -289,7 +289,7 @@ class HistoryManager
     _updateUrlFromFragment: (fragment, options) ->
         document.title = options.title
 
-        frag = (fragment or "").replace(routeStripper, "")
+        frag = encodeURI (fragment or "").replace(routeStripper, "")
   
         return if @fragment is frag
   
