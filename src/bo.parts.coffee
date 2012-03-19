@@ -34,7 +34,7 @@ class bo.Part extends bo.Bus
         if @viewModel && @viewModel.isDirty? then !(ko.utils.unwrapObservable @viewModel.isDirty) else true
                     
     deactivate: ->
-        @viewModel.deactivate() if @viewModel.deactivate?
+        @viewModel.deactivate() if @viewModel?.deactivate?
 
         if @viewModelTemplate?
             @viewModel = undefined
