@@ -68,8 +68,8 @@ bo.utils.addTemplate 'confirmationDialog',  '''
         <span class="text" data-bind="text: questionText" />
 
         <div class="button-bar">
-            <button class="confirm" class="primary"  data-bind="button: _confirm, closeDialog: true">Yes</button>
-            <button class="cancel" class="secondary" data-bind="button: _cancel,  closeDialog: true">No</button>
+            <button class="confirm primary" data-bind="button: _confirm, closeDialog: true">Yes</button>
+            <button class="cancel secondary" data-bind="button: _cancel,  closeDialog: true">No</button>
         </div>
     </div>
 '''
