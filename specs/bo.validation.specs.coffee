@@ -1304,3 +1304,62 @@ describe 'Validation:', ->
 
             # Assert
             expect(isValid).toBe true
+
+    describe 'with a date validator', ->
+        itShouldReturnTrueForEmptyValues 'date'
+
+        it 'should return true if value is parsable as a date', ->
+            # Arrange
+            value = '21/05/2012'
+
+            # Act
+            isValid = bo.validation.rules.date.validator value, {}, true
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if the value is not parsable as a date', ->
+            # Arrange
+            value = '231/05/2012'
+
+            # Act
+            isValid = bo.validation.rules.date.validator value, {}, true
+
+            # Assert
+            expect(isValid).toBe false
+
+    describe 'with an numeric validator', ->
+        itShouldReturnTrueForEmptyValues 'numeric'
+
+        it 'should return true if value is an integer', ->
+            # Arrange
+            value = '12'
+
+            # Act
+            isValid = bo.validation.rules.numeric.validator value, {}, true
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if value is a double', ->
+            # Arrange
+            value = '1.2'
+
+            # Act
+            isValid = bo.validation.rules.numeric.validator value, {}, true
+
+            # Assert
+            expect(isValid).toBe true
+
+
+        it 'should return false if value is not numeric', ->
+            # Arrange
+            value = 'numeric'
+
+            # Act
+            isValid = bo.validation.rules.numeric.validator value, {}, true
+
+            # Assert
+            expect(isValid).toBe false
+
+

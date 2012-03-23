@@ -234,6 +234,20 @@ bo.validation =
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must not be in the future."
 
+        date:
+            validator: (value, model, options) ->
+                return (emptyValue value) or (parseDate(value) != undefined)
+
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} must be a date."
+
+        numeric:
+            validator: (value, model, options) ->
+                return (emptyValue value) or (isFinite value)
+
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} must be numeric."
+
 # Given a model and a set of (optional) model validation rules will add the necessary
 # methods and observables to make the model validatable.
 bo.validatableModel = (model) ->
