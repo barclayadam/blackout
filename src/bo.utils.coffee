@@ -4,7 +4,7 @@
 window.bo.utils =
     addTemplate: (name, template) ->
         if jQuery("##{name}").length is 0
-            jQuery('head').append "<script type='text/x-jquery-tmpl' id='#{name}'>#{template}</script>"
+            jQuery('head').append "<script type='text/x-knockout-tmpl' id='#{name}'>#{template}</script>"
 
     fromCamelToTitleCase: (str) ->
         str

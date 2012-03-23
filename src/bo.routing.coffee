@@ -231,7 +231,6 @@ class HistoryManager
             window.history.replaceState {}, document.title, loc.protocol + '//' + loc.host + @options.root + @fragment
         
         bo.bus.subscribe 'routeNavigating', (msg) =>
-            console.log "transientQueryParameters = {}"
             @transientQueryParameters = {}
 
         bo.bus.subscribe 'routeNavigated', (msg) =>
@@ -290,7 +289,7 @@ class HistoryManager
     _updateUrlFromFragment: (fragment, options) ->
         document.title = options.title
 
-        frag = (fragment or "").replace(routeStripper, "")
+        frag = encodeURI (fragment or "").replace(routeStripper, "")
   
         return if @fragment is frag
   

@@ -9,17 +9,6 @@ ko.bindingHandlers.hoverClass =
         $element = jQuery(element)
         $element.hover (-> $element.addClass value), (-> $element.removeClass value)
         
-ko.bindingHandlers.flash =
-    update: (element, valueAccessor) ->
-        $element = jQuery(element)
-        value = ko.utils.unwrapObservable valueAccessor()
-
-        if value?
-            $element.html(value).hide().slideDown(350)
-            setTimeout (-> $element.fadeOut()), 3500
-        else
-            $element.hide()
-
 ko.bindingHandlers.yesno =
     update: (element, valueAccessor) ->
         value = ko.utils.unwrapObservable valueAccessor()

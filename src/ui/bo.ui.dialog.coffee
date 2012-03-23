@@ -26,8 +26,6 @@ class bo.Dialog
         @_dialogElement = injectDialogTemplate @part.name
         ko.applyBindings @, @_dialogElement
 
-        @_construct = ->
-
     # Shows this dialog, passing the `parameters` (if any) on to the view model's
     # `show` method, in the same manner as parameters passed as part of navigation.
     show: (parameters) ->
@@ -35,7 +33,8 @@ class bo.Dialog
         @_regionManager.activate [@part], parameters
 
         dialogOptions =
-            isModal: true
+            resizable: false
+            modal: true
 
         if @part.viewModel.getDialogOptions?
             dialogOptions = _.extend dialogOptions, @part.viewModel.getDialogOptions()  
@@ -69,8 +68,8 @@ bo.utils.addTemplate 'confirmationDialog',  '''
         <span class="text" data-bind="text: questionText" />
 
         <div class="button-bar">
-            <button class="confirm" class="primary"  data-bind="button: _confirm, closeDialog: true">Yes</button>
-            <button class="cancel" class="secondary" data-bind="button: _cancel,  closeDialog: true">No</button>
+            <button class="confirm primary" data-bind="button: _confirm, closeDialog: true">Yes</button>
+            <button class="cancel secondary" data-bind="button: _cancel,  closeDialog: true">No</button>
         </div>
     </div>
 '''
@@ -99,8 +98,10 @@ class ConfirmationDialog
     getDialogOptions: ->
         title: @title
 
-        width: 500,
-        height: 250
+        width: 400,
+        height: 200,
+
+        modal: true
 
     _confirm: ->
         @_deferred.resolve()

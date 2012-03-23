@@ -68,7 +68,7 @@ class TreeNode
         @indent = ko.computed =>
             "#{(@level() - 1) * 11}px"
                         
-        @_setOption o for o in ["isDraggable", "isDropTarget", "canAddChildren", "childType", "renameAfterAdd", "canRename", "canDelete", "defaultChildName"]       
+        @_setOption o for o in ["isDraggable", "isDropTarget", "canAddChildren", "childType", "renameAfterAdd", "canRename", "canDelete", "defaultChildName", "dragTemplate"]       
 
         @setChildren (@data.children || []) if not @data.loadChildren
         @children.load() if @isOpen()
@@ -249,6 +249,8 @@ class TreeNode
         @viewModel.options.handlers[name].apply(@, [@, others...])                    
 
     _setOption: (optionName) ->
+        @[optionName] = undefined
+
         for o in [@data[optionName], @viewModel.options.nodeDefaults[@type]?[optionName], @viewModel.options.nodeDefaults[optionName]]
             if o?
                 @[optionName] = o
@@ -363,15 +365,14 @@ bo.utils.addTemplate 'treeNodeTemplate', '''
                           'aria-expanded': expanded,
                           'aria-labelledby': nodeTextId,
                           'aria-selected': isSelected }, 
-                       css: { 'tree-item': true, leaf: isLeaf, open: isOpen, rename: isRenaming },  
+                       css: { 'tree-item': true, leaf: isLeaf, open: isOpen, rename: isRenaming, selected: isSelected, focused: isFocused, 'children-loading': children.isLoading },  
                        event: { click: select },                      
                        tabIndex: isFocused">        
             <div class="tree-node" 
-                 data-bind="draggable: isDraggable,
+                 data-bind="draggable: { enabled: isDraggable, template: dragTemplate },
                             dropTarget: { canAccept : canAcceptDrop, onDropComplete: acceptDrop}, 
                             contextMenu: contextMenu, 
-                            hoverClass: 'ui-state-hover',
-                            css: { 'ui-state-active': isSelected, 'ui-state-focus': isFocused, 'children-loading': children.isLoading }">
+                            hoverClass: 'ui-state-hover'">
                 <span data-bind="click: toggleFolder, 
                                  css: { 'handle': true, 'ui-icon': true, 'ui-icon-triangle-1-se': isOpen, 'ui-icon-triangle-1-e': !isOpen() },
                                  bubble : false, 
@@ -380,9 +381,7 @@ bo.utils.addTemplate 'treeNodeTemplate', '''
                 <!-- ko if: viewModel.options.checksEnabled -->
                     <input type="checkbox" class="checked" data-bind="indeterminateCheckbox: checkState" />
                 <!-- /ko -->
-                
-                <span class="icon"></span>
-                
+                                
                 <!-- ko if: isRenaming -->
                     <input class="rename" type="text" data-bind="
                                value: editingName, 

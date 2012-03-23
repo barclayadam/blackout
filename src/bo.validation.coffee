@@ -354,11 +354,8 @@ ko.bindingHandlers.validationSummary =
                         
 ko.bindingHandlers.validated =
     options:
-        inputValidClass: 'input-validation-valid'
-        inputInvalidClass: 'input-validation-error'
-
-        messageValidClass: 'field-validation-valid'
-        messageInvalidClass: 'field-validation-error'
+        inputValidClass: 'validation-valid'
+        inputInvalidClass: 'validation-error'
 
     init: (element, valueAccessor, allBindings, viewModel) ->
         value = valueAccessor()
@@ -366,7 +363,7 @@ ko.bindingHandlers.validated =
 
         if value?
             if value.allErrors?
-                $validationElement = jQuery('<span />').insertAfter $element
+                $validationElement = jQuery('<span class="validation-text"><span class="icon" /><span class="text" /></span>').insertAfter($element)
                 ko.utils.domData.set element, 'validationElement', $validationElement
 
             if value.validationRules?
@@ -376,6 +373,7 @@ ko.bindingHandlers.validated =
 
     update: (element, valueAccessor, allBindings, viewModel) ->
         $element = jQuery element
+        $label = jQuery("""label[for="#{element.id}"]""")
         $validationElement = ko.utils.domData.get element, 'validationElement'
 
         if $validationElement is undefined
@@ -392,12 +390,16 @@ ko.bindingHandlers.validated =
             isInvalid = isEnabled and errorMessages.length > 0
             isValid = not isInvalid
 
-            $element.toggleClass options.inputValidClass, isValid
-            $element.toggleClass options.inputInvalidClass, isInvalid
+            toggleClasses = ($e) ->
+                $e.toggleClass options.inputValidClass, isValid
+                $e.toggleClass options.inputInvalidClass, isInvalid
 
-            $element.attr "aria-invalid", isInvalid
+                $e.attr "aria-invalid", isInvalid
+
+            toggleClasses $element
+            toggleClasses $label
             
-            $validationElement.toggleClass options.messageValidClass, isValid
-            $validationElement.toggleClass options.messageInvalidClass, isInvalid
+            $validationElement.toggleClass options.inputValidClass, isValid
+            $validationElement.toggleClass options.inputInvalidClass, isInvalid
 
-            $validationElement.html (if isValid then '' else errorMessages.join '<br />')
+            $validationElement.find('.text').html (if isValid then '' else errorMessages.join '<br />')
