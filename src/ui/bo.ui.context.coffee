@@ -98,19 +98,19 @@ ko.bindingHandlers.contextMenu =
         $element.mousedown (evt) ->
             if evt.which == 3
                 showContextMenu evt
-                false
+                evt.preventDefault()
             
         $element.bind 'contextmenu', (evt) -> 
             showContextMenu evt
-            false
+            evt.preventDefault()
 
-        jQuery('.ui-context').live 'contextmenu', ->
-            false
+        jQuery('.ui-context').live 'contextmenu', (evt) ->
+            evt.preventDefault()
                 
         jQuery(document).bind 'keydown', 'esc', ->   
             jQuery('.ui-context').remove()
 
-        jQuery('html').click ->
+        jQuery(document).bind 'click', ->   
             jQuery('.ui-context').remove()
 
 ko.bindingHandlers.inlineContextMenu = 

@@ -355,7 +355,7 @@ TreeViewModel.defaultOptions =
         onMove: (node, newParent, onSuccess) -> onSuccess()
         canAcceptDrop: (node, droppable, defaultAcceptance) -> defaultAcceptance droppable
         onAcceptUnknownDrop: (node, droppable) ->
-           
+
 bo.utils.addTemplate 'treeNodeTemplate', '''
         <li role="treeitem"
             data-bind="attr: {
@@ -366,13 +366,13 @@ bo.utils.addTemplate 'treeNodeTemplate', '''
                           'aria-labelledby': nodeTextId,
                           'aria-selected': isSelected }, 
                        css: { 'tree-item': true, leaf: isLeaf, open: isOpen, rename: isRenaming, selected: isSelected, focused: isFocused, 'children-loading': children.isLoading },  
-                       event: { click: select },                      
-                       tabIndex: isFocused">        
+                       event: { click: select }">        
             <div class="tree-node" 
                  data-bind="draggable: { enabled: isDraggable, template: dragTemplate },
                             dropTarget: { canAccept : canAcceptDrop, onDropComplete: acceptDrop}, 
-                            contextMenu: contextMenu, 
-                            hoverClass: 'ui-state-hover'">
+                            hoverClass: 'ui-state-hover',                      
+                            contextMenu: contextMenu,
+                            tabIndex: isFocused">
                 <span data-bind="click: toggleFolder, 
                                  css: { 'handle': true, 'ui-icon': true, 'ui-icon-triangle-1-se': isOpen, 'ui-icon-triangle-1-e': !isOpen() },
                                  bubble : false, 
