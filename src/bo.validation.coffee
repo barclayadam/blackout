@@ -333,9 +333,18 @@ ko.subscribable.fn.validatable = (validationRules) ->
     ko.extenders.validatable @, validationRules
     @
 
+bo.utils.addTemplate('validationSummaryTemplate',   ''' <ul class="validation-summary" data-bind="foreach: $data">
+                                                            <li>
+                                                                <span class="icon"></span>
+                                                                <span class="text" data-bind="text: $data"></span>
+                                                            </li>
+                                                        </ul>''')
+
 ko.bindingHandlers.validationSummary =
     init: (element, valueAccessor) ->
         model = ko.utils.unwrapObservable valueAccessor()
+
+        { controlsDecendantBinding: true }
 
     update: (element, valueAccessor) ->
         model = ko.utils.unwrapObservable valueAccessor()
@@ -350,7 +359,8 @@ ko.bindingHandlers.validationSummary =
                 if not value.__errorsShown__()
                     ko.utils.arrayPushAll errorsToShow, value.allErrors()
 
-        element.innerHTML = errorsToShow.join '<br />'
+
+        ko.renderTemplate('validationSummaryTemplate', errorsToShow, {}, element, 'replaceChildren');
                         
 ko.bindingHandlers.validated =
     options:
@@ -365,6 +375,11 @@ ko.bindingHandlers.validated =
             if value.allErrors?
                 $validationElement = jQuery('<span class="validation-text"><span class="icon" /><span class="text" /></span>').insertAfter($element)
                 ko.utils.domData.set element, 'validationElement', $validationElement
+
+            if not value.__errorsShown__?
+                value.__errorsShown__ = ko.observable()
+
+            value.__errorsShown__(true)
 
             if value.validationRules?
                 for rule, options of value.validationRules
