@@ -372,4 +372,3 @@ ko.bindingHandlers.navigateTo =
                 bo.routing.navigateTo routeName, parameters, allBindingsAccessor().canVeto ? true
 
                 event.preventDefault()
-                false
