@@ -76,7 +76,8 @@ class Route
             @paramNames.push name
             if mode is '*' then '(.*)' else '([^/]*)'
 
-        routeDefinitionAsRegex = routeDefinitionAsRegex.substring 1 if routeDefinitionAsRegex[0] is '/'
+        if routeDefinitionAsRegex.length > 1 and routeDefinitionAsRegex.charAt(0) is '/'
+            routeDefinitionAsRegex = routeDefinitionAsRegex.substring 1 
 
         @incomingMatcher = new RegExp "^/?#{routeDefinitionAsRegex}/?$"
         
@@ -128,9 +129,8 @@ routeStripper = /^[#\/]/
 # Cached regex for detecting MSIE.
 isExplorer = /msie [\w.]+/
 
-# The default interval to poll for hash changes, if necessary, is
-# twenty times a second.
-interval = 50
+# The default interval to poll for hash changes, if necessary.
+interval = 150
 
 # Gets the true hash value. Cannot use location.hash directly due to bug
 # in Firefox where location.hash will always be decoded.

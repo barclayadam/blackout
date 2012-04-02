@@ -224,6 +224,19 @@ describe 'Routing:', ->
                     route: controllerRoute
                     parameters: { controller: 'AController' }
 
+            it 'should publish a routeNavigated event if url does not contain a preceeding forward slash but route specifies one', ->
+                # Arrange
+                controllerRoute = new bo.routing.Route 'Controllers', '/Controller/{action}'
+
+                # Act
+                bo.bus.publish 'urlChanged', { url: 'Controller/MyAction' }
+
+                # Assert
+                expect('routeNavigated:Controllers').toHaveBeenPublishedWith 
+                    url: '/Controller/MyAction', 
+                    route: controllerRoute
+                    parameters: { action: 'MyAction' }
+
             it 'should publish a routeNavigated event if URL matches definition with multiple parameters', ->
                 # Arrange
                 controllerRoute = new bo.routing.Route 'Controllers', '/{controller}/{action}'
