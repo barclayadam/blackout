@@ -259,21 +259,17 @@ class HistoryManager
   
     _publishCurrent: () ->
         fragment = @fragment = @getFragment()
-        fragment = '/' if fragment is ''
-        
+
         queryString = bo.QueryString.from fragment
         queryStringDelimiterIndex = fragment.indexOf '?'
 
-        if queryStringDelimiterIndex is -1
-            bo.bus.publish 'urlChanged', 
-                url: fragment
-                fullUrl: fragment
-                queryString: queryString
-        else
-            bo.bus.publish 'urlChanged', 
-                url: fragment.substring(0, queryStringDelimiterIndex)
-                fullUrl: fragment 
-                queryString: queryString
+        url = if queryStringDelimiterIndex is -1 then fragment else fragment.substring(0, queryStringDelimiterIndex)
+        url = '/' if url is ''
+
+        bo.bus.publish 'urlChanged', 
+            url: url
+            fullUrl: fragment 
+            queryString: queryString
   
     _updateFromRouteUrl: (msg) ->    
         queryString = new bo.QueryString()
