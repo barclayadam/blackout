@@ -17,7 +17,7 @@ class TreeNode
         @isRoot = not parent?
                 
         @type = @data.type || 'folder'
-        @cssClass = @data.cssClass || bo.utils.toCssClass @type
+        @cssClass = if @data.cssClass? then "#{@data.cssClass} #{bo.utils.toCssClass @type}" else bo.utils.toCssClass @type
 
         @contextMenu = @viewModel.getContextMenu @type
 
@@ -37,7 +37,8 @@ class TreeNode
             @checkState newValue if newValue != "mixed"
 
         @checkState @parent().checkState() if parent
-                
+
+        @isVisible = bo.utils.asObservable @data.isVisible ? true                
         @isOpen = ko.observable @data.isOpen ? false
         @expanded = ko.computed => @isOpen().toString()
 
@@ -358,7 +359,8 @@ TreeViewModel.defaultOptions =
 
 bo.utils.addTemplate 'treeNodeTemplate', '''
         <li role="treeitem"
-            data-bind="attr: {
+            data-bind="if: isVisible,
+                       attr: {
                           'class': cssClass, 
                           'id': safeId, 
                           'aria-level': level, 
