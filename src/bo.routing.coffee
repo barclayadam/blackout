@@ -259,7 +259,8 @@ class HistoryManager
   
     _publishCurrent: () ->
         fragment = @fragment = @getFragment()
-  
+        fragment = '/' if fragment is ''
+        
         queryString = bo.QueryString.from fragment
         queryStringDelimiterIndex = fragment.indexOf '?'
 
