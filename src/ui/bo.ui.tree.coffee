@@ -414,7 +414,7 @@ bo.utils.addTemplate 'treeTemplate', '''
                                  { callback: selectNext, keyboard: 'down' },
                                  { callback: deleteSelf, keyboard: 'del' },
                                  { callback: beginRenaming, keyboard: 'f2' },
-                                 { callback: selectFocused, keyboard: 'space' }],"></ul>
+                                 { callback: selectFocused, keyboard: 'space' }]"></ul>
         '''
 
 ko.bindingHandlers.tree =
