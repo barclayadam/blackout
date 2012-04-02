@@ -96,3 +96,13 @@ class bo.Part extends bo.Bus
             @_activateViewModel = ->
         
         @viewModel.initialise() if @viewModel.initialise
+
+ko.bindingHandlers.part =
+    init: (element, valueAccessor, allBindingsAccessor, viewModel) ->
+        part = valueAccessor()
+        partPromises = part.activate {}
+
+        jQuery.when.apply(@, partPromises).done =>
+            ko.renderTemplate part.templateName, part.viewModel, {}, element, "replaceChildren"
+
+        { "controlsDescendantBindings" : true }
