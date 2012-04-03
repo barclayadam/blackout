@@ -3,11 +3,11 @@
 bo.utils.addTemplate 'breadcrumbTemplate', '''
         <ul class="bo-breadcrumb" data-bind="foreach: breadcrumb">
             <li>
-                <!-- ko ifnot: hasRoute -->
+                <!-- ko if: !hasRoute || hasParameters -->
                     <span class="current" data-bind="text: name"></span>
                 <!-- /ko -->
 
-                <!-- ko if: hasRoute -->
+                <!-- ko if: hasRoute && !hasParameters -->
                     <a href="#" data-bind="navigateTo: name, text: name"></a>
                 <!-- /ko -->
             </li>
