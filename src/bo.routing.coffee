@@ -140,10 +140,9 @@ getHash = (windowOverride) ->
     (if match then match[1] else "")
 
 class HistoryManager
-    constructor: (options) ->
+    constructor: () ->
         @fragment = undefined
 
-        @options          = _.extend {}, { root: '/' }, options
         @_hasPushState    = !!(window.history && window.history.pushState)
 
         @persistedQueryParameters = {}
@@ -189,7 +188,9 @@ class HistoryManager
 
         decodeURI fragment 
 
-    initialise: ->
+    initialise: (options = {}) ->
+        @options = _.extend {}, { root: '/' }, options
+
         fragment = @getFragment()
         docMode  = document.documentMode
         oldIE    = isExplorer.exec(navigator.userAgent.toLowerCase()) && (!docMode || docMode <= 7)
