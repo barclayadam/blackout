@@ -371,7 +371,7 @@ ko.bindingHandlers.validated =
         value = valueAccessor()
         $element = jQuery element
 
-        if value?
+        if ko.isObservable(value)
             if value.allErrors?
                 $validationElement = jQuery('<span class="validation-text"><span class="icon" /><span class="text" /></span>').insertAfter($element)
                 ko.utils.domData.set element, 'validationElement', $validationElement
