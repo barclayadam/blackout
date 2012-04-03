@@ -36,7 +36,7 @@ describe 'Messaging', ->
 
     describe 'When executing a single query', ->
         beforeEach ->       
-            bo.messaging.config.query.url = "/ExecuteMyQuery/?query.name=$queryName&query.values=$queryValues"
+            bo.messaging.config.query.url = "ExecuteMyQuery/?query.name=$queryName&query.values=$queryValues"
             bo.messaging.config.query.optionsParameterName = "myOptions"
 
             @promise = bo.messaging.query 'My Query', { id: 3456 }
@@ -103,7 +103,7 @@ describe 'Messaging', ->
 
     describe 'When executing a single command', ->
         beforeEach ->       
-            bo.messaging.config.command.url = "/DoCommand/$commandName"
+            bo.messaging.config.command.url = "DoCommand/$commandName"
             bo.messaging.config.command.optionsParameterName = "myOptions"
 
             @command = new bo.Command 'My Command', { id: 3456 }
@@ -172,7 +172,7 @@ describe 'Messaging', ->
 
     describe 'When executing a batch of commands', ->
         it 'Should make a POST request to the batch URL with all commands', ->
-            bo.messaging.config.command.batchUrl = "/SendBatch"
+            bo.messaging.config.command.batchUrl = "SendBatch"
             bo.messaging.config.command.optionsParameterName = "myOptions"
 
             @server.respondWith "POST", "/SendBatch", [200, { "Content-Type": "application/json" },'{}']

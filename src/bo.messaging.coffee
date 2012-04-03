@@ -20,14 +20,14 @@ bo.messaging = {}
 
 bo.messaging.config =
     query:
-        url: "/Query/?query.name=$queryName&query.values=$queryValues"
+        url: "Query/?query.name=$queryName&query.values=$queryValues"
 
     queryDownload:
-        url: "/Query/Download?query.name=$queryName&query.values=$queryValues&contentType=$contentType&fileName=$fileName"
+        url: "Query/Download?query.name=$queryName&query.values=$queryValues&contentType=$contentType&fileName=$fileName"
     
     command:
-        url: "/Command"
-        batchUrl: "/Command/Batch"
+        url: "Command"
+        batchUrl: "Command/Batch"
         optionsParameterName: 'values'
 
 bo.messaging.query = (queryName, options = {}, ajaxOptions = {}) ->
@@ -38,7 +38,7 @@ bo.messaging.query = (queryName, options = {}, ajaxOptions = {}) ->
     queryDeferred = new jQuery.Deferred()
 
     request = _.extend {}, ajaxOptions, 
-                    url: bo.messaging.config.query.url.replace("$queryValues", ko.toJSON options).replace("$queryName", queryName)
+                    url: bo.config.appRoot + bo.messaging.config.query.url.replace("$queryValues", ko.toJSON options).replace("$queryName", queryName)
                     type: "GET"
                     dataType: "json"
                     contentType: "application/json; charset=utf-8"
@@ -75,11 +75,11 @@ bo.messaging.queryDownload = (queryName, contentType, fileName, options = {}, aj
     
     bo.bus.publish "queryExecuting:#{queryName}", { name: queryName, values: options }
 
-    url = bo.messaging.config.queryDownload.url
-        .replace("$queryValues", ko.toJSON options)
-        .replace("$queryName", queryName)
-        .replace("$contentType", contentType)
-        .replace("$fileName", fileName)
+    url = bo.config.appRoot + bo.messaging.config.queryDownload.url
+                                .replace("$queryValues", ko.toJSON options)
+                                .replace("$queryName", queryName)
+                                .replace("$contentType", contentType)
+                                .replace("$fileName", fileName)
 
     form = document.createElement "form"
     document.body.appendChild form
@@ -105,7 +105,7 @@ bo.messaging.command = (command) ->
     commandDeferred = new jQuery.Deferred()
 
     ajaxPromise = jQuery.ajax
-                    url: bo.messaging.config.command.url.replace("$commandName", commandName)
+                    url: bo.config.appRoot + bo.messaging.config.command.url.replace("$commandName", commandName)
                     type: "POST"
                     data: ko.toJSON { command: { name: commandName, values: commandValues } }
                     dataType: "json"
@@ -143,7 +143,7 @@ bo.messaging.commands = (commands) ->
                         { name: c.name, values: c.properties() }
 
     ajaxPromise = jQuery.ajax
-                    url: bo.messaging.config.command.batchUrl
+                    url: bo.config.appRoot + bo.messaging.config.command.batchUrl
                     type: "POST"
                     data: ko.toJSON { commands: commandsToSend }
                     dataType: "json"

@@ -1,6 +1,9 @@
 window.bo = {}
 window.bo.ui = {}
 
+window.bo.config =
+    appRoot: '/'
+
 window.bo.arg =
     ensureDefined: (argument, argumentName) ->
         if argument is undefined

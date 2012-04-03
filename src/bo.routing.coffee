@@ -140,10 +140,11 @@ getHash = (windowOverride) ->
     (if match then match[1] else "")
 
 class HistoryManager
-    constructor: () ->
+    constructor: (options) ->
         @fragment = undefined
 
         @_hasPushState    = !!(window.history && window.history.pushState)
+        @options = _.extend {}, { root: bo.config.appRoot }, options
 
         @persistedQueryParameters = {}
         @transientQueryParameters = {}
@@ -188,9 +189,7 @@ class HistoryManager
 
         decodeURI fragment 
 
-    initialise: (options = {}) ->
-        @options = _.extend {}, { root: '/' }, options
-
+    initialise: () ->
         fragment = @getFragment()
         docMode  = document.documentMode
         oldIE    = isExplorer.exec(navigator.userAgent.toLowerCase()) && (!docMode || docMode <= 7)
@@ -277,7 +276,12 @@ class HistoryManager
         queryString.setAll @transientQueryParameters
         queryString.setAll @persistedQueryParameters
        
-        @_updateUrlFromFragment msg.url + queryString.toString(), 
+        if msg.url.charAt(0) == '/'
+            baseUrl = bo.config.appRoot + msg.url.substring(1)
+        else 
+            baseUrl = bo.config.appRoot + msg.url
+            
+        @_updateUrlFromFragment baseUrl + queryString.toString(), 
             title: msg.route.title 
             replace: false
 
