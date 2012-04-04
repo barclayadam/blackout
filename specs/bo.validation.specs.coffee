@@ -1362,4 +1362,57 @@ describe 'Validation:', ->
             # Assert
             expect(isValid).toBe false
 
+    describe 'with an equalTo validator', ->
+        itShouldReturnTrueForEmptyValues 'equalTo'
+
+        it 'should return true if value is equal', ->
+            # Arrange
+            value = '12'
+
+            # Act
+            isValid = bo.validation.rules.equalTo.validator value, { property: value }, 'property'
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if value is not equal', ->
+            # Arrange
+            value = '1.2'
+
+            # Act
+            isValid = bo.validation.rules.equalTo.validator value, { property: '12' }, 'property'
+
+            # Assert
+            expect(isValid).toBe false
+
+
+        it 'should return false if other property does not exist', ->
+            # Arrange
+            value = 'numeric'
+
+            # Act
+            isValid = bo.validation.rules.equalTo.validator value, { }, 'property'
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if value is equal to value in options', ->
+            # Arrange
+            value = '12'
+
+            # Act
+            isValid = bo.validation.rules.equalTo.validator value, { }, { value: '12' }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if value is equal to observable in options', ->
+            # Arrange
+            value = '12'
+
+            # Act
+            isValid = bo.validation.rules.equalTo.validator value, { }, { value: ko.observable('12') }
+
+            # Assert
+            expect(isValid).toBe true
 
