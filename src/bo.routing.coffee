@@ -140,11 +140,10 @@ getHash = (windowOverride) ->
     (if match then match[1] else "")
 
 class HistoryManager
-    constructor: (options) ->
+    constructor: () ->
         @fragment = undefined
 
         @_hasPushState    = !!(window.history && window.history.pushState)
-        @options = _.extend {}, { root: bo.config.appRoot }, options
 
         @persistedQueryParameters = {}
         @transientQueryParameters = {}
@@ -184,7 +183,7 @@ class HistoryManager
             else
                 fragment = getHash()
 
-        fragment = fragment.substr(@options.root.length) unless fragment.indexOf @options.root
+        fragment = fragment.substr(bo.config.appRoot.length) unless fragment.indexOf bo.config.appRoot
         fragment.replace routeStripper, ""
 
         decodeURI fragment 
@@ -214,13 +213,13 @@ class HistoryManager
         @fragment = fragment;
       
         loc = window.location;
-        atRoot  = loc.pathname == @options.root;
+        atRoot  = loc.pathname == bo.config.appRoot;
   
         if !this._hasPushState && !atRoot
             # If we've started off with a route from a `pushState`-enabled browser,
             # but we're currently in a browser that doesn't support it...
             @fragment = @getFragment null, true
-            window.location.replace @options.root + '#' + @fragment;
+            window.location.replace bo.config.appRoot + '#' + @fragment;
   
             # Return immediately as browser will do redirect to new url
             return true;
@@ -228,7 +227,7 @@ class HistoryManager
             # Or if we've started out with a hash-based route, but we're currently
             # in a browser where it could be `pushState`-based instead...
             @fragment = getHash().replace routeStripper, ''
-            window.history.replaceState {}, document.title, loc.protocol + '//' + loc.host + @options.root + @fragment
+            window.history.replaceState {}, document.title, loc.protocol + '//' + loc.host + bo.config.appRoot + @fragment
         
         bo.bus.subscribe 'routeNavigating', (msg) =>
             @transientQueryParameters = {}
@@ -298,7 +297,7 @@ class HistoryManager
         @fragment = frag
 
         if @_hasPushState
-            frag = @options.root + frag unless frag.indexOf(@options.root) is 0
+            frag = bo.config.appRoot + frag unless frag.indexOf(bo.config.appRoot) is 0
             window.history[if options.replace then 'replaceState' else 'pushState'] {}, document.title, frag
         else
             @_updateHash window.location, frag, options.replace
