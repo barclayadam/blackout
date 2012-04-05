@@ -183,7 +183,7 @@ class HistoryManager
             else
                 fragment = getHash()
 
-        fragment = fragment.substr(bo.config.appRoot.length) unless fragment.indexOf bo.config.appRoot
+        fragment = fragment.substr(bo.config.appRoot.length) if fragment.indexOf(bo.config.appRoot) is 0
         fragment.replace routeStripper, ""
 
         decodeURI fragment 
@@ -219,7 +219,7 @@ class HistoryManager
             # If we've started off with a route from a `pushState`-enabled browser,
             # but we're currently in a browser that doesn't support it...
             @fragment = @getFragment null, true
-            window.location.replace bo.config.appRoot + '#' + @fragment;
+            window.location.replace bo.config.appRoot + '#' + @fragment
   
             # Return immediately as browser will do redirect to new url
             return true;
@@ -276,9 +276,9 @@ class HistoryManager
         queryString.setAll @persistedQueryParameters
        
         if msg.url.charAt(0) == '/'
-            baseUrl = bo.config.appRoot + msg.url.substring(1)
+            baseUrl = msg.url.substring(1)
         else 
-            baseUrl = bo.config.appRoot + msg.url
+            baseUrl = msg.url
             
         @_updateUrlFromFragment baseUrl + queryString.toString(), 
             title: msg.route.title 
