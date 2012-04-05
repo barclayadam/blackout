@@ -236,17 +236,30 @@ bo.validation =
 
         date:
             validator: (value, model, options) ->
-                return (emptyValue value) or (parseDate(value) != undefined)
+                (emptyValue value) or (parseDate(value) != undefined)
 
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must be a date."
 
         numeric:
             validator: (value, model, options) ->
-                return (emptyValue value) or (isFinite value)
+                (emptyValue value) or (isFinite value)
 
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must be numeric."
+
+        equalTo:
+            validator: (value, model, options) ->
+                if options.value?
+                    (emptyValue value) or (value is ko.utils.unwrapObservable options.value)
+                else    
+                    (emptyValue value) or (value is model[options])
+
+            message: (propertyName, model, options) ->
+                if options.value?
+                    "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to #{bo.utils.fromCamelToTitleCase options.propertyName}."
+                else    
+                    "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to #{bo.utils.fromCamelToTitleCase options}."
 
 # Given a model and a set of (optional) model validation rules will add the necessary
 # methods and observables to make the model validatable.
@@ -371,7 +384,7 @@ ko.bindingHandlers.validated =
         value = valueAccessor()
         $element = jQuery element
 
-        if value?
+        if ko.isObservable(value)
             if value.allErrors?
                 $validationElement = jQuery('<span class="validation-text"><span class="icon" /><span class="text" /></span>').insertAfter($element)
                 ko.utils.domData.set element, 'validationElement', $validationElement

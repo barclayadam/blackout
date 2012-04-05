@@ -18,7 +18,7 @@ class SitemapNode
             sitemap.currentNode() is @
 
         if definition.url
-            new bo.routing.Route name, definition.url, { metadata: @definition.metadata}
+            route = new bo.routing.Route name, definition.url, { metadata: @definition.metadata}
 
             bo.bus.subscribe "routeNavigated:#{name}", (msg) =>
                 sitemap.currentNode @
@@ -26,6 +26,7 @@ class SitemapNode
                 sitemap.regionManager.activate @definition.parts, msg.parameters
 
         @hasRoute = definition.url?
+        @hasParameters = @hasRoute and route.paramNames.length > 0
 
         if definition.isInNavigation?
             if ko.isObservable definition.isInNavigation 
