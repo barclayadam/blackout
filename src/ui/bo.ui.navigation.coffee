@@ -4,10 +4,10 @@
 
 bo.utils.addTemplate 'navigationItem', '''
         <li data-bind="css: { active: isActive, current: isCurrent, 'has-children': hasChildren, 'has-route': hasRoute, 'has-focus': hasFocusedChildren }, 
-                       attr: { id : bo.utils.toCssClass(name) }, 
-                       command: [{ callback: navigateTo, event: 'click', keyboard: 'return' }],
-                       tabIndex: hasFocus">
-            <span class="name" data-bind="text: name"></span>
+                       attr: { id : bo.utils.toCssClass(name) }">
+            <span class="name" data-bind="text: name, 
+                                          command: [{ callback: navigateTo, event: 'click', keyboard: 'return' }],
+                                          tabIndex: hasFocus"></span>
 
             <ul class="bo-navigation-sub-item" data-bind="template: { name : 'navigationItem', foreach: visibleChildren }"></ul>
         </li>
