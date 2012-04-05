@@ -3,29 +3,132 @@
 # reference "bo.coffee"
 
 bo.utils.addTemplate 'navigationItem', '''
-        <!-- ko if: isVisible -->
-        <li data-bind="css: { active: isActive, current: isCurrent, 'has-children': hasChildren }, attr: { id : bo.utils.toCssClass(name) }">
-            <!-- ko if: hasRoute -->
-                <a class="name" href="#" data-bind="navigateTo: name, text: name"></a>
-                <span class="after-link"></span>
-            <!-- /ko -->
-            <!-- ko ifnot: hasRoute -->
-                <span class="name" data-bind="text: name"></span>
-            <!-- /ko -->
-            <ul class="bo-navigation-sub-item" data-bind="template: { name : 'navigationItem', foreach: children }"></ul>
+        <li data-bind="css: { active: isActive, current: isCurrent, 'has-children': hasChildren, 'has-route': hasRoute, 'has-focus': hasFocusedChildren }, 
+                       attr: { id : bo.utils.toCssClass(name) }, 
+                       command: [{ callback: navigateTo, event: 'click', keyboard: 'return' }],
+                       tabIndex: hasFocus">
+            <span class="name" data-bind="text: name"></span>
+
+            <ul class="bo-navigation-sub-item" data-bind="template: { name : 'navigationItem', foreach: visibleChildren }"></ul>
         </li>
-        <!-- /ko -->
         '''
 
 bo.utils.addTemplate 'navigationTemplate', '''
-        <ul class="bo-navigation" role="navigation" data-bind="template: { name : 'navigationItem', foreach: nodes }"></ul>
+        <ul class="bo-navigation"
+            role="navigation" 
+            tabindex="0" 
+            data-bind="template: { name : 'navigationItem', foreach: sitemap.visibleChildren },
+                       sitemapFocus: true,
+                       sitemapHover: true,
+                       command: [{ callback: focusNext, keyboard: 'right' },
+                                 { callback: focusPrevious, keyboard: 'left'},
+                                 { callback: focusUp, keyboard: 'up'},
+                                 { callback: focusDown, keyboard: 'down'}]"></ul>
         '''
+
+ko.bindingHandlers.sitemapFocus =
+    init: (element) ->
+        $element = jQuery(element)
+
+        $element.on 'blur focusout', 'ul, li', ->
+            $element.removeClass 'has-focus'
+
+        $element.on 'focus focusin', 'ul, li', ->
+            $element.addClass 'has-focus'
+
+ko.bindingHandlers.sitemapHover =
+    init: (element) ->
+        _.delay ->
+            timeoutToken = undefined
+
+            $element = jQuery(element)
+
+            $root = $element.children 'li'
+            $leaves = $element.find 'li li'
+
+            $root.on 'mouseenter', (evt) ->
+                clearTimeout timeoutToken
+
+                $root.removeClass 'hovered'
+                $(evt.currentTarget).addClass 'hovered'
+
+            $leaves.on 'mouseenter', (evt) ->  
+                clearTimeout timeoutToken
+
+                $leaves.removeClass 'hovered'
+                $(evt.currentTarget).addClass 'hovered'
+
+            $leaves.on 'mouseleave', (evt) -> 
+                console.log 'leaf mouseleave'           
+
+                timeoutToken =_.delay (->
+                    $root.removeClass 'hovered'
+                    $(evt.currentTarget).removeClass 'hovered'
+                ), 450
+
+class SitemapViewModel
+    constructor: (@sitemap) ->
+        @focusedNode = ko.observable()
+
+        @_augment child for child in sitemap.children()
+
+    _doFocusNext: (node) ->
+        if node?
+            siblings = node.parent.visibleChildren()
+            currentIndex = siblings.indexOf node
+
+            if currentIndex + 1 < siblings.length
+                @focusedNode siblings[currentIndex + 1]
+            else
+                @_doFocusNext node.parent
+
+    focusNext: () ->
+        focused = @focusedNode()
+
+        if focused?
+            @_doFocusNext focused
+        else
+            @focusedNode @sitemap.visibleChildren()[0]
+
+    focusPrevious: (node) ->
+        node = node or @focusedNode()
+
+        if node? and node.parent?
+            siblings = node.parent.visibleChildren()
+            currentIndex = siblings.indexOf node
+
+            if currentIndex - 1 >= 0
+                @focusedNode siblings[currentIndex - 1]
+            else
+                @focusPrevious node.parent
+
+    focusUp: () ->
+        focused = @focusedNode()
+
+        if focused? and focused.parent?
+            @focusedNode focused.parent
+
+    focusDown: () ->
+        focused = @focusedNode()
+
+        if focused? and focused.visibleChildren().length > 0
+            @focusedNode focused.visibleChildren()[0]
+
+    _augment: (node) ->
+        node.hasFocus = ko.computed =>
+            @focusedNode() is node
+
+        node.hasFocusedChildren = ko.computed
+            read: -> node.hasFocus() or _.any(node.children(), (c) -> c.hasFocusedChildren())      
+            deferEvaluation: true
+
+        @_augment child for child in node.children()
 
 ko.bindingHandlers.navigation = 
     init: (element, valueAccessor) ->
         sitemap = ko.utils.unwrapObservable valueAccessor()
 
         if sitemap
-            ko.renderTemplate "navigationTemplate", sitemap, {}, element, "replaceChildren"
+            ko.renderTemplate "navigationTemplate", new SitemapViewModel(sitemap), {}, element, "replaceChildren"
 
          { "controlsDescendantBindings": true }
