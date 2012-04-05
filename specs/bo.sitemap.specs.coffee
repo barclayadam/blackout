@@ -45,7 +45,7 @@ describe 'Sitemap', ->
                     metadata: metadata
 
             # Assert
-            expect(sitemap.nodes[0].metadata).toBe metadata
+            expect(sitemap.children()[0].metadata).toBe metadata
 
         it 'should create the route with metadata set when metadat supplied', ->
             # Act
@@ -74,7 +74,7 @@ describe 'Sitemap', ->
                     url: '/'
 
             # Assert
-            expect(sitemap.nodes[0].hasRoute).toBe true
+            expect(sitemap.children()[0].hasRoute).toBe true
 
         it 'does not register a route if no url is defined', ->
             # Act
@@ -94,7 +94,7 @@ describe 'Sitemap', ->
                     inNavigation: true
 
             # Assert
-            expect(sitemap.nodes[0].hasRoute).toBe false
+            expect(sitemap.children()[0].hasRoute).toBe false
 
         it 'registers page as a sitemap node', ->
             # Act
@@ -105,8 +105,8 @@ describe 'Sitemap', ->
                     parts: [new bo.Part 'My Shiny Part' ]
 
             # Assert
-            expect(sitemap.nodes[0]).toBeDefined()
-            expect(sitemap.nodes[0].name).toEqual 'Home'          
+            expect(sitemap.children()[0]).toBeDefined()
+            expect(sitemap.children()[0].name).toEqual 'Home'          
 
         it 'creates sitemap nodes with path set-up correctly', ->
             # Act
@@ -116,7 +116,7 @@ describe 'Sitemap', ->
                     parts: [new bo.Part 'My Shiny Part' ]
 
             # Assert
-            expect(sitemap.nodes[0].getAncestorsAndThis()[0].name).toEqual 'Home'
+            expect(sitemap.children()[0].getAncestorsAndThis()[0].name).toEqual 'Home'
 
         it 'should create a single root node', ->
             # Act
@@ -126,7 +126,7 @@ describe 'Sitemap', ->
                     parts: [new bo.Part 'My Shiny Part' ]
 
             # Assert
-            expect(sitemap.nodes.length).toEqual 1            
+            expect(sitemap.children().length).toEqual 1            
 
     describe 'When creating a sitemap with node that has isInNavigation property', ->
         it 'creates a node with isVisible observable set to value of isInNavigation property', ->
@@ -138,7 +138,7 @@ describe 'Sitemap', ->
                     isInNavigation: false
 
             # Assert
-            expect(sitemap.nodes[0].isVisible()).toEqual false
+            expect(sitemap.children()[0].isVisible()).toEqual false
 
         it 'creates a node with isVisible observable set to value of isInNavigation function', ->
             # Act
@@ -149,7 +149,7 @@ describe 'Sitemap', ->
                     isInNavigation: -> false
 
             # Assert
-            expect(sitemap.nodes[0].isVisible()).toEqual false
+            expect(sitemap.children()[0].isVisible()).toEqual false
 
         it 'creates a node with isVisible observable set to isInNavigation observable', ->
             # Arrange
@@ -161,13 +161,13 @@ describe 'Sitemap', ->
                     parts: [new bo.Part 'My Shiny Part' ]
                     isInNavigation: inNavigationObservable
                     
-            expect(sitemap.nodes[0].isVisible()).toEqual true
+            expect(sitemap.children()[0].isVisible()).toEqual true
 
             # Act
             inNavigationObservable false
 
             # Assert
-            expect(sitemap.nodes[0].isVisible()).toEqual false
+            expect(sitemap.children()[0].isVisible()).toEqual false
 
         it 'should activate registered parts when navigating to route', ->
             # Arrange
@@ -211,7 +211,7 @@ describe 'Sitemap', ->
             bo.bus.publish 'routeNavigated:Home'
 
             # Assert
-            expect(sitemap.nodes[0].isCurrent()).toEqual true
+            expect(sitemap.children()[0].isCurrent()).toEqual true
 
         it 'should set isCurrent to false when navigated away from a route', ->
             # Arrange
@@ -225,13 +225,13 @@ describe 'Sitemap', ->
                     parts: [new bo.Part 'My Other Shiny Part' ]
 
             bo.bus.publish 'routeNavigated:Home'
-            expect(sitemap.nodes[0].isCurrent()).toEqual true
+            expect(sitemap.children()[0].isCurrent()).toEqual true
 
             # Act
             bo.bus.publish 'routeNavigated:Contact Us'
 
             # Assert
-            expect(sitemap.nodes[0].isCurrent()).toEqual false
+            expect(sitemap.children()[0].isCurrent()).toEqual false
 
         it 'should have a breadcrumb observable of current node when route navigated to', ->
             # Arrange
@@ -257,7 +257,7 @@ describe 'Sitemap', ->
             bo.bus.publish 'routeNavigated:Home'
 
             # Assert
-            expect(sitemap.nodes[0].isActive()).toBe true
+            expect(sitemap.children()[0].isActive()).toBe true
 
     describe 'When creating a sitemap with multiple levels', ->
         it 'should register sub items when defined', ->
@@ -286,7 +286,7 @@ describe 'Sitemap', ->
                         parts: [new bo.Part 'My Shiny Contact Us Part' ]
 
             # Assert
-            expect(sitemap.nodes[0].hasChildren()).toBe true
+            expect(sitemap.children()[0].hasChildren()).toBe true
 
         it 'should return false to hasChildren of parent node if no visible children', ->
             # Act
@@ -302,7 +302,7 @@ describe 'Sitemap', ->
                         isInNavigation: false
 
             # Assert
-            expect(sitemap.nodes[0].hasChildren()).toBe false
+            expect(sitemap.children()[0].hasChildren()).toBe false
 
         it 'should create the count of root nodes, with exact number of sub-nodes', ->
             # Act
@@ -318,8 +318,8 @@ describe 'Sitemap', ->
                         isInNavigation: false
 
             # Assert
-            expect(sitemap.nodes.length).toEqual 1    
-            expect(sitemap.nodes[0].children().length).toEqual 1                     
+            expect(sitemap.children().length).toEqual 1    
+            expect(sitemap.children()[0].children().length).toEqual 1                     
 
         it 'should create sitemap nodes with path set-up correctly', ->
             # Act
@@ -333,10 +333,10 @@ describe 'Sitemap', ->
                         parts: [new bo.Part 'My Shiny Contact Us Part' ]
 
             # Assert
-            expect(sitemap.nodes[0].getAncestorsAndThis()[0].name).toEqual 'Home'
+            expect(sitemap.children()[0].getAncestorsAndThis()[0].name).toEqual 'Home'
 
-            expect(sitemap.nodes[0].children()[0].getAncestorsAndThis()[0].name).toEqual 'Home'
-            expect(sitemap.nodes[0].children()[0].getAncestorsAndThis()[1].name).toEqual 'Contact Us'
+            expect(sitemap.children()[0].children()[0].getAncestorsAndThis()[0].name).toEqual 'Home'
+            expect(sitemap.children()[0].children()[0].getAncestorsAndThis()[1].name).toEqual 'Contact Us'
 
         it 'should have a breadcrumb observable of current node\'s full path when route navigated to', ->
             # Arrange
@@ -371,5 +371,5 @@ describe 'Sitemap', ->
             bo.bus.publish 'routeNavigated:Contact Us'
 
             # Assert
-            expect(sitemap.nodes[0].isActive()).toBe true
-            expect(sitemap.nodes[0].children()[0].isActive()).toBe true
+            expect(sitemap.children()[0].isActive()).toBe true
+            expect(sitemap.children()[0].children()[0].isActive()).toBe true
