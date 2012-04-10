@@ -3,7 +3,7 @@
 
 class RouteTable
     constructor: ->
-        @current = undefined
+        @currentUrl = undefined
         @routes = []
 
         bo.bus.subscribe 'routeCreated', (route) =>
@@ -23,8 +23,8 @@ class RouteTable
         bo.bus.subscribe "navigateToRoute:#{route.title}", (options = {}) =>
             route.navigateTo options.parameters || {}, options.canVeto
 
-        bo.bus.subscribe "routeNavigated:#{route.title}", (options = {}) =>
-            @current = route
+        bo.bus.subscribe "routeNavigated:#{route.title}", (msg) =>
+            @currentUrl = msg.url
 
     _find: (url) ->
         for r in @routes
@@ -95,7 +95,7 @@ class Route
     navigateTo: (args = {}, canVeto = true) ->
         url = @_create args
 
-        if routeTable.current isnt @
+        if routeTable.currentUrl isnt url
             if (bo.bus.publish "routeNavigating:#{@name}", { url: url, route: @, canVeto: canVeto }) or !canVeto
                 bo.bus.publish "routeNavigated:#{@name}", { url: url, route: @, parameters: args }        
 
