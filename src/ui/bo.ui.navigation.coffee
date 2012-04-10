@@ -19,7 +19,6 @@ bo.utils.addTemplate 'navigationTemplate', '''
             tabindex="0" 
             data-bind="template: { name : 'navigationItem', foreach: sitemap.visibleChildren },
                        sitemapFocus: true,
-                       sitemapHover: true,
                        command: [{ callback: focusNext, keyboard: 'right' },
                                  { callback: focusPrevious, keyboard: 'left'},
                                  { callback: focusUp, keyboard: 'up'},
@@ -35,36 +34,6 @@ ko.bindingHandlers.sitemapFocus =
 
         $element.on 'focus focusin', 'ul, li', ->
             $element.addClass 'has-focus'
-
-ko.bindingHandlers.sitemapHover =
-    init: (element) ->
-        _.delay ->
-            timeoutToken = undefined
-
-            $element = jQuery(element)
-
-            $root = $element.children 'li'
-            $leaves = $element.find 'li li'
-
-            $root.on 'mouseenter', (evt) ->
-                clearTimeout timeoutToken
-
-                $root.removeClass 'hovered'
-                $(evt.currentTarget).addClass 'hovered'
-
-            $leaves.on 'mouseenter', (evt) ->  
-                clearTimeout timeoutToken
-
-                $leaves.removeClass 'hovered'
-                $(evt.currentTarget).addClass 'hovered'
-
-            $leaves.on 'mouseleave', (evt) -> 
-                console.log 'leaf mouseleave'           
-
-                timeoutToken =_.delay (->
-                    $root.removeClass 'hovered'
-                    $(evt.currentTarget).removeClass 'hovered'
-                ), 450
 
 class SitemapViewModel
     constructor: (@sitemap) ->
