@@ -253,7 +253,7 @@ bo.validation =
                 if options.value?
                     (emptyValue value) or (value is ko.utils.unwrapObservable options.value)
                 else    
-                    (emptyValue value) or (value is model[options])
+                    (emptyValue value) or (value is ko.utils.unwrapObservable model[options])
 
             message: (propertyName, model, options) ->
                 if options.value?

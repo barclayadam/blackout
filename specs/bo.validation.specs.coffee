@@ -1375,6 +1375,16 @@ describe 'Validation:', ->
             # Assert
             expect(isValid).toBe true
 
+        it 'should unwrap an observable model value', ->
+            # Arrange
+            value = '12'
+
+            # Act
+            isValid = bo.validation.rules.equalTo.validator value, { property: ko.observable(value) }, 'property'
+
+            # Assert
+            expect(isValid).toBe true
+
         it 'should return false if value is not equal', ->
             # Arrange
             value = '1.2'
