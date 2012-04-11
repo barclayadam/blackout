@@ -8,56 +8,40 @@
     <script type="text/javascript" src="../lib/json2.js"></script>
     <script type="text/javascript" src="../lib/jquery.js"></script>
     <script type="text/javascript" src="../lib/underscore.js"></script>
+    <script type="text/javascript" src="../lib/jquery.splitter.js"></script>
     <script type="text/javascript" src="../lib/jquery.hotkeys.js"></script>
     <script type="text/javascript" src="../lib/jquery.ui.js"></script>
     <script type="text/javascript" src="../lib/knockout.js"></script>
     <script type="text/javascript" src="../lib/blackout.js"></script>
 
     <style type="text/css">
-        .mainContainer {
-            position: absolute;
-            left: 40px;
-            top: 40px;
-            bottom: 40px;
-            right: 40px;
+        #mainContainer {
+            width: 100%;
+            height: 500px;
             border: 1px solid #8a2be2;
         }
 
-        .splitter {
+        .vsplitbar {
             background: #f4f4f4 url('images/splitter.png') no-repeat center;
             width: 10px;
             cursor: ew-resize;
-            position: absolute;
-            top: 0px;
-            bottom: 0px;
         }
 
-        .contentLeft{
-            position: absolute;
-            bottom: 0;
-            top: 0;
-            display: inline;
-            float: left;
+        .contentLeft {
             width: 74%;
-            margin: 0%;
             background-color: #FF0000;
+            min-width: 200px;
         }
 
-        .contentRight{
-            width: 25%;
+        .contentRight {
             min-width: 100px;
-            position: absolute;
-            bottom: 0;
-            top: 0;
-            right: 0;
             background-color: #00FF00;
         }
     </style>
 </head>
 <body>
-    <div class="mainContainer">
+    <div id="mainContainer" data-bind="splitter: 'vertical'">
         <div class="contentLeft">Content</div>
-        <div data-bind="splitter: 'vertical'"></div>
         <div class="contentRight">Content</div>
     </div>
 
