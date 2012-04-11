@@ -21,3 +21,4 @@ specs\ui\bo.ui.pager.specs.coffee
 specs\ui\bo.ui.pagerSummary.specs.coffee
 specs\ui\bo.ui.recordCount.specs.coffee
 specs\ui\bo.ui.toggleFor.specs.coffee
+specs\ui\bo.ui.splitter.specs.coffee
