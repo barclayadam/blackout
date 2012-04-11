@@ -87,10 +87,11 @@ class TreeNode
         @children (@_createChild n for n in childrenToConvert)
 
     select: ->        
-        @_executeHandler 'onSelect', =>
-            @viewModel.selectedNode @
+        unless @viewModel.selectedNode() is @
+            @_executeHandler 'onSelect', =>
+                @viewModel.selectedNode @
 
-            @focus()
+                @focus()
         
     toggleFolder: ->
         @children.load =>
@@ -359,7 +360,7 @@ TreeViewModel.defaultOptions =
 
 bo.utils.addTemplate 'treeNodeTemplate', '''
         <li role="treeitem"
-            data-bind="if: isVisible,
+            data-bind="visible: isVisible,
                        attr: {
                           'class': cssClass, 
                           'id': safeId, 
@@ -368,7 +369,7 @@ bo.utils.addTemplate 'treeNodeTemplate', '''
                           'aria-labelledby': nodeTextId,
                           'aria-selected': isSelected }, 
                        css: { 'tree-item': true, leaf: isLeaf, open: isOpen, rename: isRenaming, selected: isSelected, focused: isFocused, 'children-loading': children.isLoading },  
-                       event: { click: select }">        
+                       click: select, clickBubble: false">        
             <div class="tree-node" 
                  data-bind="draggable: { enabled: isDraggable, template: dragTemplate },
                             dropTarget: { canAccept : canAcceptDrop, onDropComplete: acceptDrop}, 
@@ -377,7 +378,7 @@ bo.utils.addTemplate 'treeNodeTemplate', '''
                             tabIndex: isFocused">
                 <span data-bind="click: toggleFolder, 
                                  css: { 'handle': true, 'ui-icon': true, 'ui-icon-triangle-1-se': isOpen, 'ui-icon-triangle-1-e': !isOpen() },
-                                 bubble : false, 
+                                 clickBubble : false, 
                                  style: { marginLeft: indent }">&nbsp;</span>
 
                 <!-- ko if: viewModel.options.checksEnabled -->
