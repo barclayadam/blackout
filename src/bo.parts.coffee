@@ -100,7 +100,7 @@ class bo.Part extends bo.Bus
 ko.bindingHandlers.part =
     init: (element, valueAccessor, allBindingsAccessor, viewModel) ->
         part = valueAccessor()
-        partPromises = part.activate {}
+        partPromises = part.activate allBindingsAccessor()["parameters"] || {}
 
         jQuery.when.apply(@, partPromises).done =>
             ko.renderTemplate part.templateName, part.viewModel, {}, element, "replaceChildren"

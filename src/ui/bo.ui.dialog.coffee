@@ -4,8 +4,8 @@ injectDialogTemplate = (name) ->
     if jQuery("##{id}").length is 0
         jQuery("""
                 <div id="#{id}" class="bo-dialog">
-                    <div class="bo-dialog-region-manager" data-bind="regionManager: _regionManager">
-                       <div class="bo-dialog-content" data-bind="region: 'main'" />
+                    <div class="bo-dialog-region-manager">
+                       <div class="bo-dialog-content" data-bind="part: part, parameters: parameters" />
                     </div>
                 </div>
                 """).appendTo 'body'
@@ -20,7 +20,6 @@ injectDialogTemplate = (name) ->
 # as part of the site (e.g. see `bo.Sitemap`).
 class bo.Dialog
     constructor: (@part) ->
-        @_regionManager = new bo.RegionManager()
 
     _construct: ->
         @_dialogElement = injectDialogTemplate @part.name
@@ -28,9 +27,8 @@ class bo.Dialog
 
     # Shows this dialog, passing the `parameters` (if any) on to the view model's
     # `show` method, in the same manner as parameters passed as part of navigation.
-    show: (parameters) ->
+    show: (@parameters) ->
         @_construct()
-        @_regionManager.activate [@part], parameters
 
         dialogOptions =
             resizable: false
