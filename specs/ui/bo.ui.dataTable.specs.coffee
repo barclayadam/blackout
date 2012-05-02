@@ -130,6 +130,11 @@ describe 'Data Table', ->
                             "userType": "Editor"
                             "name":"John Smith"
                             "id":"1553726e-180f-3e27-b50d-dc8646e6ac14"
+                        },
+                        { 
+                            "userType": "Editor"
+                            "name":"Alan Baker"
+                            "id":"1553326e-180f-3e27-b50d-dc8646e6ac14"
                         }]  
 
                 @setHtmlFixture """
@@ -142,12 +147,19 @@ describe 'Data Table', ->
                 @grid = @fixture.find("table")                    
 
             it 'should render a table row for every item in the page being shown', ->
-                expect(@grid.find("tbody tr").length).toBe 2
+                expect(@grid.find("tbody tr").length).toBe 3
 
             it 'should render the text of the items using the column binding handler', ->
                 expect(@grid.find("tbody tr:first td:eq(0)")).toHaveText "93d3726e-182f-43f7-b50d-dcc5e86e6fe5"
                 expect(@grid.find("tbody tr:first td:eq(1)")).toHaveText "Adam Barclay"
                 expect(@grid.find("tbody tr:first td:eq(2)")).toHaveText "Administrator" 
+
+            it 'should add the odd class to odd numbered rows', ->
+                expect(@grid.find("tbody tr:eq(0)")).toHaveClass "odd"
+                expect(@grid.find("tbody tr:eq(2)")).toHaveClass "odd" 
+
+            it 'should add the even class to even numbered rows', ->
+                expect(@grid.find("tbody tr:eq(1)")).toHaveClass "even"
 
             describe 'and a selected binding handler defined on the table, with a selected row', ->
                 beforeEach ->
