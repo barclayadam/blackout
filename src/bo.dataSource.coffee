@@ -245,7 +245,7 @@ class bo.DataSource extends bo.Bus
         # An observable property that indicates whether the current page 
         # is the last one.
         @isLastPage = ko.computed =>
-            @pageNumber() is @pageCount()
+            @pageNumber() is @pageCount() or @pageCount() is 0
                 
         if @options.serverPaging
             @pageNumber.subscribe =>

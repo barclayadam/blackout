@@ -129,6 +129,15 @@ describe 'DataSource', ->
         it 'should set pageCount to 0', ->
             expect(@dataSource.pageCount()).toEqual 0
 
+        it 'should set isFirstPage to true', ->
+            expect(@dataSource.isFirstPage()).toEqual true
+
+        it 'should set isLastPage to true', ->
+            expect(@dataSource.isLastPage()).toEqual true
+
+        it 'should set pageItems to empty array', ->
+            expect(@dataSource.pageItems()).toEqual []
+
     describe 'When a data source is loaded, with array provider', ->
         beforeEach ->
             @loadedData = [1, 4, 7, 8, 9, 13]
