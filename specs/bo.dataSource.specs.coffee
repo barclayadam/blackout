@@ -120,6 +120,15 @@ describe 'DataSource', ->
         it 'should set isLoading to false once data has been loaded', ->
             expect(@dataSource.isLoading()).toEqual false
 
+    describe 'When a data source is loaded, with no data', ->
+        beforeEach ->
+            @loadedData = []
+            @dataSource = new bo.DataSource 
+                provider: @loadedData
+
+        it 'should set pageCount to 0', ->
+            expect(@dataSource.pageCount()).toEqual 0
+
     describe 'When a data source is loaded, with array provider', ->
         beforeEach ->
             @loadedData = [1, 4, 7, 8, 9, 13]

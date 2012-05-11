@@ -232,7 +232,10 @@ class bo.DataSource extends bo.Bus
         # An observable property that indicates the number of pages that
         # exist within this data source.
         @pageCount = ko.computed =>
-            Math.ceil @totalCount() / @pageSize()
+            if @totalCount()
+                Math.ceil @totalCount() / @pageSize()
+            else 
+                0
 
         # An observable property that indicates whether the current page 
         # is the first one.
@@ -292,7 +295,8 @@ class bo.DataSource extends bo.Bus
             @pageSize @options.clientPaging || loadedData.length
             @totalCount loadedData.length
 
-        items = _(items).chain().map(@options.map).compact().value() if @options.map?
+        if @options.map?
+            items = _(items).chain().map(@options.map).compact().value()
 
         @_loadedItems items
         @_hasLoadedOnce = true
