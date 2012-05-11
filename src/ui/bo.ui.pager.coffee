@@ -1,8 +1,8 @@
 bo.utils.addTemplate 'pagerTemplate', 
 '''<div class="pager">
     <ol class="previousLinks">
-	    <li class="goto-first" data-bind="click: goToFirstPage, enable: !isFirstPage()"><a href="#">First</a></li>
-	    <li class="goto-previous" data-bind="click: goToPreviousPage, enable: !isFirstPage()"><a href="#">Previous</a></li>
+	    <li class="goto-first" data-bind="enable: !isFirstPage()"><a href="#" data-bind="click: goToFirstPage">First</a></li>
+	    <li class="goto-previous" data-bind="enable: !isFirstPage()"><a href="#" data-bind="click: goToPreviousPage">Previous</a></li>
 	</ol>
 
     <ol class="pageLinks" data-bind="foreach: pages">
@@ -10,8 +10,8 @@ bo.utils.addTemplate 'pagerTemplate',
     </ol>
 
     <ol class="nextLinks">
-	    <li class="goto-next" data-bind="enable: !isLastPage(), click: goToNextPage"><a href="#">Next</a></li>
-	    <li class="goto-last" data-bind="enable: !isLastPage(), click: goToLastPage"><a href="#">Last</a></li>
+	    <li class="goto-next" data-bind="enable: !isLastPage()"><a href="#" data-bind="click: goToNextPage">Next</a></li>
+	    <li class="goto-last" data-bind="enable: !isLastPage()"><a href="#" data-bind="click: goToLastPage">Last</a></li>
 	</ol>
    </div>'''
 
