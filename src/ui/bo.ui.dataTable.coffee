@@ -155,11 +155,6 @@ ko.bindingHandlers.tableRow =
             ko.utils.registerEventHandler element, 'click', ->
                 dataTable.selectedItem viewModel
 
-        if (bindingContext['$index']() + 1) % 2 is 0            
-            ko.utils.toggleDomNodeCssClass element, 'even', true
-        else
-            ko.utils.toggleDomNodeCssClass element, 'odd', true
-
     update: (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) ->
         dataTable = bindingContext['$parent']
 
@@ -169,6 +164,11 @@ ko.bindingHandlers.tableRow =
 
             ko.utils.toggleDomNodeCssClass element, 'selected', isSelected
             ko.bindingHandlers.tabIndex.update element, -> isFocused 
+
+        if (bindingContext['$index']() + 1) % 2 is 0            
+            ko.utils.toggleDomNodeCssClass element, 'even', true
+        else
+            ko.utils.toggleDomNodeCssClass element, 'odd', true
 
 ko.bindingHandlers.column =
     update: (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) ->
