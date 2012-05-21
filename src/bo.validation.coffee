@@ -1,5 +1,5 @@
 hasValue = (value) ->
-    value? and value != ''
+    value? and value.toString().replace(/[ ]/g, '') != ''
 
 emptyValue = (value) ->
     not hasValue value

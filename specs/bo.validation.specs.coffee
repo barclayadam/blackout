@@ -21,6 +21,13 @@ itShouldReturnTrueForEmptyValues = ((validator) ->
 
         # Assert
         expect(isValid).toBe true
+
+    it 'should return true if property value is all spaces', ->
+        # Act
+        isValid = bo.validation.rules[validator].validator '    ', {}, true
+
+        # Assert
+        expect(isValid).toBe true
 )
 describe 'Validation:', ->
     describe 'When validating', ->
@@ -336,6 +343,13 @@ describe 'Validation:', ->
         it 'should return false if property value is empty string', ->
             # Act
             isValid = bo.validation.rules.required.validator '', {}, true
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if property value is all spaces', ->
+            # Act
+            isValid = bo.validation.rules.required.validator '    ', {}, true
 
             # Assert
             expect(isValid).toBe false
