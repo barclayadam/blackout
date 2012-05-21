@@ -38,7 +38,7 @@ bo.messaging.query = (queryName, options = {}, ajaxOptions = {}) ->
     queryDeferred = new jQuery.Deferred()
 
     request = _.extend {}, ajaxOptions, 
-                    url: bo.config.appRoot + bo.messaging.config.query.url.replace("$queryValues", ko.toJSON options).replace("$queryName", queryName)
+                    url: bo.config.appRoot + bo.messaging.config.query.url.replace("$queryValues", encodeURIComponent ko.toJSON options).replace("$queryName", queryName)
                     type: "GET"
                     dataType: "json"
                     contentType: "application/json; charset=utf-8"
@@ -76,7 +76,7 @@ bo.messaging.queryDownload = (queryName, contentType, fileName, options = {}, aj
     bo.bus.publish "queryExecuting:#{queryName}", { name: queryName, values: options }
 
     url = bo.config.appRoot + bo.messaging.config.queryDownload.url
-                                .replace("$queryValues", ko.toJSON options)
+                                .replace("$queryValues", encodeURIComponent ko.toJSON options)
                                 .replace("$queryName", queryName)
                                 .replace("$contentType", contentType)
                                 .replace("$fileName", fileName)
