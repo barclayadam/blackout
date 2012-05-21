@@ -120,8 +120,7 @@ describe 'Data Table', ->
     describe 'binding handler', ->
         describe 'with a dataSource being passed in directly', ->
             beforeEach ->
-                @dataSource = new bo.DataSource
-                    provider: [{ 
+                @data = [{ 
                             "userType": "Administrator"
                             "name":"Adam Barclay"
                             "id":"93d3726e-182f-43f7-b50d-dcc5e86e6fe5"
@@ -136,6 +135,9 @@ describe 'Data Table', ->
                             "name":"Alan Baker"
                             "id":"1553326e-180f-3e27-b50d-dc8646e6ac14"
                         }]  
+
+                @dataSource = new bo.DataSource
+                    provider: @data
 
                 @setHtmlFixture """
                     <table data-bind="dataTable: dataSource">
@@ -160,6 +162,21 @@ describe 'Data Table', ->
 
             it 'should add the even class to even numbered rows', ->
                 expect(@grid.find("tbody tr:eq(1)")).toHaveClass "even"
+
+            describe 'with item removed from page', ->
+                beforeEach ->
+                    @dataSource.remove @data[0]                   
+
+                it 'should render a table row for every item in the page being shown', ->
+                    expect(@grid.find("tbody tr").length).toBe 2
+
+                it 'should have only the odd class in odd numbered rows', ->
+                    expect(@grid.find("tbody tr:eq(0)")).toHaveClass "odd"
+                    expect(@grid.find("tbody tr:eq(0)")).toNotHaveClass "even"
+
+                it 'should have only the even class in even numbered rows', ->
+                    expect(@grid.find("tbody tr:eq(1)")).toHaveClass "even"
+                    expect(@grid.find("tbody tr:eq(1)")).toNotHaveClass "odd"
 
             describe 'and a selected binding handler defined on the table, with a selected row', ->
                 beforeEach ->
