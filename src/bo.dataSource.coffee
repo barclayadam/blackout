@@ -288,7 +288,7 @@ class bo.DataSource extends bo.Bus
             items = loadedData.items
 
             @pageSize @options.clientPaging || @options.serverPaging
-            @totalCount loadedData.totalCount
+            @totalCount loadedData.totalCount || loadedData.totalItems
         else
             items = loadedData
 

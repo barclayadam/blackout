@@ -651,6 +651,32 @@ describe 'DataSource', ->
         it 'should set the pageSize observable to the serverPaging size', ->
             expect(@dataSource.pageSize()).toEqual 5
 
+    describe 'When a data source is loaded, with server paging and totalItems instead of totalCount', ->
+        beforeEach ->
+            @allServerData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+            @loader = @spy (o, callback) => 
+                start = (o.pageNumber - 1) * o.pageSize
+                end = start + o.pageSize
+
+                callback 
+                    items: @allServerData.slice start, end
+                    totalItems: @allServerData.length
+
+            @dataSource = new bo.DataSource 
+                provider: @loader
+                serverPaging: 5
+
+            @dataSource.load()
+
+        it 'should set the items observable to the value passed back from the loader', ->
+            expect(@dataSource.items()).toEqual [1, 2, 3, 4, 5]
+
+        it 'should set the pageItems observable to value passed back from the loader', ->
+            expect(@dataSource.pageItems()).toEqual [1, 2, 3, 4, 5]
+
+        it 'should set the totalCount observable to the value passed back from the loader', ->
+            expect(@dataSource.totalCount()).toEqual @allServerData.length
+
     describe 'When a pageNumber is changed, after first load, with server paging', ->
         beforeEach ->
             # Arrange
