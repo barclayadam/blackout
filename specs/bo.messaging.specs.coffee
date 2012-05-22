@@ -49,7 +49,7 @@ describe 'Messaging', ->
                 
         describe 'that succeeds', ->
             beforeEach ->  
-                @server.respondWith "GET", '/ExecuteMyQuery/?query.name=My Query&query.values={"id":3456}', [200, { "Content-Type": "application/json" },'{ "resultProperty": 5 }']
+                @server.respondWith "GET", '/ExecuteMyQuery/?query.name=My Query&query.values=' + (encodeURIComponent '{"id":3456}'), [200, { "Content-Type": "application/json" },'{ "resultProperty": 5 }']
                 @server.respond()   
 
             it 'should resolve the promise with the result', ->
