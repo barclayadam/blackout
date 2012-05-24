@@ -263,26 +263,27 @@ bo.validation =
 
         requiredIf:
             validator: (value, model, options) ->
-                if options.value?
-                    if _.contains options.equalsOneOf, ko.utils.unwrapObservable options.value
-                        hasValue value
+                if options.equalsOneOf?
+                    if options.value?
+                        if _.contains options.equalsOneOf, ko.utils.unwrapObservable options.value
+                            hasValue value
+                        else
+                            true
+                    else if options.property?
+                        if _.contains options.equalsOneOf, ko.utils.unwrapObservable model[options.property]
+                            hasValue value
+                        else
+                            true
                     else
-                        true
-                else if options.property?
-                    if _.contains options.equalsOneOf, ko.utils.unwrapObservable model[options.property]
-                        hasValue value
-                    else
-                        true
+                        throw new Error "You need to provide either a property or a value."
                 else
-                    false
+                    throw new Error "You need to provide a list of items to check against."
 
             message: (propertyName, model, options) ->
                 if options.value?
-                    "#{bo.utils.fromCamelToTitleCase propertyName} is required if #{bo.utils.fromCamelToTitleCase options.value} appears in the list: #{bo.utils.fromCamelToTitleCase options.equalsOneOf}."
+                    "#{bo.utils.fromCamelToTitleCase propertyName} is required."
                 else if options.property?
-                    "#{bo.utils.fromCamelToTitleCase propertyName} is required if #{bo.utils.fromCamelToTitleCase options.property} appears in the list: #{bo.utils.fromCamelToTitleCase options.equalsOneOf}."
-                else
-                    "Please provide either a value to compare against, or a property to compare against."
+                    "#{bo.utils.fromCamelToTitleCase propertyName} is required."
 
 
 # Given a model and a set of (optional) model validation rules will add the necessary

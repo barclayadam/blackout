@@ -1642,3 +1642,25 @@ describe 'Validation:', ->
             
             # Assert
             expect(isValid).toBe false
+
+        it 'should throw an error if a property or value field is not provided', ->
+            # Arrange
+            model = { conditionallyRequiredProperty: 'not empty' };
+
+            # Act
+            func = ->
+                bo.validation.rules.requiredIf.validator model.conditionallyRequiredProperty, model, { equalsOneOf: ['']  }
+
+            # Assert
+            expect(func).toThrow 'You need to provide either a property or a value.'
+
+        it 'should throw an error if no values are provided to compare with', ->
+            # Arrange
+            model = { conditionallyRequiredProperty: 'not empty', propertyToCheckAgainst: 'a value' };
+
+            # Act
+            func = ->
+                bo.validation.rules.requiredIf.validator model.conditionallyRequiredProperty, model, {  property: 'propertyToCheckAgainst' }
+
+            # Assert
+            expect(func).toThrow 'You need to provide a list of items to check against.'
