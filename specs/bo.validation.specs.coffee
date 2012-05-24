@@ -1440,3 +1440,205 @@ describe 'Validation:', ->
             # Assert
             expect(isValid).toBe true
 
+    describe 'with a requiredIf validator', ->
+        it 'should return true if value does not trigger required validation and value is empty', ->
+            # Arrange
+            value = undefined
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator value, { }, { value:  ko.observable('notTriggering'), equalsOneOf: ['triggering']  }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if value does not trigger required validation and value is not empty', ->
+            # Arrange
+            value = 'not empty'
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator value, { }, { value: ko.observable('notTriggering'), equalsOneOf: ['triggering']  }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if value triggers required validation and value is not empty', ->
+            # Arrange
+            value = 'not empty'
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator value, { }, { value: ko.observable('triggering'), equalsOneOf: ['triggering']  }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if value triggers required validation and value is empty', ->
+            # Arrange
+            value = undefined
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator value, { }, { value: ko.observable('triggering'), equalsOneOf: ['triggering']  }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if value triggers required validation from a list of possible options and value is not empty', ->
+            # Arrange
+            value = 'not empty'
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator value, { }, { value: ko.observable('triggering'), equalsOneOf: ['triggering', 'trigger', 'anotherTrigger']  }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if value triggers required validation from a list of possible options and value is empty', ->
+            # Arrange
+            value = undefined
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator value, { }, { value: ko.observable('triggering'), equalsOneOf: ['triggering', 'trigger', 'anotherTrigger']  }
+            
+            # Assert
+            expect(isValid).toBe false
+
+
+        it 'should return true if value does not triggers required validation from a list of possible options and value is not empty', ->
+            # Arrange
+            value = 'not empty'
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator value, { }, { value: ko.observable('notTriggering'), equalsOneOf: ['triggering', 'trigger', 'anotherTrigger']  }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if value does not trigger required validation from a list of possible options and value is empty', ->
+            # Arrange
+            value = undefined
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator value, { }, { value: ko.observable('notTriggering'), equalsOneOf: ['triggering', 'trigger', 'anotherTrigger']  }
+            
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if value triggers required validation when trigger is empty and value is not empty', ->
+            # Arrange
+            value = 'not empty'
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator value, { }, { value: ko.observable(''), equalsOneOf: ['']  }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if value triggers required validation when trigger is empty and value is empty', ->
+            # Arrange
+            value = undefined
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator value, { }, { value: ko.observable(''), equalsOneOf: ['']  }
+            
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if other property does not trigger required validation and value is empty', ->
+            # Arrange
+            model = { conditionallyRequiredProperty: undefined, propertyToCheckAgainst: 'notTriggering' };
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator model.conditionallyRequiredProperty, model, { property:  'propertyToCheckAgainst', equalsOneOf: ['triggering']  }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if other property does not trigger required validation and value is not empty', ->
+            # Arrange
+            model = { conditionallyRequiredProperty: 'not empty', propertyToCheckAgainst: 'notTriggering' };
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator model.conditionallyRequiredProperty, model, { property: 'propertyToCheckAgainst', equalsOneOf: ['triggering']  }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if other property triggers required validation and value is not empty', ->
+            # Arrange
+            model = { conditionallyRequiredProperty: 'not empty', propertyToCheckAgainst: 'triggering' };
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator model.conditionallyRequiredProperty, model, { property: 'propertyToCheckAgainst', equalsOneOf: ['triggering']  }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if other property triggers required validation and value is empty', ->
+            # Arrange
+            model = { conditionallyRequiredProperty: undefined, propertyToCheckAgainst: 'triggering' };
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator model.conditionallyRequiredProperty, model, { property: 'propertyToCheckAgainst', equalsOneOf: ['triggering']  }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if other property triggers required validation from a list of possible options and value is not empty', ->
+            # Arrange
+            model = { conditionallyRequiredProperty: 'not empty', propertyToCheckAgainst: 'triggering' };
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator model.conditionallyRequiredProperty, model, { property: 'propertyToCheckAgainst', equalsOneOf: ['triggering', 'trigger', 'anotherTrigger']  }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if other property triggers required validation from a list of possible options and value is empty', ->
+            # Arrange
+            model = { conditionallyRequiredProperty: undefined, propertyToCheckAgainst: 'triggering' };
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator model.conditionallyRequiredProperty, model, { property: 'propertyToCheckAgainst', equalsOneOf: ['triggering', 'trigger', 'anotherTrigger']  }
+            
+            # Assert
+            expect(isValid).toBe false
+
+
+        it 'should return true if other property does not triggers required validation from a list of possible options and value is not empty', ->
+            # Arrange
+            model = { conditionallyRequiredProperty: 'not empty', propertyToCheckAgainst: 'notTriggering' };
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator model.conditionallyRequiredProperty, model, { property: 'propertyToCheckAgainst', equalsOneOf: ['triggering', 'trigger', 'anotherTrigger']  }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if other property does not trigger required validation from a list of possible options and value is empty', ->
+            # Arrange
+            model = { conditionallyRequiredProperty: undefined, propertyToCheckAgainst: 'notTriggering' };
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator model.conditionallyRequiredProperty, model, { property: 'propertyToCheckAgainst', equalsOneOf: ['triggering', 'trigger', 'anotherTrigger']  }
+            
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if other property triggers required validation when trigger is empty and value is not empty', ->
+            # Arrange
+            model = { conditionallyRequiredProperty: 'not empty', propertyToCheckAgainst: '' };
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator model.conditionallyRequiredProperty, model, { property: 'propertyToCheckAgainst', equalsOneOf: ['']  }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if other property triggers required validation when trigger is empty and value is empty', ->
+            # Arrange
+            model = { conditionallyRequiredProperty: undefined, propertyToCheckAgainst: '' };
+
+            # Act
+            isValid = bo.validation.rules.requiredIf.validator model.conditionallyRequiredProperty, model, { property: 'propertyToCheckAgainst', equalsOneOf: ['']  }
+            
+            # Assert
+            expect(isValid).toBe false
