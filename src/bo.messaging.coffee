@@ -100,7 +100,7 @@ bo.messaging.command = (command) ->
     commandName = command.name
     commandValues = ko.toJS command.properties()
 
-    bo.bus.publish "commandExecuting:#{commandName}", { name: commandName, values: commandValues }
+    bo.bus.publish "commandExecuting:#{commandName}", { command: command, values: commandValues }
 
     commandDeferred = new jQuery.Deferred()
 
@@ -113,7 +113,7 @@ bo.messaging.command = (command) ->
 
     doResolve = (result, hasFailed) ->
         messageArgs = 
-            name: commandName 
+            command: command
             values: commandValues
             result: result
             hasFailed: hasFailed
@@ -151,7 +151,8 @@ bo.messaging.commands = (commands) ->
 
     doResolve = (result, hasFailed) ->
         messageArgs = 
-            commands: commandsToSend
+            commands: commands,
+            commandValues: commandsToSend
             result: result
             hasFailed: hasFailed
       

@@ -126,19 +126,19 @@ describe 'Messaging', ->
 
             it 'should publish a commandExecuting message', ->
                 expect("commandExecuting:My Command").toHaveBeenPublishedWith
-                    name: 'My Command'
+                    command: @command
                     values: { id: 3456 }          
 
             it 'should publish a commandResultReceieved message', ->
                 expect("commandResultReceived:My Command").toHaveBeenPublishedWith
-                    name: 'My Command'
+                    command: @command
                     values: { id: 3456 },
                     result: { resultProperty: 5 },
                     hasFailed: false
 
             it 'should publish a commandExecuted message', ->
                 expect("commandExecuted:My Command").toHaveBeenPublishedWith
-                    name: 'My Command', 
+                    command: @command
                     values: { id: 3456 }
                     result: { resultProperty: 5 },
                     hasFailed: false
@@ -153,19 +153,19 @@ describe 'Messaging', ->
 
             it 'should publish a commandExecuting message', ->
                 expect("commandExecuting:My Command").toHaveBeenPublishedWith
-                    name: 'My Command'
+                    command: @command
                     values: { id: 3456 }              
 
             it 'should publish a commandResultReceieved message indicating failure', ->
                 expect("commandResultReceived:My Command").toHaveBeenPublishedWith
-                    name: 'My Command'
+                    command: @command
                     values: { id: 3456 },
                     result: undefined,
                     hasFailed: true            
 
             it 'should publish a commandFailed message indicating failure', ->
                 expect("commandFailed:My Command").toHaveBeenPublishedWith
-                    name: 'My Command'
+                    command: @command
                     values: { id: 3456 },
                     result: undefined,
                     hasFailed: true
