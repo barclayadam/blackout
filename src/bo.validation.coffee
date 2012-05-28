@@ -261,6 +261,31 @@ bo.validation =
                 else    
                     "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to #{bo.utils.fromCamelToTitleCase options}."
 
+        requiredIf:
+            validator: (value, model, options) ->
+                if options.equalsOneOf?
+                    if options.value?
+                        if _.contains options.equalsOneOf, ko.utils.unwrapObservable options.value
+                            hasValue value
+                        else
+                            true
+                    else if options.property?
+                        if _.contains options.equalsOneOf, ko.utils.unwrapObservable model[options.property]
+                            hasValue value
+                        else
+                            true
+                    else
+                        throw new Error "You need to provide either a property or a value."
+                else
+                    throw new Error "You need to provide a list of items to check against."
+
+            message: (propertyName, model, options) ->
+                if options.value?
+                    "#{bo.utils.fromCamelToTitleCase propertyName} is required."
+                else if options.property?
+                    "#{bo.utils.fromCamelToTitleCase propertyName} is required."
+
+
 # Given a model and a set of (optional) model validation rules will add the necessary
 # methods and observables to make the model validatable.
 bo.validatableModel = (model) ->
