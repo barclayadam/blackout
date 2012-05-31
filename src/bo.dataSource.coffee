@@ -213,7 +213,7 @@ class bo.DataSource extends bo.Bus
         @clientPagesPerServerPage = @options.serverPaging / (@options.clientPaging || @options.serverPaging)
 
         @pageSize = ko.observable()
-        @totalCount = ko.observable()
+        @totalCount = ko.observable(0)
         @pageNumber = ko.observable().extend
             publishable: { message: ((p) -> "pageChanged:#{p()}"), bus: @ }
 
@@ -288,7 +288,7 @@ class bo.DataSource extends bo.Bus
             items = loadedData.items
 
             @pageSize @options.clientPaging || @options.serverPaging
-            @totalCount loadedData.totalCount || loadedData.totalItems
+            @totalCount loadedData.totalCount || loadedData.totalItems || 0
         else
             items = loadedData
 

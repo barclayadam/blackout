@@ -127,7 +127,10 @@ describe 'DataSource', ->
                 provider: @loadedData
 
         it 'should set pageCount to 0', ->
-            expect(@dataSource.pageCount()).toEqual 0
+            expect(@dataSource.pageCount()).toBe 0
+
+        it 'should set totalCount to 0', ->
+            expect(@dataSource.totalCount()).toBe 0
 
         it 'should set isFirstPage to true', ->
             expect(@dataSource.isFirstPage()).toEqual true
@@ -650,6 +653,26 @@ describe 'DataSource', ->
 
         it 'should set the pageSize observable to the serverPaging size', ->
             expect(@dataSource.pageSize()).toEqual 5
+
+    describe 'When a data source is loaded, with server paging and 0 records', ->
+        beforeEach ->
+            @allServerData = []
+            @loader = @spy (o, callback) => 
+                start = (o.pageNumber - 1) * o.pageSize
+                end = start + o.pageSize
+
+                callback 
+                    items: @allServerData.slice start, end
+                    totalCount: @allServerData.length
+
+            @dataSource = new bo.DataSource 
+                provider: @loader
+                serverPaging: 5
+
+            @dataSource.load()
+
+        it 'should set totalCount to 0', ->
+            expect(@dataSource.totalCount()).toEqual 0
 
     describe 'When a data source is loaded, with server paging and totalItems instead of totalCount', ->
         beforeEach ->
