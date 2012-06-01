@@ -269,7 +269,7 @@ bo.validation =
                             hasValue value
                         else
                             true
-                    else if options.property?
+                    else if options.property? && model[options.property]
                         if _.contains options.equalsOneOf, ko.utils.unwrapObservable model[options.property]
                             hasValue value
                         else
