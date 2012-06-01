@@ -289,6 +289,19 @@ bo.validation =
                 else if options.property?
                     "#{bo.utils.fromCamelToTitleCase propertyName} is required."
 
+        custom:
+            validator: (value, model, options) ->
+                if options is undefined
+                    throw new Error "Validation funcion cannot be undefined."
+
+                if !_.isFunction options 
+                    throw new Error "Validation function must be a function."
+
+                options(value, model)
+
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} is invalid."
+
 
 # Given a model and a set of (optional) model validation rules will add the necessary
 # methods and observables to make the model validatable.

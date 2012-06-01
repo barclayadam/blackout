@@ -1664,3 +1664,57 @@ describe 'Validation:', ->
 
             # Assert
             expect(func).toThrow 'You need to provide a list of items to check against.'
+
+    describe 'with a custom validator', ->
+        it 'should throw an error if the options parameter is undefined', ->
+            # Arrange
+            # Act
+            func = ->
+                bo.validation.rules.custom.validator 'a value', {}, undefined
+
+            # Assert
+            expect(func).toThrow 'Validation funcion cannot be undefined.'
+
+        it 'should throw an error if the options parameter is not a function', ->
+            # Arrange
+            # Act
+            func = ->
+                bo.validation.rules.custom.validator 'a value', {}, 'not a function'
+
+            # Assert
+            expect(func).toThrow 'Validation function must be a function.'
+
+        it 'should return true if validation function returns true', ->
+            # Arrange
+            validationFunction = ->
+                true
+
+            # Act
+            isValid = bo.validation.rules.custom.validator 'a value', {}, validationFunction
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if validation function returns false', ->
+            # Arrange
+            validationFunction = ->
+                false
+
+            # Act
+            isValid = bo.validation.rules.custom.validator 'a value', {}, validationFunction
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true based on value and model parameters', ->
+            # Arrange
+            validationFunction = @spy()
+
+            model = { }
+            value = true
+
+            # Act
+            bo.validation.rules.custom.validator value, model, validationFunction
+
+            # Assert
+            expect(validationFunction).toHaveBeenCalledWith value, model
