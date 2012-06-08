@@ -114,8 +114,7 @@ bo.validation =
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must be exactly #{options} characters long."
 
-            modifyElement: (element, options) ->        
-                element.setAttribute "minLength", "" + options      
+            modifyElement: (element, options) ->           
                 element.setAttribute "maxLength", "" + options
 
         minLength: 
@@ -124,9 +123,6 @@ bo.validation =
 
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must be at least #{options} characters long."
-
-            modifyElement: (element, options) ->        
-                element.setAttribute "minLength", "" + options
         
         maxLength:
             validator: (value, model, options) ->
@@ -145,8 +141,7 @@ bo.validation =
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must be between #{options[0]} and #{options[1]} characters long."
 
-            modifyElement: (element, options) ->        
-                element.setAttribute "minLength", "" + options[0]        
+            modifyElement: (element, options) ->              
                 element.setAttribute "maxLength", "" + options[1]
 
         min:
