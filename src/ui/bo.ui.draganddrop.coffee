@@ -44,6 +44,7 @@ ko.bindingHandlers.draggable =
 
         $element.draggable jQuery.extend {}, dragOptions, value
         $element.attr "aria-grabbed", false
+        $element.attr "unselectable", "on"
 
     update: () ->
         jQuery("body").toggleClass "ui-drag-in-progress", draggableModel.currentlyDragging()?
