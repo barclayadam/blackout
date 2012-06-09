@@ -199,15 +199,6 @@ class HistoryManager
                 title: document.title
                 replace: true
       
-        # Depending on whether we're using pushState or hashes, and whether
-        # 'onhashchange' is supported, determine how we check the URL state.
-        if this._hasPushState
-            jQuery(window).bind 'popstate', => @_updateFromCurrentUrl()
-        else if ('onhashchange' in window) && !oldIE
-            jQuery(window).bind 'hashchange', => @_updateFromCurrentUrl()
-        else 
-            setInterval (=> @_updateFromCurrentUrl()), interval
-      
         # Determine if we need to change the base url, for a pushState link
         # opened by a non-pushState browser.
         @fragment = fragment;
@@ -228,7 +219,16 @@ class HistoryManager
             # in a browser where it could be `pushState`-based instead...
             @fragment = getHash().replace routeStripper, ''
             window.history.replaceState {}, document.title, loc.protocol + '//' + loc.host + bo.config.appRoot + @fragment
-        
+              
+        # Depending on whether we're using pushState or hashes, and whether
+        # 'onhashchange' is supported, determine how we check the URL state.
+        if this._hasPushState
+            jQuery(window).bind 'popstate', => @_updateFromCurrentUrl()
+        else if ('onhashchange' in window) && !oldIE
+            jQuery(window).bind 'hashchange', => @_updateFromCurrentUrl()
+        else 
+            setInterval (=> @_updateFromCurrentUrl()), interval
+
         bo.bus.subscribe 'routeNavigating', (msg) =>
             @transientQueryParameters = {}
 
