@@ -359,26 +359,15 @@ TreeViewModel.defaultOptions =
         onAcceptUnknownDrop: (node, droppable) ->
 
 bo.utils.addTemplate 'treeNodeTemplate', '''
-        <li role="treeitem"
-            data-bind="visible: isVisible,
-                       attr: {
-                          'class': cssClass, 
-                          'id': safeId, 
-                          'aria-level': level, 
-                          'aria-expanded': expanded,
-                          'aria-labelledby': nodeTextId,
-                          'aria-selected': isSelected }, 
-                       css: { 'tree-item': true, leaf: isLeaf, open: isOpen, rename: isRenaming, selected: isSelected, focused: isFocused, 'children-loading': children.isLoading },  
-                       click: select, clickBubble: false">        
+        <li role="treeitem" data-bind="treeNode: true">        
             <div class="tree-node" 
                  data-bind="draggable: { enabled: isDraggable, template: dragTemplate },
                             dropTarget: { canAccept : canAcceptDrop, onDropComplete: acceptDrop}, 
                             hoverClass: 'ui-state-hover',                      
                             contextMenu: contextMenu,
                             tabIndex: isFocused">
-                <span data-bind="click: toggleFolder, 
+                <span data-bind="click: toggleFolder, clickBubble : false, 
                                  css: { 'handle': true, 'ui-icon': true, 'ui-icon-triangle-1-se': isOpen, 'ui-icon-triangle-1-e': !isOpen() },
-                                 clickBubble : false, 
                                  style: { marginLeft: indent }">&nbsp;</span>
 
                 <!-- ko if: viewModel.options.checksEnabled -->
@@ -409,8 +398,7 @@ bo.utils.addTemplate 'treeTemplate', '''
             class="bo-tree" 
             role="tree" 
             tabindex="0"
-            data-bind="template: { name : 'treeNodeTemplate', data: root }, 
-                       attr: { 'aria-activedescendant': activeDescendant },
+            data-bind="treeRoot: true,
                        command: [{ callback: selectPrevious, keyboard: 'up' },
                                  { callback: open, keyboard: 'right' },
                                  { callback: close, keyboard: 'left' },
@@ -420,9 +408,62 @@ bo.utils.addTemplate 'treeTemplate', '''
                                  { callback: selectFocused, keyboard: 'space' }]"></ul>
         '''
 
+bindAttribute = (element, attribute, observable) ->
+    observable.subscribe ->
+        element.setAttribute attribute, observable()
+
+    element.setAttribute attribute, observable()
+
+bindCssClass = (element, className, observable) ->
+    observable.subscribe ->
+        ko.utils.toggleDomNodeCssClass element, className, observable()
+
+    ko.utils.toggleDomNodeCssClass element, className, observable()
+
+ko.bindingHandlers.treeRoot =
+    init: (element, valueAccessor, allBindingsAccessor, viewModel) ->
+        bindAttribute element, 'aria-activedescendant', viewModel.activeDescendant
+
+        ko.renderTemplate 'treeNodeTemplate', viewModel.root, {}, element, "replaceChildren"
+
+        { "controlsDescendantBindings": true}
+
+ko.bindingHandlers.treeNode =
+    init: (element, valueAccessor, allBindingsAccessor, viewModel) -> 
+        $element = jQuery element
+
+        viewModel.isVisible.subscribe (isVisible) ->
+            if isVisible
+                $element.show()
+            else
+                $element.hide()
+
+        element.id = viewModel.safeId
+        element.class = viewModel.cssClass
+        element.setAttribute 'aria-labelledby', viewModel.nodeTextId
+
+        ko.utils.toggleDomNodeCssClass element, viewModel.cssClass, true
+        ko.utils.toggleDomNodeCssClass element, 'tree-item', true
+
+        bindAttribute element, 'aria-level', viewModel.level
+        bindAttribute element, 'aria-expanded', viewModel.expanded
+        bindAttribute element, 'aria-selected', viewModel.isSelected
+
+        bindCssClass element, 'leaf', viewModel.isLeaf
+        bindCssClass element, 'open', viewModel.isOpen
+        bindCssClass element, 'rename', viewModel.isRenaming
+        bindCssClass element, 'selected', viewModel.isSelected
+        bindCssClass element, 'focused', viewModel.isFocused
+        bindCssClass element, 'children-loading', viewModel.children.isLoading
+
+        $element.on 'click', ->
+            viewModel.select()
+
+            false
+
 ko.bindingHandlers.tree =
-    init: (element, viewModelAccessor) ->
-        value = viewModelAccessor()
+    init: (element, valueAccessor) ->
+        value = valueAccessor()
 
         ko.renderTemplate "treeTemplate", value, {}, element, "replaceNode"
 
