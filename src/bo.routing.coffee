@@ -159,19 +159,40 @@ class HistoryManager
     # was set.
     setQueryParameter: (name, value, options = { persistent: false, createHistory: true }) ->
         if options.persistent
-            @persistedQueryParameters[name] = value
+            bucket = @persistedQueryParameters
         else
-            @transientQueryParameters[name] = value
-        
-        currentUrl = @getFragment().replace bo.query.current().toString(), ''
-        
-        queryString = new bo.QueryString()
-        queryString.setAll @transientQueryParameters
-        queryString.setAll @persistedQueryParameters
-       
-        @_updateUrlFromFragment currentUrl + queryString.toString(), 
-            title: document.title
-            replace: options.createHistory is false
+            bucket = @transientQueryParameters
+
+        if value?
+            bucket[name] = value
+        else
+            delete bucket[name]
+
+        if @initialised is true        
+            currentUrl = @getFragment().replace bo.query.current().toString(), ''
+            
+            queryString = new bo.QueryString()
+            queryString.setAll @transientQueryParameters
+            queryString.setAll @persistedQueryParameters
+           
+            @_updateUrlFromFragment currentUrl + queryString.toString(), 
+                title: document.title
+                replace: options.createHistory is false
+
+    getCrossBrowserFragment: ->      
+        loc = window.location;
+        atRoot  = loc.pathname == bo.config.appRoot;
+  
+        if !@_hasPushState && !atRoot
+            # If we've started off with a route from a `pushState`-enabled browser,
+            # but we're currently in a browser that doesn't support it...
+            @getFragment null, true
+        else if @_hasPushState && atRoot && loc.hash
+            # Or if we've started out with a hash-based route, but we're currently
+            # in a browser where it could be `pushState`-based instead...
+            getHash().replace routeStripper, ''
+        else
+            @getFragment()
 
     # Get the cross-browser normalized URL fragment, either from the URL,
     # the hash, or the override.
