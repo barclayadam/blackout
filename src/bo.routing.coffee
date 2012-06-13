@@ -21,7 +21,7 @@ class RouteTable
         @routes.push route
 
         bo.bus.subscribe "navigateToRoute:#{route.title}", (options = {}) =>
-            route.navigateTo options.parameters || {}, options.canVeto
+            route.navigateTo options.parameters || {}, options.canVeto, options.forceNavigate
 
         bo.bus.subscribe "routeNavigated:#{route.title}", (msg) =>
             @currentUrl = msg.url
