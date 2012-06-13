@@ -296,6 +296,7 @@ describe 'Routing:', ->
                 name: 'Home'
                 parameters: {}
                 canVeto: true
+                forceNavigate: false
 
         it 'should not publish a navigateToRoute message when clicked if enabled binding handler evaluates to false', ->
             # Arrange
@@ -334,7 +335,36 @@ describe 'Routing:', ->
             expect("navigateToRoute:Home").toHaveBeenPublishedWith
                 name: 'Home'
                 canVeto: false
+                forceNavigate: false
                 parameters: {}
+
+        it 'should publish a navigateToRoute message when forceNavigate is set to true when navigating to the current page', ->
+            # Arrange
+            homeRoute = new bo.routing.Route 'Home', '/'
+            navigateSubscriber = @spy()
+
+            bo.bus.subscribe 'routeNavigating:Home', navigateSubscriber
+
+            # Act
+            bo.routing.navigateTo 'Home', {}, false, false
+            bo.routing.navigateTo 'Home', {}, false, true
+
+            # Assert
+            expect(navigateSubscriber).toHaveBeenCalled(2)
+
+        it 'should not publish a navigateToRoute message when forceNavigate is set to false when navigating to the current page', ->
+            # Arrange
+            homeRoute = new bo.routing.Route 'Home', '/'
+            navigateSubscriber = @spy()
+
+            bo.bus.subscribe 'routeNavigating:Home', navigateSubscriber
+
+            # Act
+            bo.routing.navigateTo 'Home', {}, false, false
+            bo.routing.navigateTo 'Home', {}, false, false
+
+            # Assert
+            expect(navigateSubscriber).toHaveBeenCalledOnce()
 
         it 'should publish a navigateToRoute message with parameters set from parameters binding value', ->
             # Arrange
@@ -349,4 +379,5 @@ describe 'Routing:', ->
             expect("navigateToRoute:Home").toHaveBeenPublishedWith
                 name: 'Home'
                 canVeto: true
+                forceNavigate: false
                 parameters: { id : 6 }

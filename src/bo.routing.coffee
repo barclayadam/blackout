@@ -92,10 +92,10 @@ class Route
     # by passing `false` as the second parameter, `canVeto`. When `canVeto` is `false` the event
     # will still be raised, but will not stop the second message, `routeNavigated` from being
     # published.
-    navigateTo: (args = {}, canVeto = true) ->
+    navigateTo: (args = {}, canVeto = true, forceNavigate = false) ->
         url = @_create args
 
-        if routeTable.currentUrl isnt url
+        if forceNavigate or routeTable.currentUrl isnt url
             if (bo.bus.publish "routeNavigating:#{@name}", { url: url, route: @, canVeto: canVeto }) or !canVeto
                 bo.bus.publish "routeNavigated:#{@name}", { url: url, route: @, parameters: args }        
 
@@ -343,11 +343,12 @@ bo.routing =
     Route: Route    
     manager: new HistoryManager()
 
-    navigateTo: (routeName, parameters, canVeto = true) ->
+    navigateTo: (routeName, parameters, canVeto = true, forceNavigate = false) ->
         bo.bus.publish "navigateToRoute:#{routeName}", 
             name: routeName
             parameters: parameters
             canVeto: canVeto
+            forceNavigate: forceNavigate
 
 # Extends an observable to be linked to a query string parameter of a URL, allowing
 # deep links and back button support to interact with values of an observable.
