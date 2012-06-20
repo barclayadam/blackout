@@ -169,13 +169,13 @@ class HistoryManager
             delete bucket[name]
 
         if @initialised is true        
-            currentUrl = @getFragment().replace bo.query.current().toString(), ''
+            withoutQuery = @fragment.replace bo.QueryString.from(@fragment).toString(), ''
             
             queryString = new bo.QueryString()
             queryString.setAll @transientQueryParameters
             queryString.setAll @persistedQueryParameters
            
-            @_updateUrlFromFragment currentUrl + queryString.toString(), 
+            @_updateUrlFromFragment withoutQuery + queryString.toString(), 
                 title: document.title
                 replace: options.createHistory is false
 
