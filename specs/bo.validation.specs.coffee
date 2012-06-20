@@ -55,52 +55,16 @@ describe 'Validation:', ->
             expect(requiredSpy).toHaveBeenCalled()
             expect(requiredSpy).toHaveBeenCalledWith 'myValue', model, true
 
-        it 'should return false if no validators fail', ->
-            # Arrange
-            bo.validation.rules.myCustomValidator = 
-                validator: -> true
-
-            model = bo.validatableModel 
-                myProperty: ko.observable('myValue').validatable { myCustomValidator: true }
-
-            # Act
-            isValid = model.validate()
-
-            # Assert
-            expect(isValid).toEqual true
-
-        it 'should return true if model to validate is undefined', ->
-            # Act
-            isValid = bo.validation.validate undefined
-
-            # Assert
-            expect(isValid).toEqual true
-
-        it 'should revalidate an observable when it changes if it was undefined when first validated', ->
-            # Arrange
-            model = bo.validatableModel 
-                myProperty: ko.observable(undefined).validatable { required: true }
-
-            obs = ko.observable undefined
-
-            bo.validation.validate obs
-
-            # Act
-            obs model
-
-            # Assert
-            expect(model.isValid()).toBe false
-
         it 'should unwrap an observable for validation', ->
             # Arrange
             model = bo.validatableModel 
                 myProperty: ko.observable(undefined).validatable { required: true }
 
             # Act
-            isValid = bo.validation.validate ko.observable model
+            bo.validation.validate ko.observable model
 
             # Assert
-            expect(isValid).toBe false
+            expect(model.isValid()).toBe false
 
         it 'should set default failure message for property if validation fails and no message defined', ->
             # Arrange
@@ -160,10 +124,9 @@ describe 'Validation:', ->
                 mySecondProperty: ko.observable(undefined)
 
             # Act
-            isValid = model.validate()
+            model.validate()
 
             # Assert
-            expect(isValid).toBe true
             expect(model.isValid()).toBe true
 
         it 'should validate observable arrays', ->
@@ -175,10 +138,10 @@ describe 'Validation:', ->
                 myArray: ko.observableArray [new ArrayItemType(), new ArrayItemType()]
 
             # Act
-            isValid = model.validate()
+            model.validate()
 
             # Assert
-            expect(isValid).toEqual false
+            expect(model.isValid()).toEqual false
             expect(model.myArray()[0].arrayProperty.isValid()).toEqual false
             expect(model.myArray()[1].arrayProperty.isValid()).toEqual false
 
@@ -189,10 +152,10 @@ describe 'Validation:', ->
                     anotherProperty: ko.observable(undefined).validatable { required: true }
 
             # Act
-            isValid = model.validate()
+            model.validate()
 
             # Assert
-            expect(isValid).toEqual false
+            expect(model.isValid()).toEqual false
             expect(model.myChildProperty.anotherProperty.isValid()).toEqual false
             
     describe 'With an observable extended to be validatable', ->

@@ -56,30 +56,32 @@ propertiesToIgnore = ['errors', 'isValid', 'serverErrors', 'allErrors']
 bo.validation =
     addFormValidationAttribute: false,
 
-    validate: (modelToValidate) ->
-        valid = true
-
+    setupValidation: (modelToValidate) ->
         # Use computed to allow observable properties to be automatically validated
         # on change.
         ko.computed ->
-            model = ko.utils.unwrapObservable modelToValidate
+            bo.validation.validate modelToValidate
 
-            if model?                
-                for propertyName, propertyValue of model when _(propertiesToIgnore).contains(propertyName) is false                    
-                    unwrappedPropertyValue = ko.utils.unwrapObservable propertyValue
+    validate: (modelToValidate) ->
+        valid = true
+        model = ko.utils.unwrapObservable modelToValidate
 
-                    if propertyValue.validationRules?
-                        valid = (validateValue propertyName, propertyValue, model) && valid
+        if model?                
+            for propertyName, propertyValue of model when _(propertiesToIgnore).contains(propertyName) is false                    
+                unwrappedPropertyValue = ko.utils.unwrapObservable propertyValue
 
-                    if _.isArray unwrappedPropertyValue
-                        for arrayItem in unwrappedPropertyValue
-                            valid = (bo.validation.validate arrayItem) && valid
-                    else if jQuery.isPlainObject unwrappedPropertyValue
-                        valid = (bo.validation.validate unwrappedPropertyValue) && valid
+                if propertyValue.validationRules?
+                    valid = (validateValue propertyName, propertyValue, model) && valid
 
-                if ko.isWriteableObservable model.isValid
-                    model.isValid valid
-            
+                if _.isArray unwrappedPropertyValue
+                    for arrayItem in unwrappedPropertyValue
+                        valid = (bo.validation.validate arrayItem) && valid
+                else if jQuery.isPlainObject unwrappedPropertyValue
+                    valid = (bo.validation.validate unwrappedPropertyValue) && valid
+
+            if ko.isWriteableObservable model.isValid
+                model.isValid valid
+
         valid
     
     rules:
@@ -329,7 +331,8 @@ bo.validatableModel = (model) ->
     # 
     # Once a model has been validated it will automatically update its errors status
     # should any property that has been validated be an observable that changes it values.
-    model.validate = -> bo.validation.validate model
+    model.validate = _.once -> 
+        bo.validation.setupValidation model
 
     # Sets any server validation errors, errors that could not be checked client
     # side but will stop a form being submitted / action being taken and therefore
