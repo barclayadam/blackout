@@ -100,10 +100,13 @@ storageExtender = (target, keyOrOptions, type) ->
             target stored
 
     target.subscribe (newValue) ->
-        if isObject
-            window[type + 'Storage'].setItem key, JSON.stringify newValue
+        if _.isString(newValue) and newValue is ''
+            window[type + 'Storage'].removeItem key, newValue
         else
-            window[type + 'Storage'].setItem key, newValue
+            if isObject
+                window[type + 'Storage'].setItem key, JSON.stringify newValue
+            else
+                window[type + 'Storage'].setItem key, newValue
 
     target
 
