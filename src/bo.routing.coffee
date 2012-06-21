@@ -245,7 +245,7 @@ class HistoryManager
         # 'onhashchange' is supported, determine how we check the URL state.
         if this._hasPushState
             jQuery(window).bind 'popstate', => @_updateFromCurrentUrl()
-        else if ('onhashchange' in window) && !oldIE
+        else if (window.onhashchange isnt undefined) && !oldIE
             jQuery(window).bind 'hashchange', => @_updateFromCurrentUrl()
         else 
             setInterval (=> @_updateFromCurrentUrl()), interval
