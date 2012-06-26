@@ -39,6 +39,9 @@ class bo.Dialog
 
         jQuery(@_dialogElement).dialog dialogOptions
 
+        @part.viewModel.closeDialog = =>
+            jQuery(@_dialogElement).dialog 'close'
+
     # Closes this dialog.
     close: () ->
         jQuery(@_dialogElement).dialog 'close'
