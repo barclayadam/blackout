@@ -170,6 +170,8 @@ class bo.DataSource extends bo.Bus
         # is 1 as then subscription not called.
         if not @_serverPagingEnabled or currentPageNumber is 1
             @_doLoad()
+        else
+            bo.utils.resolvedPromise()
 
     # Goes to the specified page number.
     goTo: (pageNumber) ->
@@ -274,12 +276,18 @@ class bo.DataSource extends bo.Bus
 
         @isLoading true
 
+        deferred = jQuery.Deferred()
+
         @options.provider loadOptions, ((loadedData) =>
             @_setData loadedData
             @_lastProviderOptions = loadOptions
 
             @isLoading false
+
+            deferred.resolve()
         ), @
+
+        deferred
 
     _setData: (loadedData) ->   
         items = []
