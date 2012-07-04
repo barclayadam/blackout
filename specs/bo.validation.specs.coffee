@@ -289,6 +289,13 @@ describe 'Validation:', ->
             # Assert
             expect(isValid).toBe true
 
+        it 'should return true if value is a zero', ->
+            # Act
+            isValid = bo.validation.rules.required.validator 0, {}, true
+
+            # Assert
+            expect(isValid).toBe true
+
         it 'should return false if property value is undefined', ->
             # Act
             isValid = bo.validation.rules.required.validator undefined, {}, true

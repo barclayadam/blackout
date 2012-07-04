@@ -448,6 +448,13 @@ ko.bindingHandlers.validated =
             return
 
         value = valueAccessor()
+
+        if not element._modifiedForValidation and value.validationRules?
+            for rule, options of value.validationRules
+                if bo.validation.rules[rule]?.modifyElement?
+                    bo.validation.rules[rule].modifyElement element, options
+
+            element._modifiedForValidation = true
         
         if value?.allErrors?        
             isEnabled = bo.utils.isElementEnabled allBindings
