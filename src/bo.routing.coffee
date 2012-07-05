@@ -93,6 +93,7 @@ class Route
     # will still be raised, but will not stop the second message, `routeNavigated` from being
     # published.
     navigateTo: (args = {}, canVeto = true, forceNavigate = false) ->
+        args = ko.toJS args
         url = @_create args
 
         if forceNavigate or routeTable.currentUrl isnt url
