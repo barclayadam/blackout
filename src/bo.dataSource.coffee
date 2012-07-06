@@ -263,7 +263,7 @@ class bo.DataSource extends bo.Bus
             @sorting.subscribe =>
                 @_doLoad()
     
-    _doLoad: (force = false)->
+    _doLoad: ()->
         if @options.provider? and _.isArray @options.provider
             return
 
@@ -278,7 +278,7 @@ class bo.DataSource extends bo.Bus
         
         loadOptions.orderBy = @sorting() if @sorting()?
 
-        if _.isEqual loadOptions, @_lastProviderOptions and not force
+        if _.isEqual loadOptions, @_lastProviderOptions
             return
 
         @isLoading true
