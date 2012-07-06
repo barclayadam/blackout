@@ -155,6 +155,13 @@ class bo.DataSource extends bo.Bus
     remove: (item) ->
         @_loadedItems.remove item
 
+        @totalCount @totalCount() - 1
+
+        # We are on the last page with only one item, need
+        # to navigate back a page.
+        if @pageNumber() > @pageCount()
+            @pageNumber @pageNumber() - 1
+
     # Performs a load of this data source, which will set the pageNumber to 1
     # and then, using the `provider` specified on construction, load the
     # items uing the current search parameters (if any), the page size (if `serverPaging`
@@ -256,7 +263,7 @@ class bo.DataSource extends bo.Bus
             @sorting.subscribe =>
                 @_doLoad()
     
-    _doLoad: ->
+    _doLoad: (force = false)->
         if @options.provider? and _.isArray @options.provider
             return
 
@@ -271,7 +278,7 @@ class bo.DataSource extends bo.Bus
         
         loadOptions.orderBy = @sorting() if @sorting()?
 
-        if _.isEqual loadOptions, @_lastProviderOptions
+        if _.isEqual loadOptions, @_lastProviderOptions and not force
             return
 
         @isLoading true
