@@ -71,10 +71,16 @@ class Route
         @metadata = @options.metadata || {}
 
         @paramNames = []
+        @requiredParamNames = []
 
         routeDefinitionAsRegex = @definition.replace paramRegex, (_, mode, name) =>
             @paramNames.push name
-            if mode is '*' then '(.*)' else '([^/]*)'
+
+            if mode is '*' 
+                 '(.*)' 
+            else 
+                @requiredParamNames.push name
+                '([^/]*)'
 
         if routeDefinitionAsRegex.length > 1 and routeDefinitionAsRegex.charAt(0) is '/'
             routeDefinitionAsRegex = routeDefinitionAsRegex.substring 1 
@@ -113,10 +119,10 @@ class Route
     _create: (args = {}) ->
         if @_allParametersPresent args        
             @definition.replace paramRegex, (_, mode, name) =>
-                ko.utils.unwrapObservable args[name]
+                (ko.utils.unwrapObservable args[name]) || ''
 
     _allParametersPresent: (args) ->
-        _.all(@paramNames, (p) -> args[p]?)
+        _.all(@requiredParamNames, (p) -> args[p]?)
 
     toString: ->
         "#{@name}: #{@definition}"
