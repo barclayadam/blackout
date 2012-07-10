@@ -176,7 +176,7 @@ class HistoryManager
             delete bucket[name]
 
         if @initialised is true        
-            withoutQuery = @fragment.replace bo.QueryString.from(@fragment).toString(), ''
+            withoutQuery = @getFragment().replace bo.QueryString.from(@fragment).toString(), ''
             
             queryString = new bo.QueryString()
             queryString.setAll @transientQueryParameters
