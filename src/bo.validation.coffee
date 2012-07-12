@@ -245,6 +245,13 @@ bo.validation =
             message: (propertyName, model, options) ->
                 "#{bo.utils.fromCamelToTitleCase propertyName} must be numeric."
 
+        integer:
+            validator: (value, model, options) ->
+                (emptyValue value) or (/^[0-9]+$/.test value)
+
+            message: (propertyName, model, options) ->
+                "#{bo.utils.fromCamelToTitleCase propertyName} must be a whole number."
+
         equalTo:
             validator: (value, model, options) ->
                 if options.value?

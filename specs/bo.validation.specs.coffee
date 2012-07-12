@@ -1346,6 +1346,40 @@ describe 'Validation:', ->
             # Assert
             expect(isValid).toBe false
 
+    describe 'with an integer validator', ->
+        itShouldReturnTrueForEmptyValues 'integer'
+
+        it 'should return true if value is an integer', ->
+            # Arrange
+            value = '12'
+
+            # Act
+            isValid = bo.validation.rules.integer.validator value, {}, true
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if value is a double', ->
+            # Arrange
+            value = '1.2'
+
+            # Act
+            isValid = bo.validation.rules.integer.validator value, {}, true
+
+            # Assert
+            expect(isValid).toBe false
+
+
+        it 'should return false if value is not an integer', ->
+            # Arrange
+            value = 'numeric'
+
+            # Act
+            isValid = bo.validation.rules.integer.validator value, {}, true
+
+            # Assert
+            expect(isValid).toBe false
+
     describe 'with an equalTo validator', ->
         itShouldReturnTrueForEmptyValues 'equalTo'
 
