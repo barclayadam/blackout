@@ -155,12 +155,12 @@ class bo.DataSource extends bo.Bus
     remove: (item) ->
         @_loadedItems.remove item
 
-        @totalCount @totalCount() - 1
+        @totalCount Math.max 0, @totalCount() - 1
 
         # We are on the last page with only one item, need
         # to navigate back a page.
         if @pageNumber() > @pageCount()
-            @pageNumber @pageNumber() - 1
+            @pageNumber Math.max 1, @pageNumber() - 1
 
     # Performs a load of this data source, which will set the pageNumber to 1
     # and then, using the `provider` specified on construction, load the
