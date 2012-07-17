@@ -264,8 +264,8 @@ class HistoryManager
             if @initialised
                 @_updateFromRouteUrl msg
 
-        @_publishCurrent()
         @initialised = true
+        @_publishCurrent()
   
     # Checks the current URL to see if it has changed, and if it has,
     # calls `_publishCurrent`, normalizing across the hidden iframe.
@@ -385,7 +385,9 @@ ko.extenders.addressable = (target, paramNameOrOptions) ->
         set msg.queryString.get paramName
 
     currentVal = target()
-    setQueryParameter currentVal if currentVal?
+    
+    if currentVal?
+        setQueryParameter currentVal 
 
     # Set value to value of query string immediately
     set bo.query.get paramName
