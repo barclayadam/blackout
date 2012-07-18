@@ -85,7 +85,7 @@ class Route
         if routeDefinitionAsRegex.length > 1 and routeDefinitionAsRegex.charAt(0) is '/'
             routeDefinitionAsRegex = routeDefinitionAsRegex.substring 1 
 
-        @incomingMatcher = new RegExp "^/?#{routeDefinitionAsRegex}/?$"
+        @incomingMatcher = new RegExp "^/?#{routeDefinitionAsRegex}/?$", "i"
         
         bo.bus.publish "routeCreated:#{@name}", @
 
