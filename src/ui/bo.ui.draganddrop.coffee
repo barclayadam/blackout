@@ -27,7 +27,7 @@ ko.bindingHandlers.draggable =
             helper: 'clone'
             zIndex: 200000
             distance: 10
-            cursorAt: { left: 5 }
+            cursorAt: { left: 45, top: 40 }
 
             start: (e, ui) ->
                 draggableModel.canDrop false
