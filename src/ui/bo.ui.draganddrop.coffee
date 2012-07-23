@@ -23,6 +23,7 @@ ko.bindingHandlers.draggable =
         dragOptions =
             revert: 'invalid'
             revertDuration: 250
+            appendTo: 'body'
             helper: 'clone'
             zIndex: 200000
             distance: 10
