@@ -18,7 +18,8 @@ class bo.QueryString
             queryKey = decodeURIComponent split[0] 
             queryValue = decodeURIComponent split[1] 
 
-            query.set queryKey, queryValue
+            if queryKey and queryValue
+                query.set queryKey, queryValue
 
         query
 
@@ -26,7 +27,11 @@ class bo.QueryString
         @values = {}
 
     set: (key, value) ->
-        @values[key] = value
+        if key
+            if value?
+                @values[key] = value
+            else
+                delete @values[key]
 
     # Given an object will copy all key <-> value pairs into this
     # query string.
