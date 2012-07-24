@@ -76,6 +76,12 @@ describe 'Messaging', ->
                 
         describe 'that fails', ->
             beforeEach ->  
+                bo.bus.subscribe 'queryFailed:My Query', (msg) =>
+                    @["queryFailedMessage"] = msg
+
+                bo.bus.subscribe 'queryResultReceived:My Query', (msg) =>
+                    @["queryResultReceivedMessage"] = msg
+
                 @server.respondWith "GET", "/ExecuteMyQuery/?query.name=My Query&query.values={}", [500, { "Content-Type": "application/json" },'{}']
                 @server.respond()  
 
@@ -88,18 +94,14 @@ describe 'Messaging', ->
                     values: { id: 3456 }              
 
             it 'should publish a queryResultReceived message indicating failure', ->
-                expect("queryResultReceived:My Query").toHaveBeenPublishedWith
-                    name: 'My Query'
-                    values: { id: 3456 }
-                    result: undefined
-                    hasFailed: true            
+                expect(@queryResultReceivedMessage.name).toEqual 'My Query'
+                expect(@queryResultReceivedMessage.values).toEqual { id: 3456 }
+                expect(@queryResultReceivedMessage.hasFailed).toEqual true
 
             it 'should publish a queryFailed message indicating failure', ->
-                expect("queryFailed:My Query").toHaveBeenPublishedWith
-                    name: 'My Query'
-                    values: { id: 3456 }
-                    result: undefined
-                    hasFailed: true
+                expect(@queryFailedMessage.name).toEqual 'My Query'
+                expect(@queryFailedMessage.values).toEqual { id: 3456 }
+                expect(@queryFailedMessage.hasFailed).toEqual true
 
     describe 'When executing a single command', ->
         beforeEach ->       
