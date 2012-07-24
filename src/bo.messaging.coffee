@@ -49,7 +49,7 @@ bo.messaging.query = (queryName, options = {}, ajaxOptions = {}) ->
         messageArgs = 
             name: queryName 
             values: options
-            result: result
+            result: result || {}
             hasFailed: hasFailed
       
         shouldContinue = bo.bus.publish "queryResultReceived:#{queryName}", messageArgs 
@@ -65,7 +65,7 @@ bo.messaging.query = (queryName, options = {}, ajaxOptions = {}) ->
         doResolve result, false
 
     ajaxPromise.fail (result) ->
-        doResolve undefined, true
+        doResolve result, true
 
     queryDeferred.promise()
 
