@@ -261,7 +261,7 @@ bo.validation =
 
             message: (propertyName, model, options) ->
                 if options.value?
-                    "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to #{bo.utils.fromCamelToTitleCase options.propertyName}."
+                    "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to #{bo.utils.fromCamelToTitleCase options.value}."
                 else    
                     "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to #{bo.utils.fromCamelToTitleCase options}."
 
