@@ -3,7 +3,6 @@
 
 class RouteTable
     constructor: ->
-        @currentUrl = undefined
         @routes = []
 
         bo.bus.subscribe 'routeCreated', (route) =>
@@ -22,9 +21,6 @@ class RouteTable
 
         bo.bus.subscribe "navigateToRoute:#{route.title}", (options = {}) =>
             route.navigateTo options.parameters || {}, options.canVeto, options.forceNavigate
-
-        bo.bus.subscribe "routeNavigated:#{route.title}", (msg) =>
-            @currentUrl = msg.url
 
     _find: (url) ->
         for r in @routes
@@ -59,7 +55,6 @@ routeTable = new RouteTable()
 # in a URL after the /File/ prefix, such as '/File/root/pictures/myPicture.png', where
 # filePath would be 'root/pictures/myPicture.png'.
 class Route
-    @current = undefined
     paramRegex = /{(\*?)(\w+)}/g
 
     # Constructs a new route, with a name and route definition.
@@ -102,9 +97,11 @@ class Route
         args = ko.toJS args
         url = @_create args
 
-        if forceNavigate or routeTable.currentUrl isnt url
+        if forceNavigate or Route.currentUrl isnt url
             if (bo.bus.publish "routeNavigating:#{@name}", { url: url, route: @, canVeto: canVeto }) or !canVeto
-                bo.bus.publish "routeNavigated:#{@name}", { url: url, route: @, parameters: args }        
+                bo.bus.publish "routeNavigated:#{@name}", { url: url, route: @, parameters: args }
+
+                Route.currentUrl = url        
 
     match: (incoming) ->
         bo.arg.ensureString incoming, 'incoming'
