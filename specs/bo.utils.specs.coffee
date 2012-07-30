@@ -1,34 +1,55 @@
 #reference "../../js/blackout/bo.bus.coffee"
 
 describe 'Utils', ->
-    describe 'When converting to a CSS class', ->
-        it 'should return undefined if given undefined parameter', ->
-            # Act
-            cssClass = bo.utils.toCssClass undefined
+    describe 'When converting to title case', ->
+        it 'should handle non-string values by calling toString', ->
+            expect(bo.utils.toTitleCase undefined).toBeUndefined()
 
-            # Assert
-            expect(cssClass).toBeUndefined()
+        it 'should uppercase the first character of subsequent words in the string', ->
+            expect(bo.utils.toTitleCase 'myElephant').toEqual 'My Elephant'
 
-        it 'should replace spaces with dashes', ->
-            # Act
-            cssClass = bo.utils.toCssClass 'this is my class'
+        it 'should handle long strings', ->
+            expect(bo.utils.toTitleCase 'thisIsMyVeryLargeVIPElephant').toEqual 'This Is My Very Large VIP Elephant'
 
-            # Assert
-            expect(cssClass).toEqual 'this-is-my-class'
+        it 'should keep acronyms upper cased', ->
+            expect(bo.utils.toTitleCase 'myVIPElephant').toEqual 'My VIP Elephant'
 
-        it 'should lower case the value', ->
-            # Act
-            cssClass = bo.utils.toCssClass 'My Class'
+        it 'should split numbers from words', ->
+            expect(bo.utils.toTitleCase 'AddressLine1').toEqual 'Address Line 1'
 
-            # Assert
-            expect(cssClass).toEqual 'my-class'
+        it 'should handle multiple acronyms', ->
+            expect(bo.utils.toTitleCase 'My PIN Number hasLeakedOMG').toEqual 'My PIN Number Has Leaked OMG'
 
-        it 'should replace special characters with dashes', ->
-            # Act
-            cssClass = bo.utils.toCssClass 'My/Class\\Is Great'
+        it 'should convert words as part of a larger sentence', ->
+            expect(bo.utils.toTitleCase 'This is MY VeryLargeVIPElephant').toEqual 'This Is MY Very Large VIP Elephant'
 
-            # Assert
-            expect(cssClass).toEqual 'my-class-is-great'
+    describe 'When converting to sentence case', ->
+        it 'should return undefined for an undefined value being passed', ->
+            expect(bo.utils.toSentenceCase undefined).toBeUndefined()
+
+        it 'should handle non-string values by calling toString', ->
+            expect(bo.utils.toSentenceCase true).toEqual 'True'
+
+        it 'should uppercase the first character of the passed in string', ->
+            expect(bo.utils.toSentenceCase 'MyElephant').toEqual 'My elephant'
+
+        it 'should lowercase the first character of subsequent words in the string', ->
+            expect(bo.utils.toSentenceCase 'myElephant').toEqual 'My elephant'
+
+        it 'should handle long strings', ->
+            expect(bo.utils.toSentenceCase 'thisIsMyVeryLargeVIPElephant').toEqual 'This is my very large VIP elephant'
+
+        it 'should keep acronyms upper cased', ->
+            expect(bo.utils.toSentenceCase 'myVIPElephant').toEqual 'My VIP elephant'
+
+        it 'should handle multiple acronyms', ->
+            expect(bo.utils.toSentenceCase 'My PIN Number hasLeakedOMG').toEqual 'My PIN number has leaked OMG'
+
+        it 'should split numbers from words', ->
+            expect(bo.utils.toSentenceCase 'AddressLine1').toEqual 'Address line 1'
+
+        it 'should convert words as part of a larger sentence', ->
+            expect(bo.utils.toSentenceCase 'This is MY VeryLargeVIPElephant').toEqual 'This is MY very large VIP elephant'
 
     describe 'When joining observables', ->
         it 'should set all observables to be the value of the first parameter', ->

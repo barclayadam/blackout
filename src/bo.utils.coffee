@@ -6,11 +6,40 @@ window.bo.utils =
         if jQuery("##{name}").length is 0
             jQuery('head').append "<script type='text/x-knockout-tmpl' id='#{name}'>#{template}</script>"
 
-    fromCamelToTitleCase: (str) ->
-        str.toString()
-            .replace(/([a-z])([A-Z])/g, '$1 $2') # insert a space between lower & upper
-            .replace(/\b([A-Z]+)([A-Z])([a-z])/, '$1 $2$3') # space before last upper in a sequence followed by lower
-            .replace(/^./, (s) -> s.toUpperCase()) # uppercase the first character
+    toTitleCase: (str) ->
+        if str?
+            convertWord = (match) ->
+                # If 'word' matched is only an acronym perform no processing
+                if match.toUpperCase() is match
+                    match
+                else
+                    match = match.replace(/([a-z])([A-Z0-9])/g, (_, one, two) -> "#{one} #{two}") # insert a space between lower & upper / numbers
+                    match = match.replace(/\b([A-Z]+)([A-Z])([a-z])/, (_, one, two, three) -> "#{one} #{two}#{three}") # space before last upper in a sequence followed by lower
+                    match = match.replace(/^./, (s) -> s.toUpperCase()) # uppercase the first character
+
+            str.toString()
+                .replace(/\b[a-zA-Z0-9]+\b/g, convertWord)
+
+    fromCamelToTitleCase: window.bo.utils.toTitleCase
+
+    toSentenceCase: (str) ->
+        if str?
+            convertWord = (match) ->
+                # If 'word' matched is only an acronym perform no processing
+                if match.toUpperCase() is match
+                    match
+                else
+                    match = match.replace(/([A-Z]{2,})([A-Z])$/g, (_, one, two) -> " #{one}#{two}") # Handle sentence ending with acronym
+                    match = match.replace(/([A-Z]{2,})([A-Z])([^$])/g, (_, one, two, three) -> " #{one} #{two.toLowerCase()}#{three}") # Separate out acronyms first
+                    match = match.replace(/([a-z])([A-Z0-9])/g, (_, one, two) -> "#{one} #{two.toLowerCase()}") # insert a space between lower & upper              
+                    match = match.replace(/^./, (s) -> s.toLowerCase()) # lowercase the first character
+                    match
+
+            str = str.toString()                
+            str = str.replace(/\b[a-zA-Z0-9]+\b/g, convertWord)
+            str = str.replace(/^./, (s) -> s.toUpperCase()) # uppercase the first character
+            str
+
 
     asObservable: (value) ->
         if ko.isObservable value then return value
