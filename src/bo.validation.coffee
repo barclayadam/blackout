@@ -27,13 +27,17 @@ getMessageCreationFunction = (name, propertyRules, ruleName) ->
     else if bo.validation.rules[ruleName]?.message?
         bo.validation.rules[ruleName].message
     else
-        -> "#{bo.utils.fromCamelToTitleCase name} validation failed" 
+        (propertyName) -> "#{propertyName} validation failed" 
+
+formatErrorMessage = (msg) ->
+    bo.utils.toSentenceCase msg
 
 validateValue = (propertyName, propertyValue, model) ->    
     errors = []
 
     if propertyValue?
         propertyRules = propertyValue.validationRules
+        propertyName = propertyRules.propertyName || propertyName
         unwrappedPropertyValue = ko.utils.unwrapObservable propertyValue
         
         if propertyRules
@@ -41,11 +45,11 @@ validateValue = (propertyName, propertyValue, model) ->
                 if not bo.validation.rules[ruleName]?
                     throw new Error "'#{ruleName}' is not a validator. Must be defined as method on bo.validation.rules"      
 
-                isValid = bo.validation.rules[ruleName].validator(unwrappedPropertyValue, model, ruleOptions)
+                isValid = bo.validation.rules[ruleName].validator unwrappedPropertyValue, model, ruleOptions
 
                 if not isValid
                     msgCreator = getMessageCreationFunction propertyName, propertyRules, ruleName
-                    errors.push msgCreator propertyName, model, ruleOptions
+                    errors.push formatErrorMessage msgCreator propertyName, model, ruleOptions
 
     propertyValue.errors errors if propertyValue?.errors?
     
@@ -90,7 +94,7 @@ bo.validation =
                 hasValue value
             
             message: (propertyName, model, options) ->
-                "#{bo.utils.fromCamelToTitleCase propertyName} is required."
+                "#{propertyName} is required."
 
             modifyElement: (element) ->                
                 element.setAttribute "aria-required", "true"
@@ -104,7 +108,7 @@ bo.validation =
                 (emptyValue value) or (options.test value)
 
             message: (propertyName, model, options) ->
-                "#{bo.utils.fromCamelToTitleCase propertyName} is invalid."
+                "#{propertyName} is invalid."
 
             modifyElement: (element, options) ->                
                 element.setAttribute "pattern", "" + options if bo.validation.addFormValidationAttribute
@@ -114,7 +118,7 @@ bo.validation =
                 (emptyValue value) or (value.length? and value.length == options)
 
             message: (propertyName, model, options) ->
-                "#{bo.utils.fromCamelToTitleCase propertyName} must be exactly #{options} characters long."
+                "#{propertyName} must be exactly #{options} characters long."
 
             modifyElement: (element, options) ->           
                 element.setAttribute "maxLength", "" + options
@@ -124,14 +128,14 @@ bo.validation =
                 (emptyValue value) or (value.length? and value.length >= options)
 
             message: (propertyName, model, options) ->
-                "#{bo.utils.fromCamelToTitleCase propertyName} must be at least #{options} characters long."
+                "#{propertyName} must be at least #{options} characters long."
         
         maxLength:
             validator: (value, model, options) ->
                 (emptyValue value) or (value.length? and value.length <= options)
         
             message: (propertyName, model, options) ->
-                "#{bo.utils.fromCamelToTitleCase propertyName} must be no more than #{options} characters long."
+                "#{propertyName} must be no more than #{options} characters long."
 
             modifyElement: (element, options) ->                
                 element.setAttribute "maxLength", "" + options
@@ -141,7 +145,7 @@ bo.validation =
                 (bo.validation.rules.minLength.validator value, model, options[0]) and (bo.validation.rules.maxLength.validator value, model, options[1])
         
             message: (propertyName, model, options) ->
-                "#{bo.utils.fromCamelToTitleCase propertyName} must be between #{options[0]} and #{options[1]} characters long."
+                "#{propertyName} must be between #{options[0]} and #{options[1]} characters long."
 
             modifyElement: (element, options) ->              
                 element.setAttribute "maxLength", "" + options[1]
@@ -151,7 +155,7 @@ bo.validation =
                 (emptyValue value) or (value >= options)
 
             message: (propertyName, model, options) ->
-                "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to or greater than #{options}."
+                "#{propertyName} must be equal to or greater than #{options}."
 
             modifyElement: (element, options) ->                
                 element.setAttribute "min", "" + options if bo.validation.addFormValidationAttribute
@@ -161,7 +165,7 @@ bo.validation =
                 (emptyValue value) or (value <= options)
 
             message: (propertyName, model, options) ->
-                "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to or less than #{options}."
+                "#{propertyName} must be equal to or less than #{options}."
 
             modifyElement: (element, options) ->                
                 element.setAttribute "max", "" + options if bo.validation.addFormValidationAttribute
@@ -171,7 +175,7 @@ bo.validation =
                 (bo.validation.rules.min.validator value, model, options[0]) and (bo.validation.rules.max.validator value, model, options[1])
 
             message: (propertyName, model, options) ->
-                "#{bo.utils.fromCamelToTitleCase propertyName} must be between #{options[0]} and #{options[1]}."
+                "#{propertyName} must be between #{options[0]} and #{options[1]}."
 
             modifyElement: (element, options) ->                
                 element.setAttribute "min", "" + options[0] if bo.validation.addFormValidationAttribute
@@ -182,14 +186,14 @@ bo.validation =
                 (emptyValue value) or (parseDate(value) <=  parseDate(options))
 
             message: (propertyName, model, options) ->
-                "#{bo.utils.fromCamelToTitleCase propertyName} must be on or before #{options[0]}."
+                "#{propertyName} must be on or before #{options[0]}."
 
         minDate:
             validator: (value, model, options) ->
                 (emptyValue value) or (parseDate(value) >= parseDate(options))
 
             message: (propertyName, model, options) ->
-                "#{bo.utils.fromCamelToTitleCase propertyName} must be on after #{options[0]}."
+                "#{propertyName} must be after #{options[0]}."
 
         inFuture:
             validator: (value, model, options) ->
@@ -199,7 +203,7 @@ bo.validation =
                     (emptyValue value) or (parseDate(value) > new Date())
 
             message: (propertyName, model, options) ->
-                "#{bo.utils.fromCamelToTitleCase propertyName} must be in the future."
+                "#{propertyName} must be in the future."
 
         inPast:
             validator: (value, model, options) ->
@@ -209,7 +213,7 @@ bo.validation =
                     (emptyValue value) or (parseDate(value) < new Date())
 
             message: (propertyName, model, options) ->
-                "#{bo.utils.fromCamelToTitleCase propertyName} must be in the past."
+                "#{propertyName} must be in the past."
 
         notInPast:
             validator: (value, model, options) ->
@@ -219,7 +223,7 @@ bo.validation =
                     (emptyValue value) or (parseDate(value) >= new Date())
 
             message: (propertyName, model, options) ->
-                "#{bo.utils.fromCamelToTitleCase propertyName} must not be in the past."
+                "#{propertyName} must not be in the past."
 
         notInFuture:
             validator: (value, model, options) ->
@@ -229,28 +233,28 @@ bo.validation =
                     (emptyValue value) or (parseDate(value) <= new Date())
 
             message: (propertyName, model, options) ->
-                "#{bo.utils.fromCamelToTitleCase propertyName} must not be in the future."
+                "#{propertyName} must not be in the future."
 
         date:
             validator: (value, model, options) ->
                 (emptyValue value) or (parseDate(value) != undefined)
 
             message: (propertyName, model, options) ->
-                "#{bo.utils.fromCamelToTitleCase propertyName} must be a date."
+                "#{propertyName} must be a date."
 
         numeric:
             validator: (value, model, options) ->
                 (emptyValue value) or (isFinite value)
 
             message: (propertyName, model, options) ->
-                "#{bo.utils.fromCamelToTitleCase propertyName} must be numeric."
+                "#{propertyName} must be numeric."
 
         integer:
             validator: (value, model, options) ->
                 (emptyValue value) or (/^[0-9]+$/.test value)
 
             message: (propertyName, model, options) ->
-                "#{bo.utils.fromCamelToTitleCase propertyName} must be a whole number."
+                "#{propertyName} must be a whole number."
 
         equalTo:
             validator: (value, model, options) ->
@@ -261,9 +265,9 @@ bo.validation =
 
             message: (propertyName, model, options) ->
                 if options.value?
-                    "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to #{bo.utils.fromCamelToTitleCase options.value}."
+                    "#{propertyName} must be equal to #{options.value}."
                 else    
-                    "#{bo.utils.fromCamelToTitleCase propertyName} must be equal to #{bo.utils.fromCamelToTitleCase options}."
+                    "#{propertyName} must be equal to #{options}."
 
         requiredIf:
             validator: (value, model, options) ->
@@ -288,10 +292,7 @@ bo.validation =
                         true
 
             message: (propertyName, model, options) ->
-                if options.value?
-                    "#{bo.utils.fromCamelToTitleCase propertyName} is required."
-                else if options.property?
-                    "#{bo.utils.fromCamelToTitleCase propertyName} is required."
+                "#{propertyName} is required."
 
         custom:
             validator: (value, model, options) ->
@@ -304,7 +305,7 @@ bo.validation =
                 options(value, model)
 
             message: (propertyName, model, options) ->
-                "#{bo.utils.fromCamelToTitleCase propertyName} is invalid."
+                "#{propertyName} is invalid."
 
 
 # Given a model and a set of (optional) model validation rules will add the necessary
