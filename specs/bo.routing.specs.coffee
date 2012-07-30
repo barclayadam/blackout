@@ -1,4 +1,7 @@
 describe 'Routing:', ->
+    beforeEach ->
+        bo.routing.Route.currentUrl = undefined    
+
     describe 'A route', ->
         describe 'with no definition', ->
             it 'should throw an exception on creation', ->
