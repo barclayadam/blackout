@@ -78,7 +78,7 @@ describe 'Validation:', ->
             model.validate()
 
             # Assert
-            expect(model.myProperty.errors()[0]).toEqual 'My Property validation failed'
+            expect(model.myProperty.errors()[0]).toEqual 'My property validation failed'
 
         it 'should return validators default error message when defined with no model validation message', ->
             # Arrange
@@ -93,7 +93,7 @@ describe 'Validation:', ->
             model.validate()
 
             # Assert
-            expect(model.myProperty.errors()[0]).toEqual 'myProperty failed myCustomValidator validation'
+            expect(model.myProperty.errors()[0]).toEqual 'My property failed my custom validator validation'
 
         it 'should return validation message for rule if message defined for rule explictly', ->
             # Arrange
@@ -192,7 +192,7 @@ describe 'Validation:', ->
             model.validate()
 
             # Assert
-            expect(model.myFirstProperty.errors()[0]).toEqual 'My First Property is required.'
+            expect(model.myFirstProperty.errors()[0]).toEqual 'My first property is required.'
 
         it 'should set the isValid observable of the validatable value to false when validation fails', ->
             # Arrange
