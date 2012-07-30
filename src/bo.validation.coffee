@@ -41,7 +41,7 @@ validateValue = (propertyName, propertyValue, model) ->
         unwrappedPropertyValue = ko.utils.unwrapObservable propertyValue
         
         if propertyRules
-            for ruleName, ruleOptions of propertyRules when !(ruleName.endsWith 'Message')
+            for ruleName, ruleOptions of propertyRules when !(ruleName.endsWith 'Message') and ruleName != "propertyName"
                 if not bo.validation.rules[ruleName]?
                     throw new Error "'#{ruleName}' is not a validator. Must be defined as method on bo.validation.rules"      
 
