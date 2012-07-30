@@ -20,8 +20,6 @@ window.bo.utils =
             str.toString()
                 .replace(/\b[a-zA-Z0-9]+\b/g, convertWord)
 
-    fromCamelToTitleCase: window.bo.utils.toTitleCase
-
     toSentenceCase: (str) ->
         if str?
             convertWord = (match) ->
@@ -94,3 +92,6 @@ window.bo.utils =
 
         ko.utils.unwrapObservable (enabledBinding ? true) and
             !ko.utils.unwrapObservable (disabledBinding ? false)
+
+# Backward compatible
+window.bo.utils.fromCamelToTitleCase = window.bo.utils.toTitleCase
