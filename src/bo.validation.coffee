@@ -314,6 +314,31 @@ bo.validation =
             message: (propertyName, model, options) ->
                 "#{propertyName} is required."
 
+        requiredIfNot:
+            validator: (value, model, options) ->
+                if options.equalsOneOf is undefined
+                    throw new Error "You need to provide a list of items to check against."
+
+                if options.value is undefined and options.property is undefined
+                    throw new Error "You need to provide either a property or a value."
+
+                if options.property? and !model.hasOwnProperty(options.property)
+                    throw new Error "The property #{options.property} cannot be found."
+
+                if options.value?
+                    if !_.contains options.equalsOneOf, ko.utils.unwrapObservable options.value
+                        hasValue value
+                    else
+                        true
+                else if options.property? and model.hasOwnProperty(options.property)
+                    if !_.contains options.equalsOneOf, ko.utils.unwrapObservable model[options.property]
+                        hasValue value
+                    else
+                        true
+
+            message: (propertyName, model, options) ->
+                "#{propertyName} is required."
+
         custom:
             validator: (value, model, options) ->
                 if options is undefined
