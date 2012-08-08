@@ -573,6 +573,37 @@ describe 'Validation:', ->
             # Assert
             expect(isValid).toBe false
 
+    describe 'With a moreThan validator', ->
+        itShouldReturnTrueForEmptyValues 'moreThan'
+
+        it 'should return false if property value is equal to minimum option value', ->
+            # Act
+            isValid = bo.validation.rules.moreThan.validator 56, {}, 56
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if property value is greater than minimum option value', ->
+            # Act
+            isValid = bo.validation.rules.moreThan.validator 456, {}, 56
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if property value is less than minimum option value', ->
+            # Act
+            isValid = bo.validation.rules.moreThan.validator 4, {}, 56
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if property is not a number', ->
+            # Act
+            isValid = bo.validation.rules.moreThan.validator "Not a Number", {}, 5
+
+            # Assert
+            expect(isValid).toBe false
+
     describe 'With a max validator', ->
         itShouldReturnTrueForEmptyValues 'max'
 
@@ -600,6 +631,37 @@ describe 'Validation:', ->
         it 'should return false if property is not a number', ->
             # Act
             isValid = bo.validation.rules.max.validator "Not a Number", {}, 5
+
+            # Assert
+            expect(isValid).toBe false
+
+    describe 'With a lessThan validator', ->
+        itShouldReturnTrueForEmptyValues 'lessThan'
+
+        it 'should return false if property value is equal to maximum option value', ->
+            # Act
+            isValid = bo.validation.rules.lessThan.validator 56, {}, 56
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if property value is less than maximum option value', ->
+            # Act
+            isValid = bo.validation.rules.lessThan.validator 34, {}, 56
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if property value is greater than maximum option value', ->
+            # Act
+            isValid = bo.validation.rules.lessThan.validator 346, {}, 56
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return false if property is not a number', ->
+            # Act
+            isValid = bo.validation.rules.lessThan.validator "Not a Number", {}, 5
 
             # Assert
             expect(isValid).toBe false

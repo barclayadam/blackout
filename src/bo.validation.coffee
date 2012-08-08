@@ -160,6 +160,16 @@ bo.validation =
             modifyElement: (element, options) ->                
                 element.setAttribute "min", "" + options if bo.validation.addFormValidationAttribute
 
+        moreThan:
+            validator: (value, model, options) ->
+                (emptyValue value) or (value > options)
+
+            message: (propertyName, model, options) ->
+                "#{propertyName} must be greater than #{options}."
+
+            modifyElement: (element, options) ->                
+                element.setAttribute "moreThan", "" + options if bo.validation.addFormValidationAttribute
+
         max:
             validator: (value, model, options) ->
                 (emptyValue value) or (value <= options)
@@ -169,6 +179,16 @@ bo.validation =
 
             modifyElement: (element, options) ->                
                 element.setAttribute "max", "" + options if bo.validation.addFormValidationAttribute
+
+        lessThan:
+            validator: (value, model, options) ->
+                (emptyValue value) or (value < options)
+
+            message: (propertyName, model, options) ->
+                "#{propertyName} must be less than #{options}."
+
+            modifyElement: (element, options) ->                
+                element.setAttribute "lessThan", "" + options if bo.validation.addFormValidationAttribute
 
         range:
             validator: (value, model, options) ->
