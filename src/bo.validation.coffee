@@ -300,17 +300,15 @@ bo.validation =
                 if options.property? and !model.hasOwnProperty(options.property)
                     throw new Error "The property #{options.property} cannot be found."
 
-                if options.value?
-                    if _.contains options.equalsOneOf, ko.utils.unwrapObservable options.value
-                        hasValue value
-                    else
-                        true
-                else if options.property? and model.hasOwnProperty(options.property)
-                    if _.contains options.equalsOneOf, ko.utils.unwrapObservable model[options.property]
-                        hasValue value
-                    else
-                        true
+                valueToCheckAgainst = if options.value? then options.value else model[options.property]
+                valueToCheckAgainst = (ko.utils.unwrapObservable valueToCheckAgainst) || null
 
+                valueToCheckAgainstInList = _.any options.equalsOneOf, (v) -> (v || null) is valueToCheckAgainst
+
+                if valueToCheckAgainstInList
+                    hasValue value
+                else
+                    true
             message: (propertyName, model, options) ->
                 "#{propertyName} is required."
 
@@ -325,16 +323,15 @@ bo.validation =
                 if options.property? and !model.hasOwnProperty(options.property)
                     throw new Error "The property #{options.property} cannot be found."
 
-                if options.value?
-                    if !_.contains options.equalsOneOf, ko.utils.unwrapObservable options.value
-                        hasValue value
-                    else
-                        true
-                else if options.property? and model.hasOwnProperty(options.property)
-                    if !_.contains options.equalsOneOf, ko.utils.unwrapObservable model[options.property]
-                        hasValue value
-                    else
-                        true
+                valueToCheckAgainst = if options.value? then options.value else model[options.property]
+                valueToCheckAgainst = (ko.utils.unwrapObservable valueToCheckAgainst) || null
+
+                valueToCheckAgainstNotInList = _.all options.equalsOneOf, (v) -> (v || null) isnt valueToCheckAgainst
+
+                if valueToCheckAgainstNotInList
+                    hasValue value
+                else
+                    true
 
             message: (propertyName, model, options) ->
                 "#{propertyName} is required."
