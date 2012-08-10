@@ -4,6 +4,15 @@ toOrderDirection = (order) ->
     else 
         'descending'
 
+getSortOrder = (a, b) ->
+    if a is b
+        0
+    else if (_.isString a) and (_.isString b)
+        if a.toLowerCase() < b.toLowerCase() then -1 else 1
+    else
+        if a < b then -1 else 1
+
+
 # A DataSource is a representation of an array of data (of any kind) that
 # is represented in a consistent manner, providing functionality such as
 # server and client-side paging and sorting over the top of a data provider
@@ -109,7 +118,7 @@ class bo.DataSource extends bo.Bus
     # can be ordered using the less than (<) operator. 
     sort: ->
         if not @_serverPagingEnabled
-            @_sortFunction (a, b) -> (b < a) - (a < b)
+            @_sortFunction (a, b) -> getSortOrder a, b
 
         @sortedBy 'ascending'
 
@@ -117,7 +126,7 @@ class bo.DataSource extends bo.Bus
     # can be ordered using the less than (<) operator.
     sortDescending: ->
         if not @_serverPagingEnabled
-            @_sortFunction (a, b) -> ((b < a) - (a < b)) * -1
+            @_sortFunction (a, b) -> getSortOrder b, a
 
         @sortedBy 'descending'
 
@@ -137,11 +146,10 @@ class bo.DataSource extends bo.Bus
         if not @_serverPagingEnabled
             @_sortFunction (a, b) -> 
                 for p in properties
-                    if a[p.name] > b[p.name]
-                        return if p.order is 'ascending' then 1 else -1
-                    
-                    if a[p.name] < b[p.name]
-                        return if p.order is 'ascending' then -1 else 1
+                    order = getSortOrder a[p.name], b[p.name]
+
+                    if order != 0
+                        return if p.order is 'ascending' then order else order * -1
 
                 0
 
