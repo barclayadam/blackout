@@ -1956,6 +1956,46 @@ describe 'Validation:', ->
             # Assert
             expect(func).toThrow 'You need to provide a list of items to check against.'
 
+        it 'should return true if other property triggers required validation when trigger is null and value is not empty', ->
+            # Arrange
+            model = { conditionallyRequiredProperty: 'not empty', propertyToCheckAgainst: 'triggers' };
+
+            # Act
+            isValid = bo.validation.rules.requiredIfNot.validator model.conditionallyRequiredProperty, model, { property: 'propertyToCheckAgainst', equalsOneOf: [undefined]  }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return false if other property triggers required validation when trigger is null and value is empty', ->
+            # Arrange
+            model = { conditionallyRequiredProperty: undefined, propertyToCheckAgainst: 'triggers' };
+
+            # Act
+            isValid = bo.validation.rules.requiredIfNot.validator model.conditionallyRequiredProperty, model, { property: 'propertyToCheckAgainst', equalsOneOf: [undefined]  }
+
+            # Assert
+            expect(isValid).toBe false
+
+        it 'should return true if other property does not trigger required validation when trigger is null and value is not empty', ->
+            # Arrange
+            model = { conditionallyRequiredProperty: 'not empty', propertyToCheckAgainst: undefined };
+
+            # Act
+            isValid = bo.validation.rules.requiredIfNot.validator model.conditionallyRequiredProperty, model, { property: 'propertyToCheckAgainst', equalsOneOf: [undefined]  }
+
+            # Assert
+            expect(isValid).toBe true
+
+        it 'should return true if otehr property does not trigger required validation when trigger is null and value is empty', ->
+            # Arrange
+            model = { conditionallyRequiredProperty: undefined, propertyToCheckAgainst: undefined };
+
+            # Act
+            isValid = bo.validation.rules.requiredIfNot.validator model.conditionallyRequiredProperty, model, { property: 'propertyToCheckAgainst', equalsOneOf: [undefined]  }
+
+            # Assert
+            expect(isValid).toBe true
+
     describe 'with a custom validator', ->
         it 'should throw an error if the options parameter is undefined', ->
             # Arrange
