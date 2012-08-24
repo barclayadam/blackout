@@ -50,7 +50,7 @@ class SitemapNode
 
     navigateTo: () ->
         if @hasRoute
-            bo.routing.navigateTo @name
+            bo.routing.navigateTo @name, {}, (@definition.canVeto), (@definition.forceNavigate ? true)
 
     # Gets an array that contains the ancestors or this node, including this node. The order
     # will be from the root down to this node (e.g. result[0] is the root node, result[pathLength] is this
