@@ -169,6 +169,6 @@ bo.messaging.commands = (commands) ->
         doResolve result, false
 
     ajaxPromise.fail (result) ->
-        doResolve undefined, true
+        doResolve result, true
 
     commandDeferred.promise()
