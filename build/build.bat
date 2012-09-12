@@ -1,1 +1,0 @@
-call run-build-file.bat UpdateExamples

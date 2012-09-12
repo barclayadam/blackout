@@ -1,0 +1,705 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"req",
+				"requests"
+			],
+			[
+				"get",
+				"getDeferred"
+			],
+			[
+				"rege",
+				"regexValidator"
+			],
+			[
+				"reg",
+				"regexValidators"
+			],
+			[
+				"tagBindin",
+				"tagBindingHandlerName"
+			],
+			[
+				"tagBin",
+				"tagBindingHandlerName"
+			],
+			[
+				"tagN",
+				"tagBindingHandlerName"
+			],
+			[
+				"options",
+				"optionsAttribute"
+			],
+			[
+				"bin",
+				"bindingProvider"
+			],
+			[
+				"routeN",
+				"routeNavigatedStub"
+			],
+			[
+				"route",
+				"routePath"
+			],
+			[
+				"rou",
+				"routePath"
+			],
+			[
+				"exp",
+				"expectedParameters"
+			],
+			[
+				"history",
+				"historyInitialisedOnce"
+			],
+			[
+				"toHaveB",
+				"toHaveBeenCalledOnce"
+			],
+			[
+				"curren",
+				"currentLocation"
+			],
+			[
+				"current",
+				"currentFragment"
+			],
+			[
+				"ser",
+				"serverErrors"
+			],
+			[
+				"properti",
+				"propertiesToIgnore"
+			],
+			[
+				"mixin",
+				"mixinValidatableModel"
+			],
+			[
+				"dragg",
+				"draggableModel"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "src/bo.ui.partBindingHandler.coffee",
+			"settings":
+			{
+				"buffer_size": 3084,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "spec/ui/bo.partBindingHandler.specs.coffee",
+			"settings":
+			{
+				"buffer_size": 4674,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "ext/knockout.js",
+			"settings":
+			{
+				"buffer_size": 175126,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "spec/_specs_matchers.coffee",
+			"settings":
+			{
+				"buffer_size": 3943,
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 196.0,
+		"selected_items":
+		[
+			[
+				"inst",
+				"Package Control: Install Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"package",
+				"Preferences: Browse Packages"
+			],
+			[
+				"ins",
+				"Package Control: Install Package"
+			],
+			[
+				"remove",
+				"Package Control: Remove Package"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Install Package"
+			],
+			[
+				"git",
+				"Git: Quick Commit"
+			],
+			[
+				"install ",
+				"Package Control: Install Package"
+			],
+			[
+				"",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 400.0
+	},
+	"console":
+	{
+		"height": 129.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/D/Projects/boson.js/src/bo.coffee",
+		"/D/Projects/boson.js/src/bo.ui.partBindingHandler.coffee",
+		"/D/Projects/boson.js/src/ui/bo.partBindingHandler.coffee",
+		"/D/Projects/boson.js/spec/ui/bo.partBindingHandler.specs.coffee",
+		"/D/Projects/boson.js/src/bo.viewModel.coffee",
+		"/D/Projects/boson.js/spec/bo.viewModel.specs.coffee",
+		"/D/Projects/boson.js/src/bo.ajax.coffee",
+		"/D/Projects/boson.js/spec/bo.ajax.specs.coffee",
+		"/D/Projects/boson.js/spec/runner.html",
+		"/D/Projects/boson.js/ext/anvilHook.js",
+		"/D/Projects/boson.js/lib/bo.min.js",
+		"/D/Projects/boson.js/src/bo.templating.coffee",
+		"/D/Projects/boson.js/spec/bo.validation.rules.specs.coffee",
+		"/D/Projects/boson.js/src/bo.validation.rules.coffee",
+		"/D/Projects/boson.js/src/bo.location.coffee",
+		"/D/Projects/boson.js/src/bo.routing.coffee",
+		"/D/Projects/boson.js/spec/bo.routing.specs.coffee",
+		"/D/Projects/boson.js/spec/_specs_matchers.coffee",
+		"/D/Projects/boson.js/src/bo.validation.coffee",
+		"/D/Projects/boson.js/spec/bo.location.specs.coffee",
+		"/D/Projects/boson.js/spec/bo.utils.specs.coffee",
+		"/D/Projects/boson.js/src/bo.utils.coffee",
+		"/D/Projects/boson.js/spec/bo.validation.specs.coffee",
+		"/D/Projects/boson.js/ext/knockout.js",
+		"/D/Projects/boson.js/examples/pushStatePolyfill.html",
+		"/D/Projects/boson.js/spec/_specs_helper.coffee",
+		"/D/Projects/boson.js/ext/zepto.js",
+		"/D/Projects/boson.js/spec/bo.templating.specs.coffee",
+		"/D/Projects/boson.js/spec/bo.uri.specs.coffee",
+		"/D/Projects/boson.js/src/bo.notifications.coffee",
+		"/D/Projects/boson.js/src/bo.dataSource.coffee",
+		"/D/Projects/boson.js/src/bo.tagBindingsProvider.coffee",
+		"/D/Projects/boson.js/spec/bo.tagBindingsProvider.specs.coffee",
+		"/D/Projects/boson.js/ext/html5shiv.js",
+		"/D/Projects/knockout/spec/bindingAttributeBehaviors.js",
+		"/C/Users/Adam/AppData/Roaming/Sublime Text 2/Packages/Default/Preferences.sublime-settings",
+		"/D/Projects/knockout/src/binding/bindingAttributeSyntax.js",
+		"/D/Projects/blackout/src/ui/bo.ui.tree.coffee",
+		"/D/Projects/knockout/build/output/knockout-latest.debug.js",
+		"/D/Projects/boson.js/src/bo.uri.coffee",
+		"/D/Projects/boson.js/src/bo.log.coffee",
+		"/D/Projects/boson.js/src/bo.storage.coffee",
+		"/D/Projects/boson.js/spec/bo.storage.specs.coffee",
+		"/C/Users/Adam/AppData/Local/Google/Chrome/Application/chrome.exe",
+		"/D/Downloads/iPlayer-v2.4.17/plugin.video.iplayer/changelog.txt",
+		"/D/Projects/boson.js/src/bo.bus.coffee",
+		"/D/Downloads/DataTables-1.9.2/DataTables-1.9.2/media/src/DataTables.js",
+		"/D/Downloads/DataTables-1.9.2/DataTables-1.9.2/media/src/core/core.columns.js",
+		"/D/Downloads/DataTables-1.9.2/DataTables-1.9.2/media/src/ext/ext.types.js",
+		"/D/Projects/boson.js/boson.sublime-project",
+		"/D/Projects/boson.js/README.md",
+		"/D/Projects/boson.js/spec/bo.history.specs.coffee",
+		"/D/Projects/boson.js/src/bo.history.coffee",
+		"/D/WS_MaximoNewConnection.wsdl",
+		"/D/maximo/test.xml",
+		"/C/Users/Adam/AppData/Roaming/npm/node_modules/anvil.js/lib/anvil.js",
+		"/D/Projects/boson.js/ext/jasmine/jasmine.title.reporter.js",
+		"/D/Projects/boson.js/build.json",
+		"/D/Projects/boson.js/build.bat",
+		"/D/Projects/boson.js/runner.bat",
+		"/D/Projects/boson.js/src/bo.core.coffee",
+		"/D/Downloads/default.py",
+		"/D/Downloads/default-old.py",
+		"/D/Projects/boson.js/spec/bo.dataSource.specs.coffee",
+		"/D/Projects/boson.js/ext/jquery.js",
+		"/D/Projects/boson.js/spec/bo.bus.specs.coffee",
+		"/D/Projects/boson.js/spec/bo.log.specs.coffee",
+		"/D/Projects/boson.js/spec/bo.notifications.specs.coffee",
+		"/D/Projects/boson.js/ext/sinon.js",
+		"/D/Projects/boson.js/ext/sinon/sinon.js",
+		"/D/Projects/boson.js/ext/sinon/jasmine-sinon.js",
+		"/D/Projects/boson.js/ext/underscore.js",
+		"/D/Projects/boson.js/spec/bo.mixin.specs.coffee",
+		"/D/Projects/Blackout/specs/bo.validation.specs.coffee",
+		"/D/Projects/Blackout/src/bo.validation.coffee",
+		"/D/Downloads/exportdata.csv",
+		"/D/Projects/boson.js/spec/bo.log.spec.coffee",
+		"/D/Projects/Blackout/src/bo.coffee",
+		"/D/Projects/boson.js/ext/qunit.js",
+		"/D/Projects/boson.js/spec/bo.bus.specs.last.coffee",
+		"/D/Projects/Blackout/src/bo.bus.coffee",
+		"/D/Projects/Blackout/src/bo.storage.coffee",
+		"/D/Projects/Blackout/specs/specs_helper.coffee",
+		"/D/Projects/Blackout/specs/bo.bus.specs.coffee",
+		"/D/Projects/boson.js/ext/pavlov.js",
+		"/D/Projects/BlackoutV2/blackout/build.json",
+		"/D/Projects/BlackoutV2/blackout/spec/_specs_helper.coffee",
+		"/D/Projects/BlackoutV2/blackout/spec/bo.bus.specs - Copy.coffee",
+		"/D/Projects/BlackoutV2/blackout/spec/bo.bus.specs.coffee",
+		"/D/Projects/BlackoutV2/blackout/src/bo.bus.coffee",
+		"/D/Projects/BlackoutV2/blackout/src/bo.coffee",
+		"/D/Projects/BlackoutV2/blackout/spec/bo.specs.coffee",
+		"/D/Projects/BlackoutV2/blackout/lib/bo.js",
+		"/D/Projects/BlackoutV2/blackout/pavlov",
+		"/D/Conversion Stats - Copy.csv",
+		"/D/Projects/Blackout/src/ui/bo.ui.draganddrop.coffee",
+		"/D/Projects/Blackout/src/bo.utils.coffee",
+		"/D/Projects/Blackout/specs/runner.html",
+		"/D/Projects/Blackout/specs/benchmark.html",
+		"/D/Projects/Blackout/specs/lib/jslitmus/jslitmus.js",
+		"/D/Downloads/HandBrake Encoder v1.0/HandBrake Encoder v1.0/HandBrake Encoder.exe.config",
+		"/D/Downloads/gp_win_rc6.1/README",
+		"/D/Projects/Blackout/.gitignore",
+		"/D/Projects/Blackout/src/module.txt",
+		"/D/Projects/Blackout/specs/bo.dataSource.specs.coffee",
+		"/D/Projects/Blackout/src/bo.dataSource.coffee",
+		"/D/AMT VSTFS/SSE/BEC/Development/Prototype/src/Sse.Bec.Web/assets/js/app/bo.dataSource.js",
+		"/D/Projects/Blackout/src/ui/bo.ui.button.coffee",
+		"/D/Projects/Blackout/specs/module.txt",
+		"/D/Projects/Blackout/src/ui/bo.ui.controls.coffee",
+		"/D/Projects/Blackout/specs/ui/bo.ui.enable.specs.coffee",
+		"/D/Projects/Blackout/src/ui/bo.ui.enable.coffee",
+		"/D/Projects/Blackout/src/bo.routing.coffee",
+		"/D/Projects/Blackout/src/bo.sitemap.coffee",
+		"/D/Projects/Blackout/specs/bo.sitemap.specs.coffee",
+		"/D/Projects/Blackout/src/bo.regions.coffee",
+		"/D/Projects/Blackout/src/ui/bo.ui.datepicker.coffee",
+		"/D/Projects/Blackout/src/ui/bo.ui.button",
+		"/D/Projects/Blackout/specs/bo.routing.specs.coffee",
+		"/D/Projects/Blackout/examples/dragndrop/index.html",
+		"/D/Projects/Blackout/src/bo.messaging.coffee",
+		"/D/Projects/Blackout/src/bo.parts.coffee",
+		"/D/Projects/Blackout/specs/bo.messaging.specs.coffee",
+		"/D/Projects/Blackout/src/bo.ui.tree.coffee",
+		"/D/Projects/Blackout/README",
+		"/D/Projects/Blackout/src/bo.ui.splitter.coffee",
+		"/D/Projects/Blackout/src/bo.draganddrop.coffee",
+		"/D/Projects/Blackout/examples/regionManager/assets/js/sitemap.js"
+	],
+	"find":
+	{
+		"height": 43.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+			"D:\\Projects\\boson.js\\src",
+			"D:\\Projects\\boson.js\\",
+			"D:\\Projects\\boson.js\\src\\",
+			"D:\\Projects\\boson.js",
+			"D:\\Projects\\Blackout"
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"rs['templ",
+			"$.",
+			"$",
+			"dependencyDetection",
+			"dependen",
+			"twice consecutively",
+			"Receieved",
+			"'\n",
+			"\n  <script type=\"text/javascript\" src='/spec/bo.routing.specs.coffee'></script>",
+			"You need to provide a list of items t",
+			"@routeTable",
+			"bo.utils.toTitleCase ",
+			"_.",
+			"ajax",
+			"jQuery",
+			"getFragment",
+			"jQuery",
+			"jQueru",
+			"docmode",
+			"registerE",
+			"jQuery",
+			"window",
+			"trim",
+			"jQuery",
+			"preprocess",
+			"renderTemplate",
+			"'template'",
+			"applyBindingsToNodeInternal",
+			"dom",
+			"replace",
+			"setTextContent",
+			"@_routes",
+			"cancelling",
+			"getFragment",
+			".addRoute",
+			"historyInitialisedOnce",
+			"computed",
+			"bo.history",
+			"\\{ type: \"(.*)\" \\}",
+			"{ type: \"(.*)\" }",
+			"ROuteTable",
+			"getting the route by relative URL with missing slash at start",
+			"calledOnce",
+			"window",
+			"should set minLength",
+			"attachEvent",
+			"DOMContentLoaded",
+			"event =",
+			"event:",
+			"event",
+			"on:",
+			"bind",
+			"popstate",
+			"hashchange",
+			"alert",
+			"isIe",
+			".validation.",
+			".validation",
+			"getUrl",
+			"_doc",
+			"_normalisedSortBy",
+			"@searchParameters",
+			"trim",
+			"jQuery",
+			"sorting",
+			"after first",
+			"subscri",
+			"?# ",
+			"jQuery",
+			"fromCamelToTitleCase",
+			"'",
+			"aria-value-",
+			"@actual",
+			"createModel true,",
+			"bo.validation.rules",
+			"try",
+			",	",
+			", ([0-9])",
+			", \\\\",
+			"\"",
+			", \\\\",
+			", ([0-9])",
+			", \\\\",
+			", ([0-9])",
+			", \\\\WHS\\",
+			"^.*?([0-9]{5,}, [0-9]{4,})",
+			"'\\\\\\\\WHS.*', ",
+			".mp4,",
+			".avi,",
+			"\\\\WHS\\",
+			"IReposi",
+			"type=\"text/javascript\" ",
+			"bus",
+			"clientPagingEnabled",
+			"serverPagingEnabled",
+			"hasLoadedOnce",
+			"sortFunction",
+			"loadedItems",
+			"data: ",
+			"loader: ",
+			"currentlyDraggingViewModel",
+			"bo.pub",
+			"new bo.Sitemap RegionManager,",
+			"RegionManager = new ",
+			"adds the registered part to the currentParts array",
+			"bo.routing.RouteNavigatedToEvent",
+			"bo.routing.RouteNavigatingToEvent",
+			"routeNavigatingTo",
+			"RouteNavigatingToEvent",
+			"RouteNavigatingTo",
+			"MyOtherEvent",
+			"MyEvent"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"Received",
+			"@router",
+			"",
+			"$",
+			"@routes",
+			".route",
+			"bo.location",
+			"\"\\1\"",
+			"buildUrl",
+			"_sortByAsString",
+			"sortBy",
+			"toTitleCase",
+			"aria-value",
+			"jQuery(@actual)",
+			"createModel",
+			"rules",
+			"	",
+			",	\\1",
+			",	\\\\",
+			"",
+			"	\\\\",
+			"	\\1",
+			"	\\\\",
+			"	\\1",
+			"	\\\\WHS\\",
+			"	\\\\WHS",
+			"\\t\\\\WHS",
+			"\\1",
+			"",
+			".mp4',",
+			".avi',",
+			"'\\\\WHS\\",
+			"",
+			"busWithNoSubscribers",
+			"_clientPagingEnabled",
+			"_serverPagingEnabled",
+			"_hasLoadedOnce",
+			"_sortFunction",
+			"_loadedItems",
+			"provider: ",
+			"draggableModel",
+			"bo.bus",
+			"new bo.Sitemap regionManager,",
+			"regionManager = new ",
+			"\"routeNavigatedTo\"",
+			"\"routeNavigatingTo\"",
+			"myOtherEvent",
+			"myEvent"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "src/bo.ui.partBindingHandler.coffee",
+					"settings":
+					{
+						"buffer_size": 3084,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2345,
+								2345
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CoffeeScript/CoffeeScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "spec/ui/bo.partBindingHandler.specs.coffee",
+					"settings":
+					{
+						"buffer_size": 4674,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4674,
+								4674
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CoffeeScript/CoffeeScript.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 854.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "ext/knockout.js",
+					"settings":
+					{
+						"buffer_size": 175126,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								151838,
+								151908
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 82.0,
+						"translation.y": 46118.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "spec/_specs_matchers.coffee",
+					"settings":
+					{
+						"buffer_size": 3943,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2021,
+								2021
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CoffeeScript/CoffeeScript.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 495.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 0.0
+	},
+	"input":
+	{
+		"height": 29.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 100.0
+	},
+	"replace":
+	{
+		"height": 60.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+			[
+				"bo.si",
+				"src/bo.sitemap.coffee"
+			],
+			[
+				"site",
+				"examples/regionManager/assets/js/sitemap.js"
+			],
+			[
+				"",
+				"src/bo.routing.coffee"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"show_minimap": false,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 220.0,
+	"status_bar_visible": true
+}

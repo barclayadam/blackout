@@ -1,91 +1,68 @@
-#reference "bo.coffee"
-
-# Will be:
-#   subscribers
-#       eventName:
-#           tokenId: func1
-#           tokenId1: func2
-#       ...
-class bo.Bus
-    constructor: (@busOptions) ->
-        @_initBus()
-
-    _initBus: ->
-        @busOptions = { global: false, log: true } if not @busOptions?
-
-        @_subscribers = {}
-        @_currentToken = 0
-
-        @_initBus = ->
-
-    clearAll: ->
-        @_subscribers = {}
-
+EventBus = ->
+    _subscribers = {}
+    
+    clearAll = ->
+        _subscribers = {}
+ 
     # Subscribes the given function to the specified messageName, being executed
-    # if the exact same named event is raised.
+    # if the exact same named event is raised or a `namespaced` event published
+    # with a root of the given `messageName` (e.g. publishing a message with
+    # the name `myNamespace:myEvent` will call subscribers of both 
+    # `myNamespace:myEvent` and `myNamespace`).
     #
     # The return result from this function is a subscription, an object that
     # has a single 'unsubscribe' method that, if called, will dispose of the
     # subscription to the named event meaning no further events will be published
-    # to the give function.
-    subscribe: (messageName, func) ->
+    # to the given function.
+    subscribe = (messageName, callback) ->
         if _.isArray messageName
-            @subscribe(message, func) for message in messageName
+            for message in messageName
+                subscribe message, callback
+
+            undefined
         else
-            bo.arg.ensureString messageName, 'messageName'
-            bo.arg.ensureFunction func, 'func'
+            if _subscribers[messageName] is undefined
+                _subscribers[messageName] = {} 
 
-            @_initBus()
+            newToken = _.size _subscribers[messageName]
 
-            @_subscribers[messageName] = {} if @_subscribers[messageName] is undefined
+            _subscribers[messageName][newToken] = callback
 
-            @_currentToken = ++@_currentToken
-            tokenToUse = @_currentToken
-
-            @_subscribers[messageName][tokenToUse] = func
-
-            {
-                unsubscribe: =>
-                    delete @_subscribers[messageName][tokenToUse]
-            }
+            # Return value for a subscription which is an object with
+            # a single `unsubscribe` method which will dispose of subscription
+            # on execution to stop any further publications from executing
+            # the specified `callback`.
+            unsubscribe: ->
+                delete _subscribers[messageName][newToken]
 
     # Publishes the given named message to any subscribed listeners, passing 
-    # the `messageData` argument on to each subscriber as an arguments to the subscription call
+    # the `messageData` argument on to each subscriber as an arguments to the 
+    # subscription call.
     #
     # (e.g. 
     #    subscribe "My Event", (messageData) ->
     #    publish   "My Event", messageData
     # )
-    #
-    # If any subscriber returns `false` then no further subscribers will be
-    # notified of the event and `false` will be returned from this method, indicating
-    # a failure.
-    publish: (messageName, args = {}) ->
-        bo.arg.ensureString messageName, 'messageName'
-
-        @_initBus()
-
-        if @busOptions.log is true
-            if @busOptions.global is false
-                console.log "Publishing #{messageName} (local)", args
-            else
-                console.log "Publishing #{messageName}", args
-
-        if @busOptions.global is false
-            bo.bus.publish messageName, args
+    publish = (messageName, args = {}) ->
+        bo.log.debug "Publishing #{messageName}", args
 
         indexOfSeparator = -1
         messages = [messageName]
 
-        messages.push messageName while messageName = messageName.substring 0, (messageName.lastIndexOf ':')
+        while messageName = messageName.substring 0, messageName.lastIndexOf ':'
+            messages.push messageName 
 
         for msg in messages
-            for t, subscriber of (@_subscribers[msg] || {})
-                canContinue = subscriber.call @, args
+            for t, subscriber of (_subscribers[msg] || {})
+                subscriber.call @, args
 
-                if canContinue is false
-                    return false
-            
-        true
+        undefined
 
-bo.bus = new bo.Bus { global: true, log: true }
+    return {
+        clearAll: clearAll
+        subscribe: subscribe
+        publish: publish
+    }
+
+bo.EventBus = EventBus
+bo.bus = new bo.EventBus

@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>  
+  <!-- Lib Files -->
+  <script type="text/javascript" src='/ext/json2.js'></script>
+  <script type="text/javascript" src='/ext/jquery.js'></script>
+  <script type="text/javascript" src='/ext/underscore.js'></script>
+  <script type="text/javascript" src='/ext/knockout.js'></script>
+  
+  <!-- Source Files -->  
+  <script type="text/javascript" src='/lib/bo.js'></script>
+
+  <script type="text/javascript">
+    function pushNewState() {
+      bo.location.routePath('My New Url' + (new Date()).getTime());
+      bo.location.routeVariables.set('A Key', (new Date()).getTime(), { history: false })
+    }
+
+    function replaceState() {
+      window.history.replaceState(null, 'New Title', 'My New Url' + (new Date()).getTime());
+    }
+  </script>
+</head>
+<body>
+
+  <button onclick="pushNewState();">pushNewState() - Using bo.location API</button>
+
+   <br />
+
+  <button onclick="replaceState();">replaceState() - Using window.history API</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Name
+        <th>Value
+
+    <tbody>
+      <tr>
+        <td>bo.location.uri
+        <td data-bind="text: bo.location.uri"></td>
+
+      <tr>
+        <td>bo.location.path
+        <td data-bind="text: bo.location.path"></td>
+
+      <tr>
+        <td>bo.location.fragment
+        <td data-bind="text: bo.location.fragment"></td>
+
+      <tr>
+        <td>bo.location.variables
+        <td data-bind="text: ko.toJSON(bo.location.variables)"></td>
+
+      <tr>
+        <td>bo.location.query
+        <td data-bind="text:bo.location.query"></td>
+
+      <tr>
+        <td>bo.location.routePath 
+        <td data-bind="text: bo.location.routePath"></td>
+
+      <tr>
+        <td>bo.location.routeVariables 
+        <td data-bind="text: ko.toJSON(bo.location.routeVariables)"></td>
+    </table>
+
+    <script>
+       ko.applyBindings({ bo: bo })
+    </script>
+</body>
+</html>

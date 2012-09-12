@@ -1,0 +1,22 @@
+{
+	"source": "src",
+	"output": "lib",
+	"spec": "spec",
+	"ext": "ext",
+
+	"lint": {},
+	"uglify": {},
+
+	"port": 3080,
+
+	"working": "./tmp",
+
+	"host": true,
+
+	"hosts": {
+      "/examples": "examples",
+      "/lib": "lib"
+    },
+
+	"continuous": true
+}

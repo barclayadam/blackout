@@ -1,24 +1,14 @@
 toOrderDirection = (order) ->
-    if order is 'asc' or order is 'ascending'
+    if order is undefined or order is 'asc' or order is 'ascending'
         'ascending'
     else 
         'descending'
 
-getSortOrder = (a, b) ->
-    if a is b
-        0
-    else if (_.isString a) and (_.isString b)
-        if a.toLowerCase() < b.toLowerCase() then -1 else 1
-    else
-        if a < b then -1 else 1
-
-
 # A DataSource is a representation of an array of data (of any kind) that
 # is represented in a consistent manner, providing functionality such as
-# server and client-side paging and sorting over the top of a data provider
-# that is the specific implementation of a method of loading said data (e.g.
-# directly providing an array, using a `query` to load data or any operation
-# that can provide an array of data).
+# server and client-side paging and sorting over the top of a `data provider`,
+# a method of loading said data (e.g. directly providing an array, using a
+# `query` to load data or any operation that can provide an array of data).
 #
 # #Paging#
 #
@@ -44,10 +34,18 @@ getSortOrder = (a, b) ->
 # ##Server-Side Paging##
 #
 # To enable server-side paging the `serverPaging` option must be provided in 
-# the `options` at construction time, specying the size of the page. In addition
+# the `options` at construction time, specifying the size of the page. In addition
 # the `provider` must correctly adhere to the page size and number passed to it as 
 # the `pageSize` and `pageNumber` properties of its `loadOptions` parameter.
-class bo.DataSource extends bo.Bus
+#
+# When server-side paging is enabled the server must handle, if specified by the
+# options of the `DataSource`:
+#
+# * Paging
+# * Sorting
+# * Filtering
+# * Grouping
+class bo.DataSource
     constructor: (@options) ->
         # An observable property that represents whether or not this data source is
         # currently loading some data (using the specified `provider`).
@@ -63,40 +61,70 @@ class bo.DataSource extends bo.Bus
         # when in client-side only mode).
         @_loadedItems = ko.observableArray()
 
-        @sortedBy = ko.observable();
+        @_sortByAsString = ko.observable()
+        @_sortByDetails = ko.observable()
 
-        # A textual description of the sorting that is currently in-place
-        # on this data source, which will be one of:
-        # * `ascending` - The items themselves are ordered in ascending order.
-        # * `descending` - The items themselves are ordered in descending order.
-        # * `myProperty (ascending|descending)[, anotherProperty]` - The properties and
-        # their (optional) direction that are being ordered.
-        @sorting = ko.computed =>
-            sortedBy = @sortedBy()
+        # When new sorting order given will create the string representation
+        # of that sorting order in a normalised fashion (e.g. always use
+        # `ascending` or `descending` instead of `asc` or `desc`).
+        @_sortByDetails.subscribe (newValue) =>
+            normalised = _.reduce newValue, ((memo, o) -> 
+                    prop = "#{o.name} #{toOrderDirection(o.order)}"
 
-            if sortedBy?
-                if _.isString sortedBy
-                    sortedBy
-                else if sortedBy.length > 0
-                    _.reduce sortedBy, ((memo, o) -> 
-                        prop = "#{o.name} #{o.order}"
+                    if memo 
+                        "#{memo}, #{prop}" 
+                    else 
+                        prop
+                ), ''
 
-                        if memo 
-                            "#{memo}, #{prop}" 
-                        else 
-                            prop
-                    ), ''
+            @_sortByAsString normalised
 
-        @_sortFunction = ko.observable()
+        # The sorting order of this `DataSource`, a textual
+        # description of the properties by which the data is sorted.
+        #
+        # This value, when populated, will be a comma-delimited string
+        # with each value being the name of the property being sorted
+        # followed by the order (`ascending` or `descending`):
+        #
+        # `property1 ascending[, property2 descending]` 
+        @sortBy = ko.computed
+            read: @_sortByAsString
 
+            write: (value) =>
+                # TODO: Allow setting an object
+                properties = _(value.split(',')).map (p) ->
+                    p = ko.utils.stringTrim p
+
+                    indexOfSpace = p.indexOf ' '
+
+                    if indexOfSpace > -1
+                        name: p.substring 0, indexOfSpace
+                        order: toOrderDirection p.substring indexOfSpace + 1
+                    else
+                        name: p
+                        order: 'ascending'
+
+                @_sortByDetails properties
+
+        # The items that have been loaded, presented sorted, filtered and
+        # grouped as determined by the options passed to this `DataSource`.
         @items = ko.computed =>
-            if @_sortFunction()?
-                @_loadedItems().sort @_sortFunction()
+            if @_sortByDetails()? and not @_serverPagingEnabled
+                @_loadedItems().sort (a, b) => 
+                    for p in @_sortByDetails()
+                        if a[p.name] > b[p.name]
+                            return if p.order is 'ascending' then 1 else -1
+                        
+                        if a[p.name] < b[p.name]
+                            return if p.order is 'ascending' then -1 else 1
+
+                    0
             else
                 @_loadedItems()
 
         if @options.searchParameters?
-            @searchParameters = ko.computed => ko.toJS options.searchParameters
+            @searchParameters = ko.computed -> 
+                ko.toJS options.searchParameters
 
             @searchParameters.subscribe =>
                 if @_hasLoadedOnce
@@ -108,52 +136,11 @@ class bo.DataSource extends bo.Bus
         @_setupInitialData()
 
     getPropertySortOrder: (propertyName) ->
-        sortedBy = @sortedBy()
+        sortedBy = @_sortByDetails()
 
         if sortedBy? and sortedBy.length > 0
             ordering = _.find sortedBy, (o) -> o.name is propertyName            
             ordering?.order    
-
-    # Sorts the items in ascending order, assuming that the items theirselves
-    # can be ordered using the less than (<) operator. 
-    sort: ->
-        if not @_serverPagingEnabled
-            @_sortFunction (a, b) -> getSortOrder a, b
-
-        @sortedBy 'ascending'
-
-    # Sorts the items in descending order, assuming that the items theirselves
-    # can be ordered using the less than (<) operator.
-    sortDescending: ->
-        if not @_serverPagingEnabled
-            @_sortFunction (a, b) -> getSortOrder b, a
-
-        @sortedBy 'descending'
-
-    sortBy: (propertyNames) ->
-        properties = _(propertyNames.split(',')).map (p) ->
-            p = jQuery.trim p
-
-            indexOfSpace = p.indexOf ' '
-
-            if indexOfSpace > -1
-                name: p.substring 0, indexOfSpace
-                order: toOrderDirection p.substring indexOfSpace + 1
-            else
-                name: p
-                order: 'ascending'
-
-        if not @_serverPagingEnabled
-            @_sortFunction (a, b) -> 
-                for p in properties
-                    order = getSortOrder a[p.name], b[p.name]
-
-                    if order != 0
-                        return if p.order is 'ascending' then order else order * -1
-
-                0
-
-        @sortedBy properties
 
     # Removes the given item from this data source.
     #
@@ -162,13 +149,6 @@ class bo.DataSource extends bo.Bus
     # page then goes back to the page this item is on).
     remove: (item) ->
         @_loadedItems.remove item
-
-        @totalCount Math.max 0, @totalCount() - 1
-
-        # We are on the last page with only one item, need
-        # to navigate back a page.
-        if @pageNumber() > @pageCount()
-            @pageNumber Math.max 1, @pageNumber() - 1
 
     # Performs a load of this data source, which will set the pageNumber to 1
     # and then, using the `provider` specified on construction, load the
@@ -185,8 +165,6 @@ class bo.DataSource extends bo.Bus
         # is 1 as then subscription not called.
         if not @_serverPagingEnabled or currentPageNumber is 1
             @_doLoad()
-        else
-            bo.utils.resolvedPromise()
 
     # Goes to the specified page number.
     goTo: (pageNumber) ->
@@ -206,13 +184,15 @@ class bo.DataSource extends bo.Bus
     # has been enabled at the current page is not the last one (in which case
     # no changes will be made).
     goToNextPage: ->
-        @goTo @pageNumber() + 1 if not @isLastPage()
+        if not @isLastPage()
+            @goTo @pageNumber() + 1
 
     # Goes to the previous page, assuming that either client or server-side paging
     # has been enabled at the current page is not the first one (in which case
     # no changes will be made).
     goToPreviousPage: ->
-        @goTo @pageNumber() - 1  if not @isFirstPage()
+        if not @isFirstPage()
+            @goTo @pageNumber() - 1
 
     _setupInitialData: ->
         if @options.provider? and _.isArray @options.provider
@@ -234,6 +214,10 @@ class bo.DataSource extends bo.Bus
         @pageNumber = ko.observable().extend
             publishable: { message: ((p) -> "pageChanged:#{p()}"), bus: @ }
 
+        # The observable typically bound to in the UI, representing the
+        # current `page` of items, which if paging is specified will be the
+        # current page as defined by the `pageNumber` observable, or if
+        # no paging options have been supplied the loaded items.
         @pageItems = ko.computed =>
             if @_clientPagingEnabled and @_serverPagingEnabled
                 start = ((@pageNumber() - 1) % @clientPagesPerServerPage) * @pageSize()
@@ -264,18 +248,17 @@ class bo.DataSource extends bo.Bus
         @isLastPage = ko.computed =>
             @pageNumber() is @pageCount() or @pageCount() is 0
                 
+        # Server paging means any operation that would affect the
+        # items loaded and currently displayed must result in a load.
         if @options.serverPaging
             @pageNumber.subscribe =>
                 @_doLoad()
 
-            @sorting.subscribe =>
+            @sortBy.subscribe =>
                 @_doLoad()
     
-    _doLoad: ()->
-        if @options.provider? and _.isArray @options.provider
-            return
-
-        if not @pageNumber()?
+    _doLoad: ->
+        if _.isArray @options.provider
             return
 
         loadOptions = _.extend {}, @searchParameters()
@@ -284,25 +267,20 @@ class bo.DataSource extends bo.Bus
             loadOptions.pageSize = @options.serverPaging
             loadOptions.pageNumber = Math.ceil @pageNumber() / @clientPagesPerServerPage
         
-        loadOptions.orderBy = @sorting() if @sorting()?
+        if @sortBy()?
+            loadOptions.orderBy = @sortBy()
 
         if _.isEqual loadOptions, @_lastProviderOptions
             return
 
         @isLoading true
 
-        deferred = jQuery.Deferred()
-
         @options.provider loadOptions, ((loadedData) =>
             @_setData loadedData
             @_lastProviderOptions = loadOptions
 
             @isLoading false
-
-            deferred.resolve()
         ), @
-
-        deferred
 
     _setData: (loadedData) ->   
         items = []
@@ -319,7 +297,7 @@ class bo.DataSource extends bo.Bus
             @totalCount loadedData.length
 
         if @options.map?
-            items = _(items).chain().map(@options.map).compact().value()
+            items = _.chain(items).map(@options.map).compact().value()
 
         @_loadedItems items
         @_hasLoadedOnce = true

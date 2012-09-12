@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="/ext/jasmine/jasmine.css">  
+
+  <script type="text/javascript" src="/ext/jasmine/jasmine.js"></script>
+  <script type="text/javascript" src="/ext/jasmine/jasmine-html.js"></script>
+  <script type="text/javascript" src="/ext/jasmine/jasmine.title.reporter.js"></script>
+
+  <script type="text/javascript" src="/ext/sinon/sinon.js"></script>
+  <script type="text/javascript" src="/ext/sinon/jasmine-sinon.js"></script>
+  
+  <!-- Lib Files -->
+  <script type="text/javascript" src='/ext/jquery.js'></script>
+  <script type="text/javascript" src='/ext/underscore.js'></script>
+  <script type="text/javascript" src='/ext/knockout.js'></script>
+  
+  <!-- Source Files -->  
+  <script type="text/javascript" src='/lib/bo.js'></script>
+
+  <!-- Spec Files -->  
+  <script type="text/javascript" src='/spec/_specs_helper.coffee'></script>
+  <script type="text/javascript" src='/spec/_specs_matchers.coffee'></script>
+  <script type="text/javascript" src='/spec/bo.utils.specs.coffee'></script>
+  <script type="text/javascript" src='/spec/bo.log.specs.coffee'></script>
+  <script type="text/javascript" src='/spec/bo.bus.specs.coffee'></script>
+  <script type="text/javascript" src='/spec/bo.ajax.specs.coffee'></script>
+  <script type="text/javascript" src='/spec/bo.uri.specs.coffee'></script>
+  <script type="text/javascript" src='/spec/bo.storage.specs.coffee'></script>
+  <script type="text/javascript" src='/spec/bo.notifications.specs.coffee'></script>
+  <script type="text/javascript" src='/spec/bo.templating.specs.coffee'></script>
+  <script type="text/javascript" src='/spec/bo.validation.specs.coffee'></script>
+  <script type="text/javascript" src='/spec/bo.validation.rules.specs.coffee'></script>
+  <script type="text/javascript" src='/spec/bo.dataSource.specs.coffee'></script>
+  <script type="text/javascript" src='/spec/bo.location.specs.coffee'></script>
+  <script type="text/javascript" src='/spec/bo.routing.specs.coffee'></script>
+
+  <script type="text/javascript" src='/spec/bo.viewModel.specs.coffee'></script>
+
+  <script type="text/javascript" src='/spec/ui/bo.partBindingHandler.specs.coffee'></script>
+  <script type="text/javascript" src='/spec/ui/bo.regionManager.specs.coffee'></script>
+  
+  <script type="text/javascript" src='/spec/bo.tagBindingsProvider.specs.coffee'></script>
+  
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="text/javascript" src="/ext/anvilHook.js"></script>
+</head>
+<body>
+
+  <script type="text/javascript">
+    jasmine.getEnv().addReporter(new jasmine.TrivialReporter());
+    jasmine.getEnv().execute();
+  </script>
+
+</body>
+</html>

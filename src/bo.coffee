@@ -1,47 +1,32 @@
-window.bo = {}
-window.bo.ui = {}
+((window, document, $, ko) ->	
+	if ko is undefined
+	    throw new Error 'knockout must be included before boson'
 
-window.bo.config =
-    appRoot: '/'
+    # Declare some common variables used throughout the library
+    # to help reduce minified size.
+    koBindingHandlers = ko.bindingHandlers
 
-window.bo.arg =
-    ensureDefined: (argument, argumentName) ->
-        if argument is undefined
-            throw new Error "Argument '#{argumentName}' must be defined."
+	# Root namespace into which the public API will be exported.
+	bo = window.bo = {}
 
-    ensureFunction: (argument, argumentName) ->
-       if _.isFunction argument is false
-            throw new Error "Argument '#{argumentName}' must be a function. '#{argument}' was passed."
-            
-    ensureString: (argument, argumentName) ->
-        if typeof argument isnt 'string'
-            throw new Error "Argument '#{argumentName}' must be a string. '#{argument}' was passed."
-            
-    ensureNumber: (argument, argumentName) ->
-        if typeof argument isnt 'number'
-            throw new Error "Argument '#{argumentName}' must be a number. '#{argument}' was passed."
+	###import "bo.log.coffee" ###
+	###import "bo.utils.coffee" ###
+	###import "bo.bus.coffee" ###
+	###import "bo.uri.coffee" ###
+	###import "bo.ajax.coffee" ###
+	###import "bo.storage.coffee" ###
+	###import "bo.notifications.coffee" ###
+	###import "bo.templating.coffee" ###
+	###import "bo.validation.coffee" ###
+	###import "bo.validation.rules.coffee" ###
+	###import "bo.dataSource.coffee" ###
+	###import "bo.location.coffee" ###
+	###import "bo.routing.coffee" ###
+	
+	###import "bo.tagBindingsProvider.coffee" ###
 
-window.bo.exportSymbol = (path, object) ->
-    tokens = path.split '.'
-    target = window
+	###import "bo.viewModel.coffee" ###
 
-    target = target[token] || (target[token] = {}) for token in tokens[0..tokens.length-2]
-    target[tokens[tokens.length - 1]] = object
-
-if not window.console
-    window.console =
-        log: -> 
-
-if not Array::sum
-    Array::sum = ->
-        sum = 0
-        sum += e for e in @
-        sum
-
-if not String::startsWith
-    String::startsWith = (value) ->
-        @lastIndexOf(value, 0) is 0
-
-if not String::endsWith
-    String::endsWith = (suffix) ->
-        (@indexOf suffix, (@length - suffix.length)) != -1
+	###import "bo.ui.partBindingHandler.coffee" ###
+	###import "bo.ui.regionManager.coffee" ###
+)(window, document, window["jQuery"], window["ko"])

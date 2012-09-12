@@ -1,35 +1,4 @@
-#reference "bo.coffee"
-#reference "bo.bus.coffee"
-
-class RouteTable
-    constructor: ->
-        @routes = []
-
-        bo.bus.subscribe 'routeCreated', (route) =>
-            @_add route
-
-        bo.bus.subscribe 'urlChanged', (msg) =>
-            foundRoute = @_find msg.url
-
-            if foundRoute is undefined
-                bo.bus.publish 'routeNotFound', { url: msg.url }
-            else if @current isnt foundRoute
-                foundRoute.route.navigateTo foundRoute.params
-
-    _add: (route) ->
-        @routes.push route
-
-        bo.bus.subscribe "navigateToRoute:#{route.title}", (options = {}) =>
-            route.navigateTo options.parameters || {}, options.canVeto, options.forceNavigate
-
-    _find: (url) ->
-        for r in @routes
-            matchedParams = r.match url
-
-            if matchedParams?
-                return { route: r, params: matchedParams }
-
-routeTable = new RouteTable()
+bo.routing = {}
 
 # Represents a single route within an application, the definition of a URL
 # that may contain a set of parameters that can be used to navigate
@@ -57,347 +26,158 @@ routeTable = new RouteTable()
 class Route
     paramRegex = /{(\*?)(\w+)}/g
 
-    # Constructs a new route, with a name and route definition.
-    constructor: (@name, @definition, @options = {}) ->
-        bo.arg.ensureString name, 'name'
-        bo.arg.ensureString definition, 'definition'
+    # Constructs a new route, with a name and route url.
+    constructor: (@name, @url, @callback, @options) ->
+        @title = options.title
 
-        @title = @options.title || @name
-        @metadata = @options.metadata || {}
-
+        @requiredParams = []
         @paramNames = []
-        @requiredParamNames = []
 
-        routeDefinitionAsRegex = @definition.replace paramRegex, (_, mode, name) =>
+        routeDefinitionAsRegex = @url.replace paramRegex, (_, mode, name) =>
             @paramNames.push name
 
-            if mode is '*' 
-                 '(.*)' 
-            else 
-                @requiredParamNames.push name
-                '([^/]*)'
+            if mode isnt '*'
+                @requiredParams.push name
+
+            if mode is '*' then '(.*)' else '([^/]*)'
 
         if routeDefinitionAsRegex.length > 1 and routeDefinitionAsRegex.charAt(0) is '/'
             routeDefinitionAsRegex = routeDefinitionAsRegex.substring 1 
 
-        @incomingMatcher = new RegExp "^/?#{routeDefinitionAsRegex}/?$", "i"
-        
-        bo.bus.publish "routeCreated:#{@name}", @
+        @incomingMatcher = new RegExp "#{routeDefinitionAsRegex}/?$", "i"
 
-    # Navigates to this route, creating the full URL that this route and the passed parameters
-    # represent and raising messages that other parts of the application can respond to, such
-    # as the history manager (browser's history) or the `sitemap`.
-    #
-    # When first called a 'routeNavigating' message will be published, allowing subscribers
-    # a chance to veto the navigation by returning `false`. This veto behaviour can be overriden
-    # by passing `false` as the second parameter, `canVeto`. When `canVeto` is `false` the event
-    # will still be raised, but will not stop the second message, `routeNavigated` from being
-    # published.
-    navigateTo: (args = {}, canVeto = true, forceNavigate = false) ->
-        args = ko.toJS args
-        url = @_create args
-
-        if forceNavigate or Route.currentUrl isnt url
-            if (bo.bus.publish "routeNavigating:#{@name}", { url: url, route: @, canVeto: canVeto }) or !canVeto
-                bo.bus.publish "routeNavigated:#{@name}", { url: url, route: @, parameters: args }
-
-                Route.currentUrl = url        
-
-    match: (incoming) ->
-        bo.arg.ensureString incoming, 'incoming'
-
-        matches = incoming.match @incomingMatcher
+    match: (path) ->
+        matches = path.match @incomingMatcher
         
         if matches
-            matchedParams = {}
-            matchedParams[name] = matches[index + 1] for name, index in @paramNames
-            matchedParams
+            params = {}
+            
+            for name, index in @paramNames
+                params[name] = matches[index + 1] 
 
-    _create: (args = {}) ->
-        if @_allParametersPresent args        
-            @definition.replace paramRegex, (_, mode, name) =>
-                (ko.utils.unwrapObservable args[name]) || ''
+            params
 
-    _allParametersPresent: (args) ->
-        _.all(@requiredParamNames, (p) -> args[p]?)
+    buildUrl: (parameters = {}) ->
+        if @_allRequiredParametersPresent parameters        
+            @url.replace paramRegex, (_, mode, name) =>
+                ko.utils.unwrapObservable (parameters[name] || '')
+
+    _allRequiredParametersPresent: (parameters) ->
+        _.all(@requiredParams, (p) -> parameters[p]?)
 
     toString: ->
-        "#{@name}: #{@definition}"
+        "#{@name}: #{@url}"
 
+# Defines the root of this application, which will typically be the
+# root of the address (e.g. /). This can be set to a subdirectory if
+# required to ensure that when reading and writing to the URL fragment
+# (which in `pushState` enabled browsers is the path of the URL) the
+# root is ignored and maintained.
 
-# Core of history management shamelessly borrowed (and reworked) from backbone.js (https://github.com/documentcloud/backbone/blob/master/backbone.js)
+# TODO: Take this into account, spec it out etc.
+root = '/'
 
-# Cached regex for cleaning leading hashes and slashes .
-routeStripper = /^[#\/]/
+# A route table that manages a number of routes, providing the ability
+# to get a route from a URL or creating a URL from a named route and
+# set of parameters.
+class bo.routing.Router
 
-# Cached regex for detecting MSIE.
-isExplorer = /msie [\w.]+/
+    constructor: ->
+        @routes = {}
 
-# The default interval to poll for hash changes, if necessary.
-interval = 150
+        # Handle messages that are raised by the location component
+        # to indicate the URL has changed, that the user has navigated
+        # to a new page (which is also raised on first load).
+        bo.bus.subscribe 'urlChanged:external', (msg) =>
+            matchedRoute = @getRouteFromUrl msg.url
 
-# Gets the true hash value. Cannot use location.hash directly due to bug
-# in Firefox where location.hash will always be decoded.
-getHash = (windowOverride) ->
-    loc = (if windowOverride then windowOverride.location else window.location)
-    match = loc.href.match(/#(.*)$/)
-    (if match then match[1] else "")
+            if matchedRoute is undefined
+                bo.bus.publish 'routeNotFound', 
+                    url: msg.url
+            else 
+                @_doNavigate msg.path, matchedRoute.route, matchedRoute.parameters
 
-class HistoryManager
-    constructor: () ->
-        @fragment = undefined
+    _doNavigate: (url, route, parameters) ->
+        route.callback? parameters
 
-        @_hasPushState    = !!(window.history && window.history.pushState)
-
-        @persistedQueryParameters = {}
-        @transientQueryParameters = {}
-
-    # Sets a query string paramater, making it a navigatable feature such that
-    # the back button will load the URL before this query string parameter
-    # was set.
-    #
-    # Query parameters can be specified to be persisted or not, defaulting to
-    # not. A persisted query string parameter will, once set, not be
-    # replaced on navigation. Non persistent values on the other hand will
-    # be removed when navigating away from the page on which the paramater
-    # was set.
-    setQueryParameter: (name, value, options = { persistent: false, createHistory: true }) ->
-        if options.persistent
-            bucket = @persistedQueryParameters
-        else
-            bucket = @transientQueryParameters
-
-        if value?
-            bucket[name] = value
-        else
-            delete bucket[name]
-
-        if @initialised is true        
-            withoutQuery = @getFragment().replace bo.QueryString.from(@fragment).toString(), ''
-            
-            queryString = new bo.QueryString()
-            queryString.setAll @transientQueryParameters
-            queryString.setAll @persistedQueryParameters
-           
-            @_updateUrlFromFragment withoutQuery + queryString.toString(), 
-                title: document.title
-                replace: options.createHistory is false
-
-    getCrossBrowserFragment: ->      
-        loc = window.location;
-        atRoot  = loc.pathname == bo.config.appRoot;
-  
-        if !@_hasPushState && !atRoot
-            # If we've started off with a route from a `pushState`-enabled browser,
-            # but we're currently in a browser that doesn't support it...
-            @getFragment null, true
-        else if @_hasPushState && atRoot && loc.hash
-            # Or if we've started out with a hash-based route, but we're currently
-            # in a browser where it could be `pushState`-based instead...
-            getHash().replace routeStripper, ''
-        else
-            @getFragment()
-
-    # Get the cross-browser normalized URL fragment, either from the URL,
-    # the hash, or the override.
-    getFragment: (fragment, forcePushState) ->
-        unless fragment?
-            if @_hasPushState or forcePushState
-                fragment = window.location.pathname
-                fragment += window.location.search || ''
-            else
-                fragment = getHash()
-
-        fragment = fragment.substr(bo.config.appRoot.length) if fragment.indexOf(bo.config.appRoot) is 0
-        fragment.replace routeStripper, ""
-
-        decodeURI fragment 
-
-    initialise: () ->
-        fragment = @getFragment()
-        docMode  = document.documentMode
-        oldIE    = isExplorer.exec(navigator.userAgent.toLowerCase()) && (!docMode || docMode <= 7)
-  
-        if oldIE
-            @iframe = jQuery('<iframe src="javascript:0" tabindex="-1" />').hide().appendTo('body')[0].contentWindow;
-            @_updateUrlFromFragment fragment, 
-                title: document.title
-                replace: true
-      
-        # Determine if we need to change the base url, for a pushState link
-        # opened by a non-pushState browser.
-        @fragment = fragment;
-      
-        loc = window.location;
-        atRoot  = loc.pathname == bo.config.appRoot;
-  
-        if !this._hasPushState && !atRoot
-            # If we've started off with a route from a `pushState`-enabled browser,
-            # but we're currently in a browser that doesn't support it...
-            @fragment = @getFragment null, true
-            window.location.replace bo.config.appRoot + '#' + @fragment
-  
-            # Return immediately as browser will do redirect to new url
-            return true;
-        else if this._hasPushState && atRoot && loc.hash
-            # Or if we've started out with a hash-based route, but we're currently
-            # in a browser where it could be `pushState`-based instead...
-            @fragment = getHash().replace routeStripper, ''
-            window.history.replaceState {}, document.title, loc.protocol + '//' + loc.host + bo.config.appRoot + @fragment
-              
-        # Depending on whether we're using pushState or hashes, and whether
-        # 'onhashchange' is supported, determine how we check the URL state.
-        if this._hasPushState
-            jQuery(window).bind 'popstate', => @_updateFromCurrentUrl()
-        else if (window.onhashchange isnt undefined) && !oldIE
-            jQuery(window).bind 'hashchange', => @_updateFromCurrentUrl()
-        else 
-            setInterval (=> @_updateFromCurrentUrl()), interval
-
-        bo.bus.subscribe 'routeNavigating', (msg) =>
-            @transientQueryParameters = {}
-
-        bo.bus.subscribe 'routeNavigated', (msg) =>
-            if @initialised
-                @_updateFromRouteUrl msg
-
-        @initialised = true
-        @_publishCurrent()
-  
-    # Checks the current URL to see if it has changed, and if it has,
-    # calls `_publishCurrent`, normalizing across the hidden iframe.
-    _updateFromCurrentUrl: () ->
-        current = @getFragment()
-        current = @getFragment(getHash(@iframe)) if current is @fragment and @iframe
-  
-        return false if current is @fragment
-  
-        @transientQueryParameters = bo.query.current().getAll()
-
-        if @iframe
-            @_updateUrlFromFragment current,
-                title: document.title
-                replace: false
-
-        @_publishCurrent()
-  
-    _publishCurrent: () ->
-        fragment = @fragment = @getFragment()
-
-        queryString = bo.QueryString.from fragment
-        queryStringDelimiterIndex = fragment.indexOf '?'
-
-        url = if queryStringDelimiterIndex is -1 then fragment else fragment.substring(0, queryStringDelimiterIndex)
-        url = '/' if url is ''
-
-        bo.bus.publish 'urlChanged', 
-            url: url
-            fullUrl: fragment 
-            queryString: queryString
-  
-    _updateFromRouteUrl: (msg) ->    
-        queryString = new bo.QueryString()
-        queryString.setAll @transientQueryParameters
-        queryString.setAll @persistedQueryParameters
-       
-        if msg.url.charAt(0) == '/'
-            baseUrl = msg.url.substring(1)
-        else 
-            baseUrl = msg.url
-            
-        @_updateUrlFromFragment baseUrl + queryString.toString(), 
-            title: msg.route.title 
-            replace: false
-
-    # Save a fragment into the hash history, or replace the URL state if the
-    # 'replace' option is passed. You are responsible for properly URL-encoding
-    # the fragment in advance.    
-    _updateUrlFromFragment: (fragment, options) ->
-        document.title = options.title
-
-        frag = encodeURI (fragment or "").replace(routeStripper, "")
-  
-        return if @fragment is frag
-  
-        @fragment = frag
-
-        if @_hasPushState
-            frag = bo.config.appRoot + frag unless frag.indexOf(bo.config.appRoot) is 0
-            window.history[if options.replace then 'replaceState' else 'pushState'] {}, document.title, frag
-        else
-            @_updateHash window.location, frag, options.replace
-
-            if @iframe and (frag isnt @getFragment getHash @iframe)
-                @iframe.document.open().close()
-                @_updateHash @iframe.location, frag
-  
-    # Update the hash location, either replacing the current entry, or adding
-    # a new one to the browser history.
-    _updateHash: (location, fragment, replace) ->
-        if replace
-            location.replace location.toString().replace(/(javascript:|#).*$/, '') + '#' + fragment
-        else
-            location.hash = fragment
-
-bo.routing =
-    # Resets the routing infrastructure, required for testing purposes.
-    reset: ->
-        routeTable = new RouteTable()
-
-    Route: Route    
-    manager: new HistoryManager()
-
-    navigateTo: (routeName, parameters, canVeto = true, forceNavigate = false) ->
-        bo.bus.publish "navigateToRoute:#{routeName}", 
-            name: routeName
+        bo.bus.publish "routeNavigated:#{route.name}",
+            route: route
             parameters: parameters
-            canVeto: canVeto
-            forceNavigate: forceNavigate
 
-# Extends an observable to be linked to a query string parameter of a URL, allowing
-# deep links and back button support to interact with values of an observable.
-ko.extenders.addressable = (target, paramNameOrOptions) ->
-    if typeof paramNameOrOptions is "string"
-        paramName = paramNameOrOptions
-        persistent = false
-        createHistory = true
-    else
-        paramName = paramNameOrOptions.name ? paramNameOrOptions.key
-        persistent = paramNameOrOptions.persistent ? false
-        createHistory = paramNameOrOptions.createHistory ? true
+        @currentUrl = url
 
-    setQueryParameter = (value) ->
-        bo.routing.manager.setQueryParameter paramName, value,
-            persistent: persistent
-            createHistory: createHistory
+    # Adds the specified named route to this route table. If a route
+    # of the same name already exists then it will be overriden
+    # with the new definition.
+    #
+    # The URL *must* be a relative definition, the route table will
+    # not take into account absolute URLs in any case.
+    route: (name, url, callback, options = { title: name }) ->
+        @routes[name] = new Route name, url, callback, options
 
-    set = (newValue) ->
-        if newValue? and target() != newValue
-            target newValue
+        @
 
-    target.subscribe (newValue) ->
-        setQueryParameter newValue
+    # Given a *relative* URL will attempt to find the
+    # route that matches that URL, returning an object that represents
+    # the found route with parameters as:
+    #
+    # {
+    #   `route`: The route object that matched the given URL
+    #   `parameters`: The parameters that were matched based on route, or
+    #      an empty object for no parameters.
+    # }
+    #
+    # Routing will ignore preceeding and trailing slashes, treating
+    # them as optional, meaning for the incoming URL and route definitions
+    # the following are considered equal:
+    #
+    #  * /Contact Us
+    #  * /Contact Us/
+    #  * Contact Us/
+    #  * Contact Us
+    getRouteFromUrl: (url) ->
+        path = (new bo.Uri url, { decode: true }).path
+        match = undefined
 
-    bo.bus.subscribe 'urlChanged', (msg) ->
-        set msg.queryString.get paramName
+        for name, r of @routes
+            matchedParams = r.match path
 
-    currentVal = target()
+            if matchedParams?
+                match = { route: r, parameters: matchedParams }
+
+        match
     
-    if currentVal?
-        setQueryParameter currentVal 
+    # Gets the named route, or `undefined` if no such route
+    # exists.
+    getNamedRoute: (name) ->
+        @routes[name]
 
-    # Set value to value of query string immediately
-    set bo.query.get paramName
+    navigateTo: (name, parameters = {}) ->
+        url = @buildUrl name, parameters
 
-    target
+        if url?
+            route = @getNamedRoute name
 
-ko.bindingHandlers.navigateTo =
-    init: (element, valueAccessor, allBindingsAccessor) ->
-        routeName = valueAccessor()
-        parameters = allBindingsAccessor().parameters || {}
+            @_doNavigate url, route, parameters
 
-        jQuery(element).click (event) ->
-            if bo.utils.isElementEnabled allBindingsAccessor
-                bo.routing.navigateTo routeName, parameters, allBindingsAccessor().canVeto ? true
+            bo.location.routePath url
+            document.title = route.title
 
-                event.preventDefault()
+            return true
+
+        false
+
+    # Builds a URL based on a named route and a set of parameters, or
+    # `undefined` if no such route exists or the parameters do not
+    # match.
+    buildUrl: (name, parameters) ->
+        route = @getNamedRoute name
+        url = route?.buildUrl parameters
+
+        if route is undefined
+            bo.log.warn "The route '#{name}' could not be found."
+
+        if url is undefined
+            bo.log.warn "The parameters specified are not valid for the '#{name}' route."
+
+        url
