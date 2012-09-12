@@ -144,7 +144,7 @@ describe 'Messaging', ->
                     values: { id: 3456 }
                     result: { resultProperty: 5 },
                     hasFailed: false
-                
+###               
         describe 'that fails', ->
             beforeEach ->  
                 @server.respondWith "POST", "/DoCommand/My Command", [500, { "Content-Type": "application/json" },'{}']
@@ -171,7 +171,7 @@ describe 'Messaging', ->
                     values: { id: 3456 },
                     result: undefined,
                     hasFailed: true
-
+###
     describe 'When executing a batch of commands', ->
         it 'Should make a POST request to the batch URL with all commands', ->
             bo.messaging.config.command.batchUrl = "SendBatch"
