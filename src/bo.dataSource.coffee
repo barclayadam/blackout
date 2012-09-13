@@ -174,7 +174,7 @@ class bo.DataSource extends bo.Bus
     # and then, using the `provider` specified on construction, load the
     # items uing the current search parameters (if any), the page size (if `serverPaging`
     # is enabled), the current order, and the page number (i.e. 1).
-    load: ->
+    load: (forceReload = false) ->
         currentPageNumber = @pageNumber()
 
         @pageNumber 1
@@ -183,8 +183,8 @@ class bo.DataSource extends bo.Bus
         # pageNumber to perform re-load so only execute
         # immediately if not enabled, or if current page number
         # is 1 as then subscription not called.
-        if not @_serverPagingEnabled or currentPageNumber is 1
-            @_doLoad()
+        if forceReload or not @_serverPagingEnabled or currentPageNumber is 1
+            @_doLoad forceReload
         else
             bo.utils.resolvedPromise()
 
@@ -271,7 +271,7 @@ class bo.DataSource extends bo.Bus
             @sorting.subscribe =>
                 @_doLoad()
     
-    _doLoad: ()->
+    _doLoad: (forceReload = false)->
         if @options.provider? and _.isArray @options.provider
             return
 
@@ -286,7 +286,7 @@ class bo.DataSource extends bo.Bus
         
         loadOptions.orderBy = @sorting() if @sorting()?
 
-        if _.isEqual loadOptions, @_lastProviderOptions
+        if not forceReload and _.isEqual loadOptions, @_lastProviderOptions
             return
 
         @isLoading true
