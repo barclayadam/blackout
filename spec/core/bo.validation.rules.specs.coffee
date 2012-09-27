@@ -598,21 +598,21 @@ describe 'Validation', ->
 
         it 'should return true if property value is equal to minimum date value', ->
             # Act
-            isValid = rules.minDate.validator new Date(2011, 01, 01), new Date(2011, 01, 01)
+            isValid = rules.minDate.validator new Date(2011, 1, 1), new Date(2011, 1, 1)
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is after than minimum date value', ->
             # Act
-            isValid = rules.minDate.validator new Date(2010, 01, 01), new Date(2009, 01, 01)
+            isValid = rules.minDate.validator new Date(2010, 1, 1), new Date(2009, 1, 1)
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return false if property value is before than minimum option value', ->
             # Act
-            isValid = rules.minDate.validator new Date(2010, 01, 01), new Date(2011, 01, 01)
+            isValid = rules.minDate.validator new Date(2010, 1, 1), new Date(2011, 1, 1)
 
             # Assert
             expect(isValid).toBe false
@@ -629,21 +629,21 @@ describe 'Validation', ->
 
         it 'should return true if property value is equal to maximum date value', ->
             # Act
-            isValid = rules.maxDate.validator new Date(2011, 01, 01), new Date(2011, 01, 01)
+            isValid = rules.maxDate.validator new Date(2011, 1, 1), new Date(2011, 1, 1)
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return true if property value is less than maximum date value', ->
             # Act
-            isValid = rules.maxDate.validator new Date(2010, 01, 01), new Date(2011, 01, 01)
+            isValid = rules.maxDate.validator new Date(2010, 1, 1), new Date(2011, 1, 1)
 
             # Assert
             expect(isValid).toBe true
 
         it 'should return false if property value is greater than maximum option value', ->
             # Act
-            isValid = rules.maxDate.validator new Date(2011, 01, 01), new Date(2010, 01, 01)
+            isValid = rules.maxDate.validator new Date(2011, 1, 1), new Date(2010, 1, 1)
 
             # Assert
             expect(isValid).toBe false

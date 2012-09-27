@@ -84,8 +84,6 @@ describe 'component binding provider', ->
 
             @applyBindingsToHtmlFixture {}
 
-            debugger
-
         it 'should call binding handlers init function, and allow text content of nodes to be set', ->
             expect(@fixture.find("#tag-sample")).toHaveText 'My New Text'
 
@@ -126,7 +124,6 @@ describe 'component binding provider', ->
                 </div>
             """
 
-            debugger
             @applyBindingsToHtmlFixture {}
 
         it 'should call binding handlers init function', ->

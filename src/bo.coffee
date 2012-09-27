@@ -9,24 +9,25 @@
 	# Root namespace into which the public API will be exported.
 	bo = window.bo = {}
 
-	###import "bo.log.coffee" ###
-	###import "bo.utils.coffee" ###
-	###import "bo.bus.coffee" ###
-	###import "bo.uri.coffee" ###
-	###import "bo.ajax.coffee" ###
-	###import "bo.storage.coffee" ###
-	###import "bo.notifications.coffee" ###
-	###import "bo.templating.coffee" ###
-	###import "bo.validation.coffee" ###
-	###import "bo.validation.rules.coffee" ###
-	###import "bo.dataSource.coffee" ###
-	###import "bo.location.coffee" ###
-	###import "bo.routing.coffee" ###
+	#= core/bo.log.coffee
+
+	#= core/bo.utils.coffee
+	#= core/bo.bus.coffee
+	#= core/bo.uri.coffee
+	#= core/bo.ajax.coffee
+	#= core/bo.storage.coffee
+	#= core/bo.notifications.coffee
+	#= core/bo.templating.coffee
+	#= core/bo.validation.coffee
+	#= core/bo.validation.rules.coffee
+	#= core/bo.dataSource.coffee
+	#= core/bo.location.coffee
+	#= core/bo.routing.coffee
 	
-	###import "bo.tagBindingsProvider.coffee" ###
+	#= core/bo.tagBindingsProvider.coffee
 
-	###import "bo.viewModel.coffee" ###
+	#= core/bo.viewModel.coffee
 
-	###import "bo.ui.partBindingHandler.coffee" ###
-	###import "bo.ui.regionManager.coffee" ###
+	#= ui/bo.ui.partBindingHandler.coffee
+	#= ui/bo.ui.regionManager.coffee
 )(window, document, window["jQuery"], window["ko"])

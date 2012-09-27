@@ -1,5 +1,3 @@
-#reference "../../js/blackout/@bus.coffee"
-
 describe 'Bus', ->
     describe 'Given a new EventBus', ->
         beforeEach ->

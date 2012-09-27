@@ -1,6 +1,6 @@
 testHistoryPolyfill = false
 
-describe 'history', ->
+describe 'location', ->
     beforeEach ->
         @currentLocation = window.location.pathname
         @currentTitle = document.title
@@ -95,7 +95,7 @@ describe 'history', ->
             expect(bo.location.uri).toBeObservable()
 
             # Use toContain as non-pushState browsers may have hash as well
-            expect(bo.location.uri().toString()).toContain 'http://localhost:3080/spec/runner.html'
+            expect(bo.location.uri().toString()).toContain 'http://localhost:8000/spec/runner.html'
 
         it 'should have populated host property from current URL', ->
             expect(bo.location.host()).toEqual 'localhost'
