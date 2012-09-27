@@ -129,3 +129,11 @@ ko.bindingHandlers.delegatedEvent =
                 result
                 
             ko.bindingHandlers.event.init element, realValueAccessor, allBindings, viewModel
+
+originalTextUpdate = ko.bindingHandlers.text.update
+
+ko.bindingHandlers.text.update = (element, viewModelAccessor, allBindingsAccessor) ->
+    valueAccessor = ->
+        ko.utils.unwrapObservable(viewModelAccessor()) || allBindingsAccessor().defaultValue
+
+    originalTextUpdate element, valueAccessor, allBindingsAccessor
