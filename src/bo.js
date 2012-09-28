@@ -1513,70 +1513,60 @@ var __hasProp = {}.hasOwnProperty;
     };
     findTagCompatibleBindingHandlerNames = function(node) {
       var tagName;
-      if (node.tagHandlers != null) {
-        return node.tagHandlers;
+      if (node.tagHandler != null) {
+        return node.tagHandler;
       } else {
         tagName = node.tagName;
         if (tagName != null) {
           return _.filter(_.keys(koBindingHandlers), function(key) {
-            var bindingHandler, _ref;
+            var bindingHandler;
             bindingHandler = koBindingHandlers[key];
             processBindingHandlerTagDefinition(bindingHandler);
-            return ((_ref = bindingHandler.tag) != null ? _ref.appliesTo : void 0) === tagName;
+            return (bindingHandler.tag != null) && bindingHandler.tag.appliesTo === tagName;
           });
-        } else {
-          return [];
         }
       }
     };
-    processOptions = function(node, tagBindingHandlerName, bindingContext) {
-      var options, optionsAttribute;
+    processOptions = function(node, tagBindingHandlerName) {
+      var existingBindings, options, optionsAttribute;
+      existingBindings || (existingBindings = {});
       options = true;
       optionsAttribute = node.getAttribute('data-option');
       if (optionsAttribute) {
         optionsAttribute = "" + tagBindingHandlerName + ": " + optionsAttribute;
         options = realBindingProvider.parseBindingsString(optionsAttribute, bindingContext);
-        options = options[tagBindingHandlerName];
+        options[tagBindingHandlerName];
       }
       return options;
     };
     this.preprocessNode = function(node) {
-      var nodeReplacement, replacementRequiredBindingHandlers, tagBindingHandler, tagBindingHandlerNames;
-      tagBindingHandlerNames = findTagCompatibleBindingHandlerNames(node);
+      var nodeReplacement, tagBindingHandler, tagBindingHandlerNames, _ref;
+      tagBindingHandlerNames = findTagCompatibleBindingHandlerName(node);
       if (tagBindingHandlerNames.length > 0) {
-        node.tagHandlers = tagBindingHandlerNames;
-        replacementRequiredBindingHandlers = _.filter(tagBindingHandlerNames, function(key) {
-          var _ref;
-          return ((_ref = koBindingHandlers[key].tag) != null ? _ref.replacedWith : void 0) != null;
-        });
-        if (replacementRequiredBindingHandlers.length > 1) {
-          throw new Error("More than one binding handler specifies a replacement node for the node with name '" + node.tagName + "'.");
-        }
-        if (replacementRequiredBindingHandlers.length === 1) {
-          tagBindingHandler = koBindingHandlers[replacementRequiredBindingHandlers[0]];
+        tagBindingHandler = koBindingHandlers[tagBindingHandlerNames[0]];
+        if (((_ref = tagBindingHandler.tag) != null ? _ref.replacedWith : void 0) != null) {
           nodeReplacement = document.createElement(tagBindingHandler.tag.replacedWith);
           mergeAllAttributes(node, nodeReplacement);
+          nodeReplacement.tagHandler = tagBindingHandlerName;
           ko.utils.replaceDomNodes(node, [nodeReplacement]);
-          nodeReplacement.tagHandlers = tagBindingHandlerNames;
-          nodeReplacement.originalTagName = node.tagName;
           return nodeReplacement;
         }
       }
     };
     this.nodeHasBindings = function(node, bindingContext) {
-      var isCompatibleTagHandler, tagBindingHandlers;
-      tagBindingHandlers = findTagCompatibleBindingHandlerNames(node);
-      isCompatibleTagHandler = tagBindingHandlers.length > 0;
-      return isCompatibleTagHandler || realBindingProvider.nodeHasBindings(node, bindingContext);
+      var isCompatibleTagHandler, tagBindingHandler;
+      tagBindingHandler = findTagCompatibleBindingHandlerName(node);
+      isCompatibleTagHandler = tagBindingHandler !== void 0;
+      return realBindingProvider.nodeHasBindings(node, bindingContext) || isCompatibleTagHandler;
     };
     this.getBindings = function(node, bindingContext) {
       var existingBindings, tagBindingHandlerName, tagBindingHandlerNames, _i, _len;
-      existingBindings = (realBindingProvider.getBindings(node, bindingContext)) || {};
-      tagBindingHandlerNames = findTagCompatibleBindingHandlerNames(node);
+      existingBindings = realBindingProvider.getBindings(node, bindingContext);
+      tagBindingHandlerNames = findTagCompatibleBindingHandlerName(node);
       if (tagBindingHandlerNames.length > 0) {
         for (_i = 0, _len = tagBindingHandlerNames.length; _i < _len; _i++) {
           tagBindingHandlerName = tagBindingHandlerNames[_i];
-          existingBindings[tagBindingHandlerName] = processOptions(node, tagBindingHandlerName, bindingContext);
+          existingBindings[tagBindingHandlerName] = processOptions(node, tagBindingHandlerName);
         }
       }
       return existingBindings;

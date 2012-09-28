@@ -43,17 +43,17 @@ module.exports = function(grunt) {
     },
 
     min: {
-      build: {
-        src: ['lib/bo.js'],
-        dest: 'lib/bo.min.js'
-      }
+      src: ['lib/bo.js'],
+      dest: 'lib/bo.min.js'
     },
 
     uglify: {},
 
     watch: {
-      files: ['src/*', 'spec/*'],
-      tasks: 'build reload'
+      build: {
+        files: ['src/**/*.*', 'spec/**/*.*'],
+        tasks: 'build reload'
+      }
     },
 
     reload: {

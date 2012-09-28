@@ -1,6 +1,6 @@
 ((window, document, $, ko) ->	
 	if ko is undefined
-	    throw new Error 'knockout must be included before boson'
+	    throw new Error 'knockout must be included before blackout.'
 
     # Declare some common variables used throughout the library
     # to help reduce minified size.

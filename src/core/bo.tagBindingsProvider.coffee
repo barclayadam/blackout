@@ -43,65 +43,80 @@ tagBindingProvider = ->
             for attr in source.attributes
                 destination.setAttribute attr.name, attr.value
 
-    findTagCompatibleBindingHandlerName = (node) ->
-        if node.tagHandler?
-            node.tagHandler
+    findTagCompatibleBindingHandlerNames = (node) ->
+        if node.tagHandlers?
+            node.tagHandlers
         else
             tagName = node.tagName
 
             if tagName?
-                _.find _.keys(koBindingHandlers), (key) ->
+                _.filter _.keys(koBindingHandlers), (key) ->
                     bindingHandler = koBindingHandlers[key]
 
                     processBindingHandlerTagDefinition bindingHandler
 
-                    bindingHandler.tag? and bindingHandler.tag.appliesTo is tagName
+                    bindingHandler.tag?.appliesTo is tagName
+            else
+                []
+
+    processOptions = (node, tagBindingHandlerName, bindingContext) ->
+        options = true
+        optionsAttribute = node.getAttribute 'data-option'
+
+        if optionsAttribute
+            # To use the built-in parsing logic we will create a binding
+            # string that would be used if this binding handler was being used
+            # in a normal data-bind context. With the parsed options we can then
+            # extract the value that would be passed for the valueAccessor.
+            optionsAttribute = "#{tagBindingHandlerName}: #{optionsAttribute}"                
+            options = realBindingProvider.parseBindingsString optionsAttribute, bindingContext
+            options = options[tagBindingHandlerName]
+
+        options
 
     @preprocessNode = (node) ->
-        tagBindingHandlerName = findTagCompatibleBindingHandlerName node
-        tagBindingHandler = koBindingHandlers[tagBindingHandlerName]
+        tagBindingHandlerNames = findTagCompatibleBindingHandlerNames node
 
         # We assume that if this is for a 'tag binding handler' it refers to an unknown
         # node so we use the specified replacement node from the binding handler's
         # tag option.
-        if tagBindingHandlerName and tagBindingHandler.tag?.replacedWith?
-            nodeReplacement = document.createElement tagBindingHandler.tag.replacedWith
-            mergeAllAttributes node, nodeReplacement
+        if tagBindingHandlerNames.length > 0
+            node.tagHandlers = tagBindingHandlerNames
 
-            nodeReplacement.tagHandler = tagBindingHandlerName
+            replacementRequiredBindingHandlers = _.filter tagBindingHandlerNames, (key) ->
+                koBindingHandlers[key].tag?.replacedWith?
+            
+            if replacementRequiredBindingHandlers.length > 1
+                throw new Error "More than one binding handler specifies a replacement node for the node with name '#{node.tagName}'."
 
-            ko.utils.replaceDomNodes node, [nodeReplacement]
+            if replacementRequiredBindingHandlers.length == 1
+                tagBindingHandler = koBindingHandlers[replacementRequiredBindingHandlers[0]]
 
-            return nodeReplacement
+                nodeReplacement = document.createElement tagBindingHandler.tag.replacedWith
+                mergeAllAttributes node, nodeReplacement
+
+                ko.utils.replaceDomNodes node, [nodeReplacement]
+
+                nodeReplacement.tagHandlers = tagBindingHandlerNames
+                nodeReplacement.originalTagName = node.tagName
+
+                return nodeReplacement
 
     @nodeHasBindings = (node, bindingContext) ->
-        tagBindingHandler = findTagCompatibleBindingHandlerName node
-        isCompatibleTagHandler = tagBindingHandler isnt undefined
+        tagBindingHandlers = findTagCompatibleBindingHandlerNames node
+        isCompatibleTagHandler = tagBindingHandlers.length > 0
 
-        realBindingProvider.nodeHasBindings(node, bindingContext) or isCompatibleTagHandler
+        isCompatibleTagHandler or realBindingProvider.nodeHasBindings(node, bindingContext)
 
     @getBindings = (node, bindingContext) ->
         # parse the bindings with the real binding provider
-        existingBindings = realBindingProvider.getBindings node, bindingContext
+        existingBindings = (realBindingProvider.getBindings node, bindingContext) || {}
 
-        tagBindingHandlerName = findTagCompatibleBindingHandlerName node
+        tagBindingHandlerNames = findTagCompatibleBindingHandlerNames node
         
-        if tagBindingHandlerName isnt undefined
-            existingBindings or existingBindings = {}
-
-            options = true
-            optionsAttribute = node.getAttribute 'data-option'
-
-            if optionsAttribute
-                # To use the built-in parsing logic we will create a binding
-                # string that would be used if this binding handler was being used
-                # in a normal data-bind context. With the parsed options we can then
-                # extract the value that would be passed for the valueAccessor.
-                optionsAttribute = "#{tagBindingHandlerName}: #{optionsAttribute}"                
-                options = realBindingProvider.parseBindingsString optionsAttribute, bindingContext
-                options = options[tagBindingHandlerName]
-
-            existingBindings[tagBindingHandlerName] = options
+        if tagBindingHandlerNames.length > 0
+            for tagBindingHandlerName in tagBindingHandlerNames 
+                existingBindings[tagBindingHandlerName] = processOptions node, tagBindingHandlerName, bindingContext
 
         existingBindings
 

@@ -66,12 +66,11 @@ describe 'component binding provider', ->
                 init: (element, valueAccessor) =>
                     @complexValuePassed = valueAccessor()
 
-            bo.templating.set 'myNamedTemplate', 'A Cool Template'
-
             ko.bindingHandlers.templateTag =
                 tag: 'templateTag->div'
 
                 init: (element, valueAccessor) ->
+                    bo.templating.set 'myNamedTemplate', 'A Cool Template'
                     ko.renderTemplate "myNamedTemplate", {}, {}, element, "replaceChildren"
 
             @setHtmlFixture """
@@ -82,6 +81,7 @@ describe 'component binding provider', ->
                 </div>
             """
 
+            debugger
             @applyBindingsToHtmlFixture {}
 
         it 'should call binding handlers init function, and allow text content of nodes to be set', ->
@@ -131,3 +131,32 @@ describe 'component binding provider', ->
 
         it 'should not replace the element with another', ->
             expect(@fixture.find("#input-control")[0].tagName).toEqual 'INPUT'
+
+    describe 'multiple binding handlers specified as tag compatible, without replacement', ->
+        beforeEach ->   
+            ko.bindingHandlers.exampleEnhancer1 =
+                tag: 'example'
+
+                init: (element, valueAccessor) =>
+                    ko.utils.toggleDomNodeCssClass element, 'a-new-class', true
+
+            ko.bindingHandlers.exampleEnhancer2 =
+                tag: 'example'
+
+                init: (element, valueAccessor) =>
+                    ko.utils.toggleDomNodeCssClass element, 'another-new-class', true
+
+            @setHtmlFixture """
+                <div>
+                    <example id="example-control" />
+                </div>
+            """
+
+            @applyBindingsToHtmlFixture {}
+
+        it 'should call all binding handlers init function', ->
+            expect(@fixture.find("#example-control")).toHaveClass 'a-new-class'
+            expect(@fixture.find("#example-control")).toHaveClass 'another-new-class'
+
+        it 'should not replace the element with another', ->
+            expect(@fixture.find("#example-control")[0].tagName).toEqual 'EXAMPLE'
