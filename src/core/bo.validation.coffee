@@ -14,7 +14,7 @@ getMessageCreator = (propertyRules, ruleName) ->
 # return a `string` to use as the error message.
 validation.formatErrorMessage = (msg) -> msg
 
-validateObservable = (observableValue, model) ->    
+getErrors = (observableValue) ->    
     errors = []
     rules = observableValue.validationRules
 
@@ -28,7 +28,7 @@ validateObservable = (observableValue, model) ->
         rule = bo.validation.rules[ruleName]
 
         if rule?
-            isValid = rule.validator value, ruleOptions, model
+            isValid = rule.validator value, ruleOptions
 
             if not isValid
                 msgCreator = getMessageCreator rules, ruleName
@@ -38,21 +38,20 @@ validateObservable = (observableValue, model) ->
                 else 
                     errors.push validation.formatErrorMessage msgCreator
 
-    observableValue.errors errors
-    observableValue.isClientValid errors.length is 0
+    errors
 
 # Validates the specified 'model'.
 #
 # If the model has `validationRules` defined (e.g. a `validatable` observable) 
 # will validate those values.
-validateModel = (model, parent) -> 
+validateModel = (model) -> 
     valid = true  
 
     if model?
         # We have reached a property that has been marked as `validatable`
         if model.validate? and model.validationRules?
-            model.validate parent
-            valid = model.isClientValid() && valid
+            model.validate()
+            valid = model.isValid() && valid
           
         # Need to ensure that children are also validated, either
         # child properties (this is a 'model'), or an array (which
@@ -64,11 +63,11 @@ validateModel = (model, parent) ->
 
         if _.isObject unwrapped
             for own propName, propValue of unwrapped
-                valid = (validateModel propValue, propName, model) && valid
+                valid = (validateModel propValue) && valid
 
         if _.isArray unwrapped
             for item in unwrapped
-                validateModel item, model
+                validateModel item
 
     valid
 
@@ -102,7 +101,7 @@ validation.mixin = (model) ->
         # of this model and its children changes.
         if not model.validated()
             ko.computed ->
-                model.isClientValid validateModel model
+                model.isValid validateModel model
 
             model.validated true
 
@@ -125,7 +124,7 @@ validation.mixin = (model) ->
     # the validitiy of a model as this value is used when determining
     # whether to even submit a form / command for processing by the
     # server.
-    model.isClientValid = ko.observable()
+    model.isValid = ko.observable()
 
     # An observable that will contain an array of error messages
     # that apply to the model as a whole but are not considered when
@@ -170,14 +169,8 @@ ko.extenders.validationRules = (target, validationRules = {}) ->
     # rules (against the child properties), setting up a dependency
     # that will update the `errors` and `isValid` property of this
     # observable on any value change.
-    target.validate = _.once (parentModel) ->
-        doValidate = ->
-            target.validated true
-
-            validateObservable target, parentModel
-
-        target.subscribe doValidate
-        doValidate()  
+    target.validate = ->
+        target.validated true
 
     # An observable that indicates whether this property has been validated,
     # set to `true` when the `validate` method of this method has been 
@@ -185,8 +178,7 @@ ko.extenders.validationRules = (target, validationRules = {}) ->
     target.validated = ko.observable false
 
     target.errors = ko.observable []
-
-    target.isClientValid = ko.observable true
+    target.isValid = ko.observable true
 
     # An observable that will contain an array of error messages
     # that apply to this property but are not considered when
@@ -194,12 +186,20 @@ ko.extenders.validationRules = (target, validationRules = {}) ->
     # stop the posting of a form to the server).
     target.serverErrors = ko.observable []
 
+    validate = ->
+        target.serverErrors []
+
+        target.errors getErrors target
+        target.isValid target.errors().length is 0
+
     # When this value is changed the server errors will be removed, as
     # there would be no way to identify whether they were still accurate
     # or not until re-submitted, so for user-experience purposes these
     # errors are removed when a user modifies the value.
     target.subscribe ->
-        target.serverErrors []
+        validate()
+
+    validate()
 
     target
 

@@ -48,7 +48,7 @@ rules =
 
     numeric:
         validator: (value, options) ->
-            return (emptyValue value) or (isFinite value)
+            (emptyValue value) or (isFinite value)
 
         message: (options) ->
             "This field must be numeric"
@@ -161,7 +161,7 @@ rules =
             (emptyValue value) or (parseDate(value) >= parseDate(options))
 
         message: (options) ->
-            "This field must be on after #{options[0]}"
+            "This field must be on or after #{options[0]}"
 
     inFuture:
         validator: (value, options) ->
@@ -200,18 +200,14 @@ rules =
         message: "This field must not be in the future"
 
     requiredIf:
-        validator: (value, options, model) ->
+        validator: (value, options) ->
             if options.equalsOneOf is undefined
                 throw new Error "You need to provide a list of items to check against."
 
-            if options.value is undefined and options.property is undefined
-                throw new Error "You need to provide either a property or a value."
+            if options.value is undefined
+                throw new Error "You need to provide a value."
 
-            if options.property? and !_.has model, options.property
-                throw new Error "The property #{options.property} cannot be found."
-
-            valueToCheckAgainst = options.value || model[options.property]
-            valueToCheckAgainst = (ko.utils.unwrapObservable valueToCheckAgainst) || null
+            valueToCheckAgainst = (ko.utils.unwrapObservable options.value) || null
 
             valueToCheckAgainstInList = _.any options.equalsOneOf, (v) -> (v || null) is valueToCheckAgainst
 
@@ -223,18 +219,14 @@ rules =
         message: "This field is required"
 
     requiredIfNot:
-        validator: (value, options, model) ->
+        validator: (value, options) ->
             if options.equalsOneOf is undefined
                 throw new Error "You need to provide a list of items to check against."
 
-            if options.value is undefined and options.property is undefined
-                throw new Error "You need to provide either a property or a value."
+            if options.value is undefined
+                throw new Error "You need to provide a value."
 
-            if options.property? and !_.has model, options.property
-                throw new Error "The property #{options.property} cannot be found."
-
-            valueToCheckAgainst = options.value || model[options.property]
-            valueToCheckAgainst = (ko.utils.unwrapObservable valueToCheckAgainst) || null
+            valueToCheckAgainst = (ko.utils.unwrapObservable options.value) || null
 
             valueToCheckAgainstNotInList = _.all options.equalsOneOf, (v) -> (v || null) isnt valueToCheckAgainst
 
@@ -246,24 +238,18 @@ rules =
         message: "This field is required"
 
     equalTo:
-        validator: (value, options, model) ->
-            if options.value?
-                (emptyValue value) or (value is ko.utils.unwrapObservable options.value)
-            else    
-                (emptyValue value) or (value is ko.utils.unwrapObservable model[options])
+        validator: (value, options) ->
+            (emptyValue value) or (value is ko.utils.unwrapObservable options)
 
         message: (options) ->
-            if options.value?
-                "This field must be equal to #{options.value}."
-            else    
-                "This field must be equal to #{options}."
+            "This field must be equal to #{options}."
 
     custom:
-        validator: (value, options, model) ->
+        validator: (value, options) ->
             if !_.isFunction options 
                 throw new Error "Must pass a function to the 'custom' validator"
 
-            options value, model
+            options value
 
         message: "This field is invalid."
 

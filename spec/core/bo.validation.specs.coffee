@@ -9,9 +9,9 @@ describe 'validation', ->
             it 'should add a validate method', ->
                 expect(@model.validate).toBeAFunction()
 
-            it 'should add an isClientValid observable set to undefined', ->
-                expect(@model.isClientValid).toBeObservable()
-                expect(@model.isClientValid()).toBeUndefined()
+            it 'should add an isValid observable set to undefined', ->
+                expect(@model.isValid).toBeObservable()
+                expect(@model.isValid()).toBeUndefined()
 
             it 'should add a validated observable set to false', ->
                 expect(@model.validated).toBeObservable()
@@ -26,36 +26,33 @@ describe 'validation', ->
             it 'should add a validate method', ->
                 expect(@property.validate).toBeAFunction()
 
-            it 'should add an isClientValid observable set to true by default', ->
-                expect(@property.isClientValid).toBeObservable()
-                expect(@property.isClientValid()).toEqual true
+            it 'should add an isValid observable immediately set to correct state', ->
+                expect(@property.isValid).toBeObservable()
+                expect(@property.isValid()).toEqual false
 
             it 'should add a validated observable set to false', ->
                 expect(@property.validated).toBeObservable()
                 expect(@property.validated()).toBe false
 
-    describe 'validating a single, invalid, property', ->
+            describe 'updating invalid property to be valid', ->
+                beforeEach ->
+                    @property 'My Required Value'
+
+                it 'should remove any errors to the errors property', ->
+                    expect(@property.errors().length).toEqual 0
+
+                it 'should mark the property as valid', ->
+                    expect(@property.isValid()).toEqual true
+
+    describe 'validating a property', ->
         beforeEach ->
             @property = ko.observable()
             @property.addValidationRules { required: true }
 
             @property.validate()
 
-        it 'should add any errors to the errors property', ->
-            expect(@property.errors().length).toEqual 1
-
-        it 'should mark the property as invalid', ->
-            expect(@property.isClientValid()).toEqual false
-
-        describe 'updating invalid property to be valid', ->
-            beforeEach ->
-                @property 'My Required Value'
-
-            it 'should remove any errors to the errors property', ->
-                expect(@property.errors().length).toEqual 0
-
-            it 'should mark the property as valid', ->
-                expect(@property.isClientValid()).toEqual true
+        it 'should mark property as being validated', ->
+            expect(@property.validated()).toBe true
 
     describe 'validating a model', ->
         describe 'with no defined observable properties', ->
@@ -65,8 +62,8 @@ describe 'validation', ->
 
                 @model.validate()
 
-            it 'should set isClientValid to true', ->
-                expect(@model.isClientValid()).toBe true
+            it 'should set isValid to true', ->
+                expect(@model.isValid()).toBe true
 
             it 'should set validated observable to true', ->
                 expect(@model.validated()).toBe true
@@ -92,8 +89,8 @@ describe 'validation', ->
                         property1: 'A Value'
                         property2: 'A Value'
 
-                it 'should set isClientValid to true', ->
-                    expect(@model.isClientValid()).toBe true
+                it 'should set isValid to true', ->
+                    expect(@model.isValid()).toBe true
 
                 it 'should set validated observable to true', ->
                     expect(@model.validated()).toBe true
@@ -103,8 +100,8 @@ describe 'validation', ->
                     @model = createModel 
                         property1: 'A Value'
 
-                it 'should set isClientValid of the model to false', ->
-                    expect(@model.isClientValid()).toBe false
+                it 'should set isValid of the model to false', ->
+                    expect(@model.isValid()).toBe false
 
                 it 'should set validated observable to true', ->
                     expect(@model.validated()).toBe true
@@ -112,14 +109,14 @@ describe 'validation', ->
                 it 'should not add error message to errors property of valid observable', ->
                     expect(@model.property1.errors().length).toBe 0
 
-                it 'should set isClientValid to true for the valid property', ->
-                    expect(@model.property1.isClientValid()).toBe true
+                it 'should set isValid to true for the valid property', ->
+                    expect(@model.property1.isValid()).toBe true
 
                 it 'should add error message to errors property of invalid observable', ->
                     expect(@model.property2.errors().length).toBe 1
 
-                it 'should set isClientValid to false for the invalid property', ->
-                    expect(@model.property2.isClientValid()).toBe false
+                it 'should set isValid to false for the invalid property', ->
+                    expect(@model.property2.isValid()).toBe false
 
                 it 'should use custom message if specified', ->
                     expect(@model.property2.errors()[0]).toEqual 'This is a custom message'
@@ -131,32 +128,32 @@ describe 'validation', ->
 
                     @model.property2 'A Value'
 
-                it 'should set isClientValid of the model to true', ->
-                    expect(@model.isClientValid()).toBe true
+                it 'should set isValid of the model to true', ->
+                    expect(@model.isValid()).toBe true
 
-                it 'should set isClientValid to true for the now valid property', ->
-                    expect(@model.property2.isClientValid()).toBe true
+                it 'should set isValid to true for the now valid property', ->
+                    expect(@model.property2.isValid()).toBe true
 
                 it 'should remove error message from the invalid observable', ->
                     expect(@model.property2.errors().length).toBe 0
 
-                it 'should set isClientValid to true for the now valid property', ->
-                    expect(@model.property2.isClientValid()).toBe true
+                it 'should set isValid to true for the now valid property', ->
+                    expect(@model.property2.isValid()).toBe true
 
             describe 'when multiples properties are invalid', ->
                 beforeEach ->
                     @model = createModel {}
 
-                it 'should set isClientValid of the model to false', ->
-                    expect(@model.isClientValid()).toBe false
+                it 'should set isValid of the model to false', ->
+                    expect(@model.isValid()).toBe false
 
                 it 'should add error messages to errors property of all invalid observable', ->
                     expect(@model.property1.errors().length).toBe 1
                     expect(@model.property2.errors().length).toBe 1
 
-                it 'should set isClientValid to false for all inalid properties', ->
-                    expect(@model.property1.isClientValid()).toBe false
-                    expect(@model.property2.isClientValid()).toBe false
+                it 'should set isValid to false for all inalid properties', ->
+                    expect(@model.property1.isValid()).toBe false
+                    expect(@model.property2.isValid()).toBe false
 
             describe 'when array property has no validationRules', ->
                 beforeEach ->
@@ -164,8 +161,8 @@ describe 'validation', ->
                         property1: 'A Value' # To make valid
                         property2: []
 
-                it 'should set isClientValid to true', ->
-                    expect(@model.isClientValid()).toBe true
+                it 'should set isValid to true', ->
+                    expect(@model.isValid()).toBe true
 
             describe 'when array property has validationRules that are broken', ->
                 beforeEach ->
@@ -177,11 +174,11 @@ describe 'validation', ->
 
                     @model.validate()
 
-                it 'should set isClientValid of the model to false', ->
-                    expect(@model.isClientValid()).toBe false
+                it 'should set isValid of the model to false', ->
+                    expect(@model.isValid()).toBe false
 
-                it 'should set isClientValid of the array property to false', ->
-                    expect(@model.arrayProp.isClientValid()).toBe false
+                it 'should set isValid of the array property to false', ->
+                    expect(@model.arrayProp.isValid()).toBe false
 
                 it 'should add error message to the array property error observable', ->
                     expect(@model.arrayProp.errors().length).toBe 1
@@ -206,15 +203,15 @@ describe 'validation', ->
 
                         @model.validate()
 
-                    it 'should set isClientValid of the model to false', ->
-                        expect(@model.isClientValid()).toBe false
+                    it 'should set isValid of the model to false', ->
+                        expect(@model.isValid()).toBe false
 
-                    it 'should set isClientValid of the valid child array property to true', ->
-                        expect(@model.arrayProp()[0].isClientValid()).toBe true
-                        expect(@model.arrayProp()[2].isClientValid()).toBe true
+                    it 'should set isValid of the valid child array property to true', ->
+                        expect(@model.arrayProp()[0].isValid()).toBe true
+                        expect(@model.arrayProp()[2].isValid()).toBe true
 
-                    it 'should set isClientValid of the invalid child array property to false', ->                    
-                        expect(@model.arrayProp()[1].isClientValid()).toBe false
+                    it 'should set isValid of the invalid child array property to false', ->                    
+                        expect(@model.arrayProp()[1].isValid()).toBe false
 
             describe 'when array property has child validatables with one failing', ->
                 beforeEach ->
@@ -233,15 +230,15 @@ describe 'validation', ->
 
                     @model.validate()
 
-                it 'should set isClientValid of the model to false', ->
-                    expect(@model.isClientValid()).toBe false
+                it 'should set isValid of the model to false', ->
+                    expect(@model.isValid()).toBe false
 
-                it 'should set isClientValid of the valid child array property to true', ->
-                    expect(@model.arrayProp()[0].isClientValid()).toBe true
-                    expect(@model.arrayProp()[2].isClientValid()).toBe true
+                it 'should set isValid of the valid child array property to true', ->
+                    expect(@model.arrayProp()[0].isValid()).toBe true
+                    expect(@model.arrayProp()[2].isValid()).toBe true
 
-                it 'should set isClientValid of the invalid child array property to false', ->                    
-                    expect(@model.arrayProp()[1].isClientValid()).toBe false
+                it 'should set isValid of the invalid child array property to false', ->                    
+                    expect(@model.arrayProp()[1].isValid()).toBe false
 
             describe 'when plain child object has validatables with one failing', ->
                 beforeEach ->
@@ -254,11 +251,11 @@ describe 'validation', ->
 
                     @model.validate()
 
-                it 'should set isClientValid of the model to false', ->
-                    expect(@model.isClientValid()).toBe false
+                it 'should set isValid of the model to false', ->
+                    expect(@model.isValid()).toBe false
 
-                it 'should set isClientValid of the invalid child property to false', ->
-                    expect(@model.child.childProperty.isClientValid()).toBe false
+                it 'should set isValid of the invalid child property to false', ->
+                    expect(@model.child.childProperty.isValid()).toBe false
 
             describe 'when observable child object has validatables with one failing', ->
                 beforeEach ->
@@ -273,11 +270,11 @@ describe 'validation', ->
 
                     @model.validate()
 
-                it 'should set isClientValid of the model to false', ->
-                    expect(@model.isClientValid()).toBe false
+                it 'should set isValid of the model to false', ->
+                    expect(@model.isValid()).toBe false
 
-                it 'should set isClientValid of the invalid child property to false', ->
-                    expect(@model.child().childProperty.isClientValid()).toBe false
+                it 'should set isValid of the invalid child property to false', ->
+                    expect(@model.child().childProperty.isValid()).toBe false
 
             describe 'when only server-side errors are set', ->
                 beforeEach ->
@@ -290,8 +287,8 @@ describe 'validation', ->
                         property1: 'property1 is invalid on server',
                         _: 'The whole form is somehow invalid'
 
-                it 'should set isClientValid to true', ->
-                    expect(@model.isClientValid()).toBe true
+                it 'should set isValid to true', ->
+                    expect(@model.isValid()).toBe true
 
                 it 'should set non-property error messages on serverErrors of model', ->
                     expect(@model.serverErrors()).toEqual ['The whole form is somehow invalid']
@@ -299,8 +296,8 @@ describe 'validation', ->
                 it 'should set property error messages on serverErrors of property', ->
                     expect(@model.property1.serverErrors()).toEqual ['property1 is invalid on server']
 
-                it 'should set isClientValid of property with server-side errors to true', ->
-                    expect(@model.property1.isClientValid()).toBe true
+                it 'should set isValid of property with server-side errors to true', ->
+                    expect(@model.property1.isValid()).toBe true
 
                 describe 'and property value is updated', ->
                     beforeEach ->
