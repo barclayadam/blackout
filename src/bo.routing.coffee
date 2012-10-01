@@ -255,14 +255,18 @@ class HistoryManager
             setInterval (=> @_updateFromCurrentUrl()), interval
 
         bo.bus.subscribe 'routeNavigating', (msg) =>
-            @transientQueryParameters = {}
+            if @fullyInitialised
+                @transientQueryParameters = {}
 
         bo.bus.subscribe 'routeNavigated', (msg) =>
             if @initialised
                 @_updateFromRouteUrl msg
 
+        @transientQueryParameters = bo.query.current().getAll()
+
         @initialised = true
         @_publishCurrent()
+        @fullyInitialised = true
   
     # Checks the current URL to see if it has changed, and if it has,
     # calls `_publishCurrent`, normalizing across the hidden iframe.
