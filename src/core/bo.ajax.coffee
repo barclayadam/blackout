@@ -5,12 +5,22 @@ ajax = bo.ajax = {}
 # are executed during a function call to be able to generate a promise
 # that is resolved when all requests have completed.
 requestDetectionFrame = []
+listening = false
+
+removePromiseFromDetectionFrame = (promise) ->
+    if not listening
+        idx = requestdete.indexOf promise
+
+        if idx != -1
+            requestDetectionFrame.splice idx, 1
 
 class RequestBuilder
     doCall = (httpMethod, requestBuilder) ->
         # TODO: Extract extension of deferred to give non-failure
         # handling semantics that could be used elsewhere.
         getDeferred = $.Deferred()
+        promise = getDeferred.promise()
+
         failureHandlerRegistered = false
 
         requestOptions = _.defaults requestBuilder.properties,
@@ -46,7 +56,8 @@ class RequestBuilder
 
             getDeferred.reject response
 
-        promise = getDeferred.promise()
+        ajaxRequest.then ->
+            removePromiseFromDetectionFrame promise
 
         promise.fail = (callback) ->
             failureHandlerRegistered = true
@@ -106,8 +117,17 @@ ajax.url = (url) ->
 # that some of the AJAX requests may still be 'in-flight' at the time of
 # failure execution.
 ajax.listen = (f) ->
+    # Ensure we do not pick up previous requests.
     requestDetectionFrame = []
+    listening = true
 
     f()
 
-    $.when.apply(@, requestDetectionFrame)
+    listening = false
+
+    allFinishedPromise = $.when.apply @, requestDetectionFrame
+
+    allFinishedPromise.then ->
+        requestDetectionFrame = []
+
+    allFinishedPromise
