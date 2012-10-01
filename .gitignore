@@ -1,5 +1,4 @@
 blackout.sublime-workspace
 npm-debug.log
 node_modules
-lib\bo.coffee
-lib\bo.min.js
+lib
