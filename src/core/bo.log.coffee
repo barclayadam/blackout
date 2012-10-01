@@ -1,4 +1,5 @@
-bo.log = {}
+bo.log = 
+    enabled: false
 
 # We attempt to use console.log to determine availability
 # and safety of use, setting `console` to an empty object
@@ -24,4 +25,5 @@ catch e
     # Note this does also fail in IE8/9 as the `apply` functionality
     # is not available on the `console.[n]` functions.
     bo.log[n] = -> 
-        (window.console[n] || window.console.log || ->).apply? window.console, arguments
+        if bo.log.enabled
+            (window.console[n] || window.console.log || ->).apply? window.console, arguments
