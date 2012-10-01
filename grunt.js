@@ -5,6 +5,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-coffee');
   grunt.loadNpmTasks('grunt-coffeepot');
   grunt.loadNpmTasks('grunt-reload');
+  grunt.loadNpmTasks('grunt-jasmine-task');
 
   // Project configuration.
   grunt.initConfig({
@@ -49,6 +50,13 @@ module.exports = function(grunt) {
 
     uglify: {},
 
+    jasmine: {
+      all: {
+        src: ['http://localhost:8001/spec/runner.html'],
+        errorReporting: true
+      }
+    },
+
     watch: {
       build: {
         files: ['src/**/*.*', 'spec/**/*.*'],
@@ -73,5 +81,6 @@ module.exports = function(grunt) {
   // Default task.
   grunt.registerTask('build', 'rig coffee');
   grunt.registerTask('default', 'build min');
+  grunt.registerTask('test', 'build coffeepot jasmine');
   grunt.registerTask('serve', 'build coffeepot reload watch');
 };

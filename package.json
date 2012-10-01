@@ -44,6 +44,8 @@
     "grunt-rigger": "*",
     "grunt-coffee": "*",
     "grunt-coffeepot": "*",
-    "grunt-reload": "*"
+    "grunt-reload": "*",
+    "grunt-jasmine-task": "*",
+    "temporary": "*"
   }
 }
