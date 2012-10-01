@@ -4,7 +4,7 @@
 		{
 			"path": ".",
             "folder_exclude_patterns": ["tmp", "node_modules"],
-            "file_exclude_patterns": ["npm-debug.log"]
+            "file_exclude_patterns": ["npm-debug.log", "specs-in-browser.bat", "watch.bat", "blackout.*", "install-nodejs.bat", "npm-install.bat", "license.txt", ".gitignore", "grunt.js"]
 		}
 	]
 }
