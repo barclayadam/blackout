@@ -95,7 +95,8 @@ describe 'location', ->
             expect(bo.location.uri).toBeObservable()
 
             # Use toContain as non-pushState browsers may have hash as well
-            expect(bo.location.uri().toString()).toContain 'http://localhost:8000/spec/runner.html'
+            expect(bo.location.uri().toString()).toContain 'http://localhost'
+            expect(bo.location.uri().toString()).toContain 'spec/runner.html'
 
         it 'should have populated host property from current URL', ->
             expect(bo.location.host()).toEqual 'localhost'
