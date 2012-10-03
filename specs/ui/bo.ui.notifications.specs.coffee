@@ -2,30 +2,33 @@ describe 'Notifications', ->
     describe 'when publishing', ->
         describe 'a success notification', ->
             beforeEach ->
-                bo.notifications.success 'Something good happened'
+                bo.notifications.success 'Something good happened', {}
 
             it 'should publish a notification:success message', ->
                 expect('notification:success').toHaveBeenPublishedWith 
                     text: 'Something good happened'
-                    level: 'success'
+                    level: 'success',
+                    options: {}
 
         describe 'a warning notification', ->
             beforeEach ->
-                bo.notifications.warning 'Something not so good happened'
+                bo.notifications.warning 'Something not so good happened', {}
 
             it 'should publish a notification:warning message', ->
                 expect('notification:warning').toHaveBeenPublishedWith
                     text: 'Something not so good happened'
-                    level: 'warning'
+                    level: 'warning',
+                    options: {}
 
         describe 'an error notification', ->
             beforeEach ->
-                bo.notifications.error 'Something really bad happened'
+                bo.notifications.error 'Something really bad happened', {}
 
             it 'should publish a notification:error message', ->
                 expect('notification:error').toHaveBeenPublishedWith
                     text: 'Something really bad happened'
-                    level: 'error'
+                    level: 'error',
+                    options: {}
 
     describe 'when binding using a notification binding handler', ->
         beforeEach ->            

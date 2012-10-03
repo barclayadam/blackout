@@ -10,27 +10,30 @@
 bo.notifications =
     # Publishes a success notification, to indicate that an action
     # has completed without any warnings or failure.
-    success: (text) ->
+    success: (text, options) ->
         bo.bus.publish 'notification:success', 
             text: text
             level: 'success'
+            options: options
 
     # Publishes a warning notification, to indicate that an action
     # may or may not have completed but warnings exist that should
     # be looked into.
-    warning: (text) ->
+    warning: (text, options) ->
         bo.bus.publish 'notification:warning', 
             text: text
             level: 'warning'
+            options: options
 
     # Publishes an error notification, to indicate that an
     # action has failed, that the user must either retry due to
     # an unforeseen error or that the user has peformed an action
     # illegal or invalid.
-    error: (text) ->
+    error: (text, options) ->
         bo.bus.publish 'notification:error', 
             text: text
             level: 'error'
+            options: options
 
 # A binding handler that can be used to display notifications that are being published
 # (see `bo.notifications`) to the user.
