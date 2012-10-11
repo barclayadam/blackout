@@ -177,6 +177,9 @@ class bo.DataSource extends bo.Bus
     load: (forceReload = false) ->
         currentPageNumber = @pageNumber()
 
+        if @_hasLoadedOnce and !forceReload
+            return
+
         @pageNumber 1
 
         # serverPaging enabled means subscription to

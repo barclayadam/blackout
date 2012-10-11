@@ -3,28 +3,33 @@ class bo.DataTable
         selectable: true
 
     constructor: (@dataSource, options = defaultOptions) ->
-        @selectedItem = ko.observable()
-        @focusedItem = ko.observable()
+        if dataSource.selectedItem is undefined
+            dataSource.selectedItem = ko.observable()
+            dataSource.focusedItem = ko.observable()
+
+            if ko.isObservable options.selected
+                bo.utils.joinObservable dataSource.selectedItem, options.selected
+
+        @selectedItem = dataSource.selectedItem
+        @focusedItem = dataSource.focusedItem
+
         @options = _.defaults options, defaultOptions
 
         # Ensure that when selection is made focus is on that
         # item.
         @selectedItem.subscribe (selected) =>
             if (selected?)
-                @focusedItem selected
+                dataSource.focusedItem selected
 
-        @dataSource.subscribe 'pageChanged', =>
-            @selectedItem undefined
-            @focusedItem @dataSource.pageItems()[0]
-
-        if ko.isObservable @options.selected
-            bo.utils.joinObservables @selectedItem, @options.selected
+        dataSource.subscribe 'pageChanged', =>
+            dataSource.selectedItem undefined
+            dataSource.focusedItem dataSource.pageItems()[0]
 
     select: (item) ->
-        @selectedItem item
+        @dataSource.selectedItem item
 
     focus: (item) ->
-        @focusedItem item
+        @dataSource.focusedItem item
 
     focusNext: ->
         currentIndex = _.indexOf @dataSource.pageItems(), @focusedItem()

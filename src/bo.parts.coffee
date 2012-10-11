@@ -36,7 +36,7 @@ class bo.Part extends bo.Bus
     deactivate: ->
         @viewModel.deactivate() if @viewModel?.deactivate?
 
-        if @viewModelTemplate?
+        if @viewModelTemplate? and @options.keepAlive isnt true
             @viewModel = undefined
 
     # Activates this part.
@@ -91,6 +91,9 @@ class bo.Part extends bo.Bus
     _activateViewModel: ->
         if @viewModelTemplate
             @viewModel = new @viewModelTemplate() || {}
+
+            if @options.keepAlive is true
+                @_activateViewModel = ->
         else
             # Should only call this once if 'static' view model.
             @_activateViewModel = ->
