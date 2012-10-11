@@ -8,7 +8,7 @@ class bo.DataTable
             dataSource.focusedItem = ko.observable()
 
             if ko.isObservable options.selected
-                bo.utils.joinObservable dataSource.selectedItem, options.selected
+                bo.utils.joinObservables dataSource.selectedItem, options.selected
 
         @selectedItem = dataSource.selectedItem
         @focusedItem = dataSource.focusedItem
