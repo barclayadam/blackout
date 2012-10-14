@@ -23,7 +23,7 @@ class ExternalTemplateSource
 
         @stringTemplateSource.text.apply @stringTemplateSource, arguments
 
-# Creates the custom `boson` templating engine by augmenting the given templating
+# Creates the custom `blackout` templating engine by augmenting the given templating
 # engine with a new `makeTemplateSource` function that first sees if
 # a template has been added via. `bo.templating.add` and returns a
 # `StringTemplateSource` if found, attempts to create an external
