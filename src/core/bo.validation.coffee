@@ -187,15 +187,15 @@ ko.extenders.validationRules = (target, validationRules = {}) ->
     target.serverErrors = ko.observable []
 
     validate = ->
+        # When this value is changed the server errors will be removed, as
+        # there would be no way to identify whether they were still accurate
+        # or not until re-submitted, so for user-experience purposes these
+        # errors are removed when a user modifies the value.
         target.serverErrors []
 
         target.errors getErrors target
         target.isValid target.errors().length is 0
 
-    # When this value is changed the server errors will be removed, as
-    # there would be no way to identify whether they were still accurate
-    # or not until re-submitted, so for user-experience purposes these
-    # errors are removed when a user modifies the value.
     target.subscribe ->
         validate()
 
