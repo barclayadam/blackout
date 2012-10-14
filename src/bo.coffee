@@ -27,6 +27,7 @@
 		#= core/bo.bus.coffee
 		#= core/bo.uri.coffee
 		#= core/bo.ajax.coffee
+		#= core/bo.sorting.coffee
 		#= core/bo.storage.coffee
 		#= core/bo.notifications.coffee
 		#= core/bo.templating.coffee
