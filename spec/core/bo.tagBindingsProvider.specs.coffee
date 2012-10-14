@@ -81,7 +81,6 @@ describe 'component binding provider', ->
                 </div>
             """
 
-            debugger
             @applyBindingsToHtmlFixture {}
 
         it 'should call binding handlers init function, and allow text content of nodes to be set', ->
