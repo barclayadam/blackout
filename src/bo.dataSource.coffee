@@ -100,7 +100,7 @@ class bo.DataSource extends bo.Bus
 
             @searchParameters.subscribe =>
                 if @_hasLoadedOnce
-                    @load()
+                    @load true
         else
             @searchParameters = ko.observable {}
 
