@@ -191,6 +191,15 @@ class bo.DataSource extends bo.Bus
         else
             bo.utils.resolvedPromise()
 
+    # Performs a load of this data source, unless this data source has already been 
+    # loaded, at which point it performs a reload of the data, but doesn't change 
+    # any of the parameters.
+    reload: ->
+        if @_hasLoadedOnce 
+            @_doLoad true
+        else
+            @load()
+
     # Goes to the specified page number.
     goTo: (pageNumber) ->
         @pageNumber pageNumber
