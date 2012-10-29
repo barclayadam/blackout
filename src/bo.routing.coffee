@@ -208,7 +208,9 @@ class HistoryManager
             else
                 fragment = getHash()
 
-        fragment = fragment.substr(bo.config.appRoot.length) if fragment.indexOf(bo.config.appRoot) is 0
+        if fragment.toLowerCase().indexOf(bo.config.appRoot.toLowerCase()) is 0
+            fragment = fragment.toLowerCase.substr(bo.config.appRoot.length) 
+
         fragment.replace routeStripper, ""
 
         decodeURI fragment 
@@ -229,7 +231,7 @@ class HistoryManager
         @fragment = fragment;
       
         loc = window.location;
-        atRoot  = loc.pathname == bo.config.appRoot;
+        atRoot  = loc.pathname.toLowerCase() == bo.config.appRoot.toLowerCase();
   
         if !this._hasPushState && !atRoot
             # If we've started off with a route from a `pushState`-enabled browser,
@@ -326,7 +328,9 @@ class HistoryManager
         @fragment = frag
 
         if @_hasPushState
-            frag = bo.config.appRoot + frag unless frag.indexOf(bo.config.appRoot) is 0
+            if frag.toLowerCase().indexOf(bo.config.appRoot.toLowerCase()) isnt 0
+                frag = bo.config.appRoot + frag
+
             window.history[if options.replace then 'replaceState' else 'pushState'] {}, document.title, frag
         else
             @_updateHash window.location, frag, options.replace
