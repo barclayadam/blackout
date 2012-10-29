@@ -185,7 +185,7 @@ class HistoryManager
 
     getCrossBrowserFragment: ->      
         loc = window.location;
-        atRoot  = loc.pathname == bo.config.appRoot;
+        atRoot  = loc.pathname.toLowerCase() == bo.config.appRoot.toLowerCase();
   
         if !@_hasPushState && !atRoot
             # If we've started off with a route from a `pushState`-enabled browser,
@@ -209,7 +209,7 @@ class HistoryManager
                 fragment = getHash()
 
         if fragment.toLowerCase().indexOf(bo.config.appRoot.toLowerCase()) is 0
-            fragment = fragment.toLowerCase.substr(bo.config.appRoot.length) 
+            fragment = fragment.substr(bo.config.appRoot.length) 
 
         fragment.replace routeStripper, ""
 
