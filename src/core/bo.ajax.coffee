@@ -9,7 +9,7 @@ listening = false
 
 removePromiseFromDetectionFrame = (promise) ->
     if not listening
-        idx = requestdete.indexOf promise
+        idx = requestDetectionFrame.indexOf promise
 
         if idx != -1
             requestDetectionFrame.splice idx, 1
@@ -97,7 +97,7 @@ class RequestBuilder
 # The AJAX API is designed to provide a simple method of entry to
 # creating AJAX calls, to allow composition of calls if necessary (by
 # passing the request builder around), and to provide the familiar semantics
-# of publishing events as used extensively throughout `boson`.
+# of publishing events as used extensively throughout `blackout`.
 ajax.url = (url) ->
     new RequestBuilder url
 

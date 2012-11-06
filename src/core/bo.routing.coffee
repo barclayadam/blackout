@@ -180,3 +180,4 @@ class bo.routing.Router
             bo.log.warn "The parameters specified are not valid for the '#{name}' route."
 
         url
+        

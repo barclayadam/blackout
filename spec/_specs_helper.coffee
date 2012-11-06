@@ -8,8 +8,7 @@ beforeEach ->
     bo.templating.reset()
     window.sessionStorage.clear()
     window.localStorage.clear()
-    #bo.routing.reset()
-
+    
     @fixture = $('<div id="fixture" />').appendTo('body')
 
     @setHtmlFixture = (html) =>
