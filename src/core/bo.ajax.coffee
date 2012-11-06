@@ -39,6 +39,7 @@ class RequestBuilder
                 method: httpMethod
                 response: response
                 status: 200
+                success: true
 
             getDeferred.resolve response
 
@@ -48,6 +49,7 @@ class RequestBuilder
                 method: httpMethod
                 responseText: response.responseText
                 status: response.status
+                success: false
 
             bo.bus.publish "ajaxResponseReceived:failure:#{requestBuilder.url}", failureMessage
 

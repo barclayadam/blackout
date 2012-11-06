@@ -35,6 +35,7 @@
                     method: httpMethod
                     response: @response
                     status: 200
+                    success: true
                 
             it 'should not fail promise with response from server if response is 200', ->
                 expect(@failSpy).toHaveNotBeenCalled()
@@ -128,6 +129,7 @@
                     method: httpMethod
                     responseText: @response
                     status: 500
+                    success: false
                 
             it 'should fail promise with response from server if response is not 200', ->
                 expect(@failSpy).toHaveBeenCalled()
@@ -150,6 +152,7 @@
                     method: httpMethod
                     responseText: @response
                     status: 500
+                    success: false
 )
 
 describe 'ajax', ->
