@@ -78,6 +78,20 @@ describe 'validation', ->
             it 'should set validated observable to true', ->
                 expect(@model.validated()).toBe true
 
+        describe 'with undefined properties', ->
+            beforeEach ->
+                @model = 
+                    property1: undefined
+
+                    property2: ko.observable('Valid Value').addValidationRules
+                        required: true
+
+                bo.validation.mixin @model
+                @model.validate()
+
+            it 'should set isValid to true', ->
+                expect(@model.isValid()).toBe true
+
         describe 'with validatable properties', ->
             createModel = (values) ->
                 model = 
