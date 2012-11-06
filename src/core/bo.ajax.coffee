@@ -73,6 +73,10 @@ class RequestBuilder
     constructor: (@url) ->
         @properties = {}
 
+    data: (data) ->
+        @properties.data = ko.toJSON data
+        @
+
     get: () ->
         doCall 'GET', @
 

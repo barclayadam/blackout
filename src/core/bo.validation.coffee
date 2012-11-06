@@ -148,6 +148,8 @@ validation.mixin = (model) ->
 
         model.serverErrors _.flatten _.values errors
 
+    model
+
 validation.newModel = (model = {}) ->
     validation.mixin model
 

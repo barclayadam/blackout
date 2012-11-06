@@ -161,3 +161,10 @@ describe 'ajax', ->
     basicMethodTests 'put', 'PUT'
     basicMethodTests 'delete', 'DELETE'
     basicMethodTests 'head', 'HEAD'
+
+    describe 'POST specific', ->
+        it 'should POST "values"', ->
+            # TODO: How should this be tested properly?
+            @request = bo.ajax.url('/AUrl')
+                .data({ id: 342 })
+                .post()

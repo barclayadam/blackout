@@ -1,4 +1,4 @@
-messaging = bo.messaging = {}
+messaging = bo.messaging ?= {}
 
 messaging.queryUrlTemplate = 'Query/{name}/?values={values}'
 
