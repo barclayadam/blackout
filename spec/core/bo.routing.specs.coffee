@@ -95,9 +95,6 @@ describe 'Routing:', ->
                 it 'should use history manager to push a built URL', ->
                     expect(@routePathStub).toHaveBeenCalledWith '/Contact Us'
 
-                it 'should set the document\'s title', ->
-                    expect(document.title).toEqual @contactUsRoute.title
-
                 it 'should call registered callback with parameters', ->
                     expect(@routeNavigatedStub).toHaveBeenCalledWith {}
 

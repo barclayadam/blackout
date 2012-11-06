@@ -83,7 +83,7 @@ root = '/'
 class bo.routing.Router
 
     constructor: ->
-        @routes = {}
+        @_routes = {}
 
         # Handle messages that are raised by the location component
         # to indicate the URL has changed, that the user has navigated
@@ -113,7 +113,7 @@ class bo.routing.Router
     # The URL *must* be a relative definition, the route table will
     # not take into account absolute URLs in any case.
     route: (name, url, callback, options = { title: name }) ->
-        @routes[name] = new Route name, url, callback, options
+        @_routes[name] = new Route name, url, callback, options
 
         @
 
@@ -139,7 +139,7 @@ class bo.routing.Router
         path = (new bo.Uri url, { decode: true }).path
         match = undefined
 
-        for name, r of @routes
+        for name, r of @_routes
             matchedParams = r.match path
 
             if matchedParams?
@@ -150,7 +150,7 @@ class bo.routing.Router
     # Gets the named route, or `undefined` if no such route
     # exists.
     getNamedRoute: (name) ->
-        @routes[name]
+        @_routes[name]
 
     navigateTo: (name, parameters = {}) ->
         url = @buildUrl name, parameters
@@ -161,7 +161,6 @@ class bo.routing.Router
             @_doNavigate url, route, parameters
 
             bo.location.routePath url
-            document.title = route.title
 
             return true
 
