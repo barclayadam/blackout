@@ -33,8 +33,8 @@ bo.utils =
 
     # Given a value will convert it to an observable, using the following rules:
     #
-    # * If `value` is already an observable (`ko.isObservable`) return it directly
-    # * If `value` is an array, return a `'ko.observableArray` initialised with the value
+    # * If `value` is already an observable (`ko.isObservable`), return it directly
+    # * If `value` is an array, return a `ko.observableArray` initialised with the value
     # * For all other cases (including `undefined` or `null` values) return a `ko.observable` initialised with the value
     asObservable: (value) ->
         if ko.isObservable value then return value
