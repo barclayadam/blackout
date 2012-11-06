@@ -74,7 +74,7 @@ bo.validation =
             for propertyName, propertyValue of model when _(propertiesToIgnore).contains(propertyName) is false                    
                 unwrappedPropertyValue = ko.utils.unwrapObservable propertyValue
 
-                if propertyValue.validationRules?
+                if propertyValue? && propertyValue.validationRules?
                     valid = (validateValue propertyName, propertyValue, model) && valid
 
                 if _.isArray unwrappedPropertyValue
