@@ -16,7 +16,7 @@ validation.formatErrorMessage = (msg) -> msg
 
 getErrors = (observableValue) ->    
     errors = []
-    rules = observableValue.validationRules
+    rules = observableValue.validationRules()
 
     # We only peek at the actual observable values as all subscriptions
     # are done manually in a validatable property's validate method, yet
@@ -163,7 +163,13 @@ validation.newModel = (model = {}) ->
 #  * `validationRules` -> The rules passed as the options of this extender, used in the validation
 #                         of this observable property.
 ko.extenders.validationRules = (target, validationRules = {}) ->
-    target.validationRules = validationRules
+    # We are adding rules to an already validatable property, just extend
+    # its validation rules.
+    if target.validationRules?
+        target.validationRules _.extend target.validationRules(), validationRules
+        return
+
+    target.validationRules = ko.observable validationRules
     
     # Validates this property against the currently-defined set of
     # rules (against the child properties), setting up a dependency
@@ -196,8 +202,8 @@ ko.extenders.validationRules = (target, validationRules = {}) ->
         target.errors getErrors target
         target.isValid target.errors().length is 0
 
-    target.subscribe ->
-        validate()
+    target.subscribe validate
+    target.validationRules.subscribe validate
 
     validate()
 

@@ -54,6 +54,16 @@ describe 'validation', ->
         it 'should mark property as being validated', ->
             expect(@property.validated()).toBe true
 
+
+    describe 'adding validation rules multiple times', ->
+        beforeEach ->
+            @property = ko.observable('a')
+            @property.addValidationRules { minLength: 2 }
+            @property.addValidationRules { equalTo: 'b' }
+
+        it 'should include errors for each added rule', ->
+            expect(@property.errors().length).toBe 2
+
     describe 'validating a model', ->
         describe 'with no defined observable properties', ->
             beforeEach ->
