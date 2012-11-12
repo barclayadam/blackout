@@ -92,8 +92,8 @@ describe 'templating', ->
                 @wrapperTwo = @fixture.find "#two"
 
             it 'should immediately render the loading template (bo.templating.loadingTemplate)', ->
-                expect(@wrapperOne).toHaveText bo.templating.loadingTemplate
-                expect(@wrapperTwo).toHaveText bo.templating.loadingTemplate
+                expect(@wrapperOne).toHaveHtml bo.templating.loadingTemplate
+                expect(@wrapperTwo).toHaveHtml bo.templating.loadingTemplate
 
             it 'should only attempt one load of the document from the server', ->
                 expect(@ajaxSpy).toHaveBeenCalledOnce()
