@@ -59,19 +59,16 @@ koBindingHandlers.part =
     init: (element, valueAccessor) ->
         viewModel = ko.utils.unwrapObservable valueAccessor() || {}
 
-        realValueAccessor = ->
+        templateValueAccessor = ->
             { data: viewModel, name: viewModel.viewName }
 
-        koBindingHandlers.template.init element, realValueAccessor
+        koBindingHandlers.template.init element, templateValueAccessor
 
     update: (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) ->
         viewModel = ko.utils.unwrapObservable valueAccessor()
 
         if not viewModel?
             return
-
-        realValueAccessor = ->
-            { data: viewModel, name: viewModel.viewName }
 
         lastViewModel = ko.utils.domData.get element, '__part__lastViewModel'
 
@@ -88,7 +85,10 @@ koBindingHandlers.part =
             deferred.resolve()
 
         deferred.done ->
-            koBindingHandlers.template.update element, realValueAccessor, allBindingsAccessor, viewModel, bindingContext
+            templateValueAccessor = ->
+                { data: viewModel, name: viewModel.viewName }
+
+            koBindingHandlers.template.update element, templateValueAccessor, allBindingsAccessor, viewModel, bindingContext
 
             if viewModel.afterShow?
                 viewModel.afterShow()
