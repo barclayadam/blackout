@@ -60,7 +60,7 @@ koBindingHandlers.part =
         viewModel = ko.utils.unwrapObservable valueAccessor() || {}
 
         templateValueAccessor = ->
-            { data: viewModel, name: viewModel.viewName }
+            { data: viewModel, name: viewModel.templateName }
 
         koBindingHandlers.template.init element, templateValueAccessor
 
@@ -86,7 +86,7 @@ koBindingHandlers.part =
 
         deferred.done ->
             templateValueAccessor = ->
-                { data: viewModel, name: viewModel.viewName }
+                { data: viewModel, name: viewModel.templateName }
 
             koBindingHandlers.template.update element, templateValueAccessor, allBindingsAccessor, viewModel, bindingContext
 

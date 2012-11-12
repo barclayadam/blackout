@@ -59,7 +59,7 @@ describe 'part binding handler', ->
             bo.templating.set 'myNamedPartTemplate', 'This is the template'
 
             @viewModel =
-                viewName: 'myNamedPartTemplate'
+                templateName: 'myNamedPartTemplate'
 
             @setHtmlFixture """
                 <div data-bind="part: viewModel"></div>
@@ -157,14 +157,14 @@ describe 'part binding handler', ->
                 bo.templating.set 'viewModelTwoTemplate', 'Template Two'
 
                 @viewModelOne =
-                    viewName: 'viewModelOneTemplate'
+                    templateName: 'viewModelOneTemplate'
 
                     beforeShow: @spy()
                     show: @spy()
                     hide: @spy()
 
                 @viewModelTwo =
-                    viewName: 'viewModelTwoTemplate'
+                    templateName: 'viewModelTwoTemplate'
 
                     beforeShow: @spy()
                     show: @spy()
