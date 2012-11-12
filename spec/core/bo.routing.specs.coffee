@@ -73,6 +73,21 @@ describe 'Routing:', ->
                     route: @contactUsRoute
                     parameters: {}
 
+            it 'should set currentRoute property', ->
+                expect(@router.currentRoute).toBe @contactUsRoute
+
+            it 'should set currentParameters property to be empty', ->
+                expect(@router.currentParameters).toEqual {}
+
+        describe 'URL changed externally to one matching route with query string params', ->
+            beforeEach ->
+                bo.bus.publish 'urlChanged:external', 
+                    url: '/Contact Us?name=My Name'
+                    external: true
+
+            it 'should set currentParameters property to contain query string parameters', ->
+                expect(@router.currentParameters).toEqual { name: 'My Name' }
+
         describe 'URL changed by user to not match URL', ->
             beforeEach ->
                 bo.bus.publish 'urlChanged:external', 
@@ -279,6 +294,12 @@ describe 'Routing:', ->
                     route: @contactUsRoute
                     parameters: { category: 'A Category' }
 
+            it 'should set currentRoute property', ->
+                expect(@router.currentRoute).toBe @contactUsRoute
+
+            it 'should set currentParameters property to contain route parameters', ->
+                expect(@router.currentParameters).toEqual { category: 'A Category' }
+
         describe 'navigateTo route', ->
             describe 'twice consecutively with same parameters', ->
                 beforeEach ->                
@@ -300,6 +321,12 @@ describe 'Routing:', ->
 
                 it 'should publish a routeNavigated message twice', ->
                     expect(@routeNavigatedStub).toHaveBeenCalledTwice()
+
+                it 'should set currentRoute property', ->
+                    expect(@router.currentRoute).toBe @contactUsRoute
+
+                it 'should set currentParameters property to contain route parameters', ->
+                    expect(@router.currentParameters).toEqual { category: 'A Category' }
 
             describe 'twice consecutively with different parameters', ->
                 beforeEach ->                

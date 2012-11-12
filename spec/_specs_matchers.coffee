@@ -1,3 +1,6 @@
+browserTagCaseIndependentHtml = (html) ->
+    jQuery('<div/>').append(html).html()
+
 beforeEach ->
     publishSpy = window.sinonSandbox.spy bo.bus, "publish"
     

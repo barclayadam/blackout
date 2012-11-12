@@ -9,12 +9,12 @@ nerddinner.app.router.route('Homepage', '/', function() {
     alert("Visited homepage");
 });
 
-nerddinner.app.router.route('Homepage', '/examples/nerddinner', function() {
+nerddinner.app.router.route('Homepage', '/examples/nerddinner/', function() {
     nerddinner.app.regionManager.show({ 
-        viewName: 'e:homepage', 
+        templateName: 'e:homepage', 
 
         show: function() {
-            this.myName = bo.location.variables().name || 'You';
+            this.myName = nerddinner.app.router.currentParameters.name || 'You';
         }
     });
 }); 
