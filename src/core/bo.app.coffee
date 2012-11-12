@@ -6,11 +6,9 @@ class bo.App
     start: ->
         bo.log.info "Starting application"
 
-        # HACK: Figure out better way of starting aqpp after load.
-        jQuery =>
-            ko.applyBindings @
+        ko.applyBindings @
 
-            bo.location.initialise()
+        bo.location.initialise()
 
 koBindingHandlers.app =
     init: (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) ->
