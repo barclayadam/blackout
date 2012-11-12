@@ -8,11 +8,10 @@ requestDetectionFrame = []
 listening = false
 
 removePromiseFromDetectionFrame = (promise) ->
-    if not listening
-        idx = requestDetectionFrame.indexOf promise
+    idx = requestDetectionFrame.indexOf promise
 
-        if idx != -1
-            requestDetectionFrame.splice idx, 1
+    if idx != -1
+        requestDetectionFrame.splice idx, 1
 
 class RequestBuilder
     doCall = (httpMethod, requestBuilder) ->
@@ -58,15 +57,13 @@ class RequestBuilder
 
             getDeferred.reject response
 
-        ajaxRequest.then ->
-            removePromiseFromDetectionFrame promise
-
         promise.fail = (callback) ->
             failureHandlerRegistered = true
 
             getDeferred.fail callback
 
-        requestDetectionFrame.push promise
+        if listening
+            requestDetectionFrame.push promise
 
         promise
 
