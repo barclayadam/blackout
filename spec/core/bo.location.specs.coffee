@@ -124,6 +124,8 @@ describe 'location', ->
             window.history.pushState null, null, '/My New Url?key=value'            
             ko.utils.triggerEvent window, 'popstate'
 
+            bo.location.initialise()
+
         it 'should publish a urlChanged:external with current fragment and external=true', ->
             expect('urlChanged:external').toHaveBeenPublished()
 

@@ -78,17 +78,17 @@ describe 'part binding handler', ->
     describe 'lifecycle', ->
         describe 'without AJAX requests', ->
             beforeEach ->   
-                @beforeShowHadContent = undefined
                 @showHadContent = undefined
+                @afterShowHadContent = undefined
 
                 @viewModel =
                     anObservableProperty: ko.observable()
 
-                    beforeShow: @spy =>
-                        @beforeShowHadContent = @fixture.find("div").text().length > 0
-
                     show: @spy =>
                         @showHadContent = @fixture.find("div").text().length > 0
+
+                    afterShow: @spy =>
+                        @afterShowHadContent = @fixture.find("div").text().length > 0
 
                 @setHtmlFixture """
                     <div data-bind="part: viewModel">
@@ -99,28 +99,25 @@ describe 'part binding handler', ->
                 @applyBindingsToHtmlFixture 
                     viewModel: @viewModel 
 
-            it 'should call beforeShow function before show', ->
-                expect(@viewModel.beforeShow).toHaveBeenCalledBefore @viewModel.show
+            it 'should call show function before afterShow', ->
+                expect(@viewModel.show).toHaveBeenCalledBefore @viewModel.afterShow
 
-            it 'should call beforeShow function before rendering', ->
-                expect(@beforeShowHadContent).toEqual false
+            it 'should call show function before rendering', ->
+                expect(@showHadContent).toEqual false
 
-            it 'should call show function after beforeShow', ->
-                expect(@viewModel.show).toHaveBeenCalledAfter @viewModel.beforeShow
+            it 'should call afterShow function before rendering', ->
+                expect(@afterShowHadContent).toEqual true
 
-            it 'should call show function after rendering', ->
-                expect(@showHadContent).toEqual true
-
-        describe 'with AJAX requests in beforeShow', ->
+        describe 'with AJAX requests in show', ->
             beforeEach ->   
                 @viewModel =
                     anObservableProperty: ko.observable()
 
-                    beforeShow: @spy ->
+                    show: @spy ->
                         bo.ajax.url('/Users/Managers').get()
 
-                    show: @spy =>
-                        @showHadContent = @fixture.find("div").text().length > 0
+                    afterShow: @spy =>
+                        @afterShowHadContent = @fixture.find("div").text().length > 0
 
                     hide: @spy()
 
@@ -137,9 +134,9 @@ describe 'part binding handler', ->
                 # We have not responded from server yet
                 expect(@fixture.find("div")).toBeEmpty()
 
-            it 'should not call show before ajax requests complete', ->
+            it 'should not call afterShow before ajax requests complete', ->
                 # We have not responded from server yet
-                expect(@viewModel.show).toHaveNotBeenCalled()
+                expect(@viewModel.afterShow).toHaveNotBeenCalled()
 
             describe 'after AJAX requests complete', ->
                 beforeEach ->  
@@ -150,9 +147,9 @@ describe 'part binding handler', ->
                     # We have now responded from server
                     expect(@fixture.find("div")).toNotBeEmpty()
 
-                it 'should call show before ajax requests complete', ->
+                it 'should call afterShow before ajax requests complete', ->
                     # We have now responded from server
-                    expect(@viewModel.show).toHaveBeenCalled()
+                    expect(@viewModel.afterShow).toHaveBeenCalled()
 
         describe 'switching view models', ->
             beforeEach ->   

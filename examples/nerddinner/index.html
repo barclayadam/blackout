@@ -5,15 +5,16 @@
 	  <script type="text/javascript" src='/ext/jquery.js'></script>
 	  <script type="text/javascript" src='/ext/underscore.js'></script>
 	  <script type="text/javascript" src='/ext/knockout.js'></script>
+      <script type="text/javascript" src='/lib/bo.js'></script>
 	  
 	  <!-- Source Files -->  
-	  <script type="text/javascript" src='/lib/bo.js'></script>
+      <script type="text/javascript" src='./js/app.js'></script>
 
 	  <!-- Styles -->
 	  <link rel="stylesheet" type="text/css" href="./styles/site.css" />
   </head>
 
-  <body data-bind="app: nerddinner.App">
+  <body data-bind="app: nerddinner.app">
 	<div class="page">
         <header>
             <div id="title">
@@ -46,19 +47,12 @@
             </nav>
         </header>
         
-        <region id="main" class="clearfix"></region>
+        <region id="main" class="clearfix">
+        </region>
 
         <footer>
-            Code by <a href="http://www.hanselman.com">Hanselman</a>, <a href="http://weblogs.asp.net/scottgu">
-                Guthrie</a>, <a href="http://weblogs.asp.net/jgalloway">Galloway</a>, <a href="http://mourfield.com">
-                    Mourfield</a>,<a href="http://www.johnvpetersen.com"> Petersen</a>  and <a href="http://blog.nerdbank.net/">Arnott</a>. JavaScript
-            by <a href="http://encosia.com">Dave Ward</a>. ASP.NET MVC by <a href="http://www.haacked.com">
-                Haack</a> and friends. Style by <a href="http://michaeldorian.com/">Michael Dorian Bach</a>.<br />
-            Source Code at <a href="http://nerddinner.codeplex.com">http://nerddinner.codeplex.com</a>.
-            Free Sample Book Chapter and code walkthrough at <a href="http://tinyurl.com/aspnetmvc">
-                http://tinyurl.com/aspnetmvc</a>.
+            Copyright &copy; The Blackout Team
         </footer>
-
-
+    </div>
   </body>
 </html>

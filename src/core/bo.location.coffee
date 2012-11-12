@@ -124,17 +124,29 @@ location.routePath = ko.computed
 location.reset = ->
     updateUri()
 
-# Bind to the popstate event, as polyfilled previously, and convert
-# it into a message that is published on the bus for others to
-# listen to.
-ko.utils.registerEventHandler window, 'popstate', ->
-    updateUri()
+# Initialises the location subsystem, to be called when the application is
+# ready to begin receiving messages (`urlChanged:external` messages).
+location.initialise = ->
+    location.initialised = true
 
     bo.bus.publish 'urlChanged:external', 
         url: _getFragment()
         path: location.routePath()
         variables: location.routeVariables()
         external: true
+
+# Bind to the popstate event, as polyfilled previously, and convert
+# it into a message that is published on the bus for others to
+# listen to.
+ko.utils.registerEventHandler window, 'popstate', ->
+    updateUri()
+
+    if location.initialised
+        bo.bus.publish 'urlChanged:external', 
+            url: _getFragment()
+            path: location.routePath()
+            variables: location.routeVariables()
+            external: true
 
 # pushState & replaceState polyfill
 if not hasPushState

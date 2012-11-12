@@ -40,6 +40,8 @@
         #= core/bo.tagBindingsProvider.coffee
         #= core/bo.viewModel.coffee
 
+        #= core/bo.app.coffee
+
         #= messaging/bo.messaging.query.coffee
         #= messaging/bo.messaging.command.coffee
 

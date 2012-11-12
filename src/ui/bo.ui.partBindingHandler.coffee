@@ -80,9 +80,9 @@ koBindingHandlers.part =
 
         deferred = new $.Deferred()
 
-        if viewModel.beforeShow?
+        if viewModel.show?
             deferred = bo.ajax.listen ->
-                viewModel.beforeShow()
+                viewModel.show()
         else
             # Resolve immediately, nothing to wait for
             deferred.resolve()
@@ -90,7 +90,7 @@ koBindingHandlers.part =
         deferred.done ->
             koBindingHandlers.template.update element, realValueAccessor, allBindingsAccessor, viewModel, bindingContext
 
-            if viewModel.show?
-                viewModel.show()
+            if viewModel.afterShow?
+                viewModel.afterShow()
 
             ko.utils.domData.set element, '__part__lastViewModel', viewModel
