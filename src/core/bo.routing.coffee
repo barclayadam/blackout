@@ -95,16 +95,18 @@ class bo.routing.Router
                 bo.bus.publish 'routeNotFound', 
                     url: msg.url
             else 
-                @_doNavigate msg.path, matchedRoute.route, matchedRoute.parameters
+                @_doNavigate msg.url, matchedRoute.route, matchedRoute.parameters
 
     _doNavigate: (url, route, parameters) ->
+        @currentUrl = url
+        @currentRoute = route
+        @currentParameters = _.extend parameters, new bo.Uri(url).variables
+
         route.callback? parameters
 
         bo.bus.publish "routeNavigated:#{route.name}",
             route: route
             parameters: parameters
-
-        @currentUrl = url
 
     # Adds the specified named route to this route table. If a route
     # of the same name already exists then it will be overriden

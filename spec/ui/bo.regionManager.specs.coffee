@@ -53,7 +53,7 @@ describe 'region manager', ->
                 bo.templating.set 'myViewModelTemplateName', 'This is the template'
 
                 @viewModel =
-                    viewName: 'myViewModelTemplateName'
+                    templateName: 'myViewModelTemplateName'
 
                 @regionManager.show @viewModel
 
@@ -102,7 +102,7 @@ describe 'region manager', ->
                 bo.templating.set 'myViewModelTemplateName', 'This is the main template'
 
                 @viewModel =
-                    viewName: 'myViewModelTemplateName'
+                    templateName: 'myViewModelTemplateName'
 
                 @regionManager.show @viewModel
 
@@ -115,7 +115,7 @@ describe 'region manager', ->
                     bo.templating.set 'myViewModelTemplateName', 'This is the main template'
 
                     @mainViewModel =
-                        viewName: 'myViewModelTemplateName'
+                        templateName: 'myViewModelTemplateName'
 
                     @regionManager.showAll 
                         'main': @mainViewModel
@@ -132,10 +132,10 @@ describe 'region manager', ->
                     bo.templating.set 'myHelpViewModelTemplateName', 'This is the help template'
 
                     @mainViewModel =
-                        viewName: 'myMainViewModelTemplateName'
+                        templateName: 'myMainViewModelTemplateName'
 
                     @helpViewModel =
-                        viewName: 'myHelpViewModelTemplateName'
+                        templateName: 'myHelpViewModelTemplateName'
 
                     @regionManager.showAll 
                         'main': @mainViewModel
@@ -150,7 +150,7 @@ describe 'region manager', ->
                         bo.templating.set 'myNewMainViewModelTemplateName', 'This is the new main template'
 
                         @newMainViewModel =
-                            viewName: 'myNewMainViewModelTemplateName'
+                            templateName: 'myNewMainViewModelTemplateName'
                         
                         @regionManager.showAll 
                             'main': @newMainViewModel
