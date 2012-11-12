@@ -7,12 +7,6 @@ ajax = bo.ajax = {}
 requestDetectionFrame = []
 listening = false
 
-removePromiseFromDetectionFrame = (promise) ->
-    idx = requestDetectionFrame.indexOf promise
-
-    if idx != -1
-        requestDetectionFrame.splice idx, 1
-
 class RequestBuilder
     doCall = (httpMethod, requestBuilder) ->
         # TODO: Extract extension of deferred to give non-failure
