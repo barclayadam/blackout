@@ -62,7 +62,7 @@ ko.setTemplateEngine createCustomEngine new ko.nativeTemplateEngine()
 # set immediately whenever an external template that has not yet been
 # loaded is used and bound to, automatically being replaced once the
 # template has been successfully loaded.
-templating.loadingTemplate = 'Loading...'
+templating.loadingTemplate = '<div class="template-loading">Loading...</div>'
 
 # Determines whether the specified template definition is 'external',
 # whether given the specified name a template could be loaded by passing
