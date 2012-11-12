@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
   <head>
+      <title>Nerd Dinner</title>
+
 	  <!-- Lib Files -->
 	  <script type="text/javascript" src='/ext/jquery.js'></script>
 	  <script type="text/javascript" src='/ext/underscore.js'></script>
@@ -8,10 +10,10 @@
       <script type="text/javascript" src='/lib/bo.js'></script>
 	  
 	  <!-- Source Files -->  
-      <script type="text/javascript" src='./js/app.js'></script>
+      <script type="text/javascript" src='js/app.js'></script>
 
 	  <!-- Styles -->
-	  <link rel="stylesheet" type="text/css" href="./styles/site.css" />
+	  <link rel="stylesheet" type="text/css" href="styles/site.css" />
   </head>
 
   <body data-bind="app: nerddinner.app">
@@ -33,22 +35,10 @@
                     <li><a href="/Dinners/Create">Host Dinner</a></li>
                     <li class="last"><a href="/Home/About">About</a></li>
                 </ul>
-
-                <a class="feed" href="/Services/OData.svc">
-                    <img alt="OData Feed" title="OData Feed" src="./images/icon-odatafeed-28x28.png" />
-                </a>
-
-                <a class="feed" href="/Services/RSS">
-                    <img alt="RSS Feed" title="RSS Feed" src="./images/icon-feed-28x28.png" />
-                </a>
-
-                <a class="feed" href="webcal://www.nerddinner.com/Services/iCalFeed ">
-                    <img alt="iCal Calendar Feed for Nerd Dinners" title="iCal Calendar Feed for Nerd Dinners" src="./images/icon-icalfeed-28x28.png" /></a>
             </nav>
         </header>
         
-        <region id="main" class="clearfix">
-        </region>
+        <region id="main" class="clearfix"></region>
 
         <footer>
             Copyright &copy; The Blackout Team
