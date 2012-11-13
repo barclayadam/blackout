@@ -44,25 +44,52 @@ describe 'Messaging - Commands', ->
         beforeEach ->
             bo.messaging.commandUrlTemplate = 'ExecuteCommand/{name}'
 
-            @command = new bo.messaging.Command 'My Command', { id: 3456 }
-            @promise = @command.execute()
+            @command = new bo.messaging.Command 'My Command', { id: ko.observable(3456).addValidationRules({ required: true }) }
 
             @successCallback = @spy()
-            @promise.then @successCallback
-
             @failureCallback = @spy()
-            @promise.fail @failureCallback
 
-        describe 'that succeeds', ->
-            it 'should resolve the promise with the result, using URL with replaced name', ->
+        describe 'that fails validation', ->
+            beforeEach ->
+                @command.id undefined
+                @promise = @command.execute()
+
+                @promise.then @successCallback
+                @promise.fail @failureCallback
+
                 @server.respondWith "POST", "ExecuteCommand/My Command", [200, { "Content-Type": "application/json" },'{ "resultProperty": 5}']
                 @server.respond()  
 
+            it 'should not execute any AJAX', ->
+                expect(@successCallback).toHaveNotBeenCalled()
+                expect(@failureCallback).toHaveNotBeenCalled()
+
+            it 'validate properties', ->
+                expect(@command.id.isValid()).toBe false
+
+        describe 'that succeeds', ->
+            beforeEach ->
+                @promise = @command.execute()
+
+                @promise.then @successCallback
+                @promise.fail @failureCallback
+
+                @server.respondWith "POST", "ExecuteCommand/My Command", [200, { "Content-Type": "application/json" },'{ "resultProperty": 5}']
+                @server.respond()  
+
+
+            it 'should resolve the promise with the result, using URL with replaced name', ->
                 expect(@successCallback).toHaveBeenCalledWith { resultProperty: 5 }
                 
         describe 'that fails', ->
-            it 'should reject the promise', ->
+            beforeEach ->
+                @promise = @command.execute()
+
+                @promise.then @successCallback
+                @promise.fail @failureCallback
+
                 @server.respondWith "POST", "ExecuteCommand/My Command", [500, { "Content-Type": "application/json" },'{}']
                 @server.respond()  
 
+            it 'should reject the promise', ->
                 expect(@failureCallback).toHaveBeenCalled()

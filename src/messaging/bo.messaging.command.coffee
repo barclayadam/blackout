@@ -36,7 +36,14 @@ class messaging.Command
         bo.validation.mixin @
 
     execute: () ->
-        messaging.command @__name, @
+        @validate()
+
+        if @isValid()
+            messaging.command @__name, @
+        else
+            # If not valid then a promise that never resolves is returned.
+            # TODO: Is this the correct thing to do?
+            jQuery.Deferred()
 
     toJSON: () ->
         definedValues = {}
