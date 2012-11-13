@@ -1,15 +1,26 @@
 (behavesLikeNotification = (name) ->
-	describe name, ->
-		beforeEach ->
-			bo.notifications[name] 'This is the message'
+    describe "#{name} with no options", ->
+        beforeEach ->
+            bo.notifications[name] 'This is the message'
 
-		it 'should raise an event with text and level', ->
-			expect("notification:#{name}").toHaveBeenPublishedWith
-				text: 'This is the message'
-				level: name
+        it 'should raise an event with text and level with default empty options', ->
+            expect("notification:#{name}").toHaveBeenPublishedWith
+                text: 'This is the message'
+                level: name
+                options: {}
+
+    describe "#{name} with options", ->
+        beforeEach ->
+            bo.notifications[name] 'This is the message', { anOption: 'An option value'}
+
+        it 'should raise an event with text and level with passed options', ->
+            expect("notification:#{name}").toHaveBeenPublishedWith
+                text: 'This is the message'
+                level: name
+                options: { anOption: 'An option value'}
 )
 
 describe 'notifications', ->
-	behavesLikeNotification 'success'
-	behavesLikeNotification 'warning'
-	behavesLikeNotification 'error'
+    behavesLikeNotification 'success'
+    behavesLikeNotification 'warning'
+    behavesLikeNotification 'error'

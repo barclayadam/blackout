@@ -10,7 +10,8 @@ notifications = bo.notifications = {}
 # * `text`: The text of the notification
 # * `level`: The level of the notification (i.e. `success`, `warning` or `error`)
 'success warning error'.replace /\w+/g, (level) ->
-    notifications[level] = (text) ->
+    notifications[level] = (text, options = {}) ->
         bo.bus.publish "notification:#{level}", 
             text: text
             level: level
+            options: options
