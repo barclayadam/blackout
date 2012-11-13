@@ -5,7 +5,7 @@ class bo.RegionManager
         @defaultRegion = undefined
         @regions = {}
 
-    show: (viewModel) ->
+    showSingle: (viewModel) ->
         # If a single region has been set use whatever name was given.
         if (_.keys @regions).length is 1
             @regions[_.keys(@regions)[0]] viewModel
@@ -14,7 +14,7 @@ class bo.RegionManager
         else
             throw new Error 'Cannot use show when multiple regions exist'
     
-    showAll: (viewModels) ->
+    show: (viewModels) ->
         for regionKey, vm of viewModels
             if @regions[regionKey] is undefined
                 throw new Error "This region manager does not have a '#{regionKey}' region."

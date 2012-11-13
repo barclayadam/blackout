@@ -27,7 +27,7 @@ class Route
     paramRegex = /{(\*?)(\w+)}/g
 
     # Constructs a new route, with a name and route url.
-    constructor: (@name, @url, @callback, @options) ->
+    constructor: (@name, @url, @callbackOrOptions, @options) ->
         @title = options.title
 
         @requiredParams = []
@@ -102,11 +102,16 @@ class bo.routing.Router
         @currentRoute = route
         @currentParameters = _.extend parameters, new bo.Uri(url).variables
 
-        route.callback? parameters
-
-        bo.bus.publish "routeNavigated:#{route.name}",
+        msg =
             route: route
             parameters: parameters
+
+        if _.isFunction route.callbackOrOptions 
+            route.callbackOrOptions parameters
+        else if route.callbackOrOptions?
+            msg.options = route.callbackOrOptions
+
+        bo.bus.publish "routeNavigated:#{route.name}", msg
 
     # Adds the specified named route to this route table. If a route
     # of the same name already exists then it will be overriden
@@ -114,8 +119,8 @@ class bo.routing.Router
     #
     # The URL *must* be a relative definition, the route table will
     # not take into account absolute URLs in any case.
-    route: (name, url, callback, options = { title: name }) ->
-        @_routes[name] = new Route name, url, callback, options
+    route: (name, url, callbackOrOptions, options = { title: name }) ->
+        @_routes[name] = new Route name, url, callbackOrOptions, options
 
         @
 

@@ -55,7 +55,7 @@ describe 'region manager', ->
                 @viewModel =
                     templateName: 'myViewModelTemplateName'
 
-                @regionManager.show @viewModel
+                @regionManager.showSingle @viewModel
 
             it 'should render the view model and its associated template in single region', ->
                 expect(@wrapper.find("div.region")).toHaveText 'This is the template'
@@ -104,12 +104,12 @@ describe 'region manager', ->
                 @viewModel =
                     templateName: 'myViewModelTemplateName'
 
-                @regionManager.show @viewModel
+                @regionManager.showSingle @viewModel
 
             it 'should set the view model to the default region', ->
                 expect(@wrapper.find("div#main")).toHaveText 'This is the main template'
 
-        describe 'showAll', ->
+        describe 'show', ->
             describe 'with one view model set', ->
                 beforeEach ->
                     bo.templating.set 'myViewModelTemplateName', 'This is the main template'
@@ -117,7 +117,7 @@ describe 'region manager', ->
                     @mainViewModel =
                         templateName: 'myViewModelTemplateName'
 
-                    @regionManager.showAll 
+                    @regionManager.show 
                         'main': @mainViewModel
 
                 it 'should render the view model and its associated template in set region', ->
@@ -137,7 +137,7 @@ describe 'region manager', ->
                     @helpViewModel =
                         templateName: 'myHelpViewModelTemplateName'
 
-                    @regionManager.showAll 
+                    @regionManager.show 
                         'main': @mainViewModel
                         'help': @helpViewModel
 
@@ -145,14 +145,14 @@ describe 'region manager', ->
                     expect(@wrapper.find("div#main")).toHaveText 'This is the main template'
                     expect(@wrapper.find("div#help")).toHaveText 'This is the help template'
 
-                describe 'showAll called again with only a single region', ->
+                describe 'show called again with only a single region', ->
                     beforeEach ->
                         bo.templating.set 'myNewMainViewModelTemplateName', 'This is the new main template'
 
                         @newMainViewModel =
                             templateName: 'myNewMainViewModelTemplateName'
                         
-                        @regionManager.showAll 
+                        @regionManager.show 
                             'main': @newMainViewModel
 
                     it 'should re-render the changed region', ->    
@@ -161,10 +161,10 @@ describe 'region manager', ->
                     it 'should not change the region not passed in', ->    
                         expect(@wrapper.find("div#help")).toHaveText 'This is the help template'
 
-            describe 'with unknown region specified in showAll', ->
+            describe 'with unknown region specified in show', ->
                 beforeEach ->
                     @showWithUnknownRegion = =>
-                        @regionManager.showAll 
+                        @regionManager.show 
                             'main': {}
                             'unknown': {}
 

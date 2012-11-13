@@ -5,19 +5,11 @@ var nerddinner = window.nerddinner = {};
 
 nerddinner.app = new bo.App()
 
-nerddinner.app.router.route('Homepage', '/', function() {
-    alert("Visited homepage");
-});
-
-nerddinner.app.router.route('Homepage', '/examples/nerddinner/', function() {
-    nerddinner.app.regionManager.show({ 
-        templateName: 'homepage', 
-
-        show: function() {
-            this.myName = nerddinner.app.router.currentParameters.name || 'You';
-        }
-    });
-}); 
+bo.bus.subscribe('routeNavigated', function(msg) {
+	if(msg.options) {
+		nerddinner.app.regionManager.show(msg.options);
+	}
+})
 
 jQuery(function() {
     nerddinner.app.start();   

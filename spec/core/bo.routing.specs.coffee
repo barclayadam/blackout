@@ -170,6 +170,23 @@ describe 'Routing:', ->
                 expectedParameters: {}
                 route: 'Contact Us'
 
+    describe 'Single no-param route, with object as callback', ->
+        beforeEach ->
+            @callbackOptions = { anOption: 'some text' }
+            @router.route 'Contact Us', '/Contact Us', @callbackOptions
+            @contactUsRoute = @router.getNamedRoute 'Contact Us'
+
+        describe 'navigateTo route', ->
+            beforeEach ->                
+                @routePathStub = @stub bo.location, 'routePath'
+                @router.navigateTo 'Contact Us'
+
+            it 'should publish a routeNavigated message with options included', ->
+                expect("routeNavigated:Contact Us").toHaveBeenPublishedWith
+                    route: @contactUsRoute
+                    parameters: {}
+                    options: @callbackOptions
+
     describe 'Multiple, different, routes', ->
         beforeEach ->
             @contactUsRouteNavigatedStub = @stub()
