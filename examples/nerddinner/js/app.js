@@ -11,7 +11,7 @@ nerddinner.app.router.route('Homepage', '/', function() {
 
 nerddinner.app.router.route('Homepage', '/examples/nerddinner/', function() {
     nerddinner.app.regionManager.show({ 
-        templateName: 'e:homepage', 
+        templateName: 'homepage', 
 
         show: function() {
             this.myName = nerddinner.app.router.currentParameters.name || 'You';

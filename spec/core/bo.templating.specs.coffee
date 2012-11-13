@@ -72,17 +72,17 @@ describe 'templating', ->
                     expect(@wrapper).toHaveText 'Explicitly set template again'  
 
     describe 'external templates', ->
-        describe 'when an external template name is used by specifying e: prefix', ->
+        describe 'when a template name does not match an existing element, or string template it is loaded externally', ->
             beforeEach ->
-                @template = "A cool template"
+                @templateText = "A cool external template"
 
                 # Use {name} to specify injection point for template name
                 bo.templating.externalPath = '/Get/Template/{name}'
-                @respondWithTemplate '/Get/Template/myExternalTemplate', @template     
+                @respondWithTemplate '/Get/Template/myExternalTemplate', @templateText     
 
                 @setHtmlFixture """
-                    <div id='one' data-bind="template: 'e:myExternalTemplate'"></div>
-                    <div id='two' data-bind="template: 'e:myExternalTemplate'"></div>
+                    <div id='one' data-bind="template: 'myExternalTemplate'"></div>
+                    <div id='two' data-bind="template: 'myExternalTemplate'"></div>
                 """
 
                 @ajaxSpy = @spy $, 'ajax'
@@ -103,5 +103,5 @@ describe 'templating', ->
                     @server.respond()
 
                 it 'should render template', ->
-                    expect(@wrapperOne).toHaveText @template
-                    expect(@wrapperTwo).toHaveText @template
+                    expect(@wrapperOne).toHaveText @templateText
+                    expect(@wrapperTwo).toHaveText @templateText

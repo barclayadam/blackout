@@ -32,15 +32,37 @@ class ExternalTemplateSource
 createCustomEngine = (templateEngine) ->
     originalMakeTemplateSource = templateEngine.makeTemplateSource
 
-    templateEngine.makeTemplateSource = (template) ->
+    templateEngine.makeTemplateSource = (template, templateDocument) ->
         if templating.templates[template]?
             new StringTemplateSource template
-        else if templating.isExternal template
-            new ExternalTemplateSource template
+        else if template.nodeType == 1 || template.nodeType == 8
+            new ko.templateSources.anonymousTemplate template
+        else if _.isString template
+            templateElement = (templateDocument || document).getElementById template
+
+            if !templateElement
+                new ExternalTemplateSource template
+            else
+                new ko.templateSources.domElement elem
         else
-            originalMakeTemplateSource template
+            throw new Error "Unknown template type: #{template}"
 
     templateEngine
+
+#ko.templateEngine.prototype['makeTemplateSource'] = function(template, templateDocument) {
+#    // Named template
+#    if (typeof template == "string") {
+#        templateDocument = templateDocument || document;
+#        var elem = templateDocument.getElementById(template);
+#        if (!elem)
+#            throw new Error("Cannot find template with ID " + template);
+#        return new ko.templateSources.domElement(elem);
+#    } else if ((template.nodeType == 1) || (template.nodeType == 8)) {
+#        // Anonymous template
+#        return new ko.templateSources.anonymousTemplate(template);
+#    } else
+#        throw new Error("Unknown template type: " + template);
+#};
 
 ko.setTemplateEngine createCustomEngine new ko.nativeTemplateEngine()
 
@@ -64,23 +86,12 @@ ko.setTemplateEngine createCustomEngine new ko.nativeTemplateEngine()
 # template has been successfully loaded.
 templating.loadingTemplate = '<div class="template-loading">Loading...</div>'
 
-# Determines whether the specified template definition is 'external',
-# whether given the specified name a template could be loaded by passing
-# it to the `bo.templating.loadExternalTemplate` method.
-#
-# By default a template is deemed to be external if it being with the
-# preifx `e:` (e.g. `e:My External Template`). When a template is
-# identified as external it will be passed to the `bo.templating.loadExternalTemplate`
-# method to load the template from the server.
-templating.isExternal = (name) ->
-    name.indexOf && name.indexOf 'e:' is 0
-
 # The location from which to load external templates, with a `{name}`
 # token indicating the location into which to inject the name of the
 # template being added.
 #
 # For example, given an `externalPath` of `/Templates/{name}` and a template
-# name of `e:Contact Us` the template will be loaded from `/Templates/Contact Us`.
+# name of `Contact Us` the template will be loaded from `/Templates/Contact Us`.
 #
 # This property is used from the default implementation of
 # `bo.templating.loadExternalTemplate`, which can be completely overriden
@@ -88,10 +99,6 @@ templating.isExternal = (name) ->
 templating.externalPath = '/Templates/Get/{name}'
 
 templating.loadExternalTemplate = (name) ->
-    # The default support is for template names beginning 'e:', strip
-    # that identifier out.
-    name = name.substring 2
-
     path = templating.externalPath.replace '{name}', name
 
     bo.ajax.url(path).get()
