@@ -67,7 +67,7 @@ validateModel = (model) ->
 
         if _.isArray unwrapped
             for item in unwrapped
-                validateModel item
+                valid = (validateModel item) && valid
 
     valid
 

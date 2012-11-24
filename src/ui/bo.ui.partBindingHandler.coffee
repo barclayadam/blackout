@@ -28,7 +28,7 @@
 # ## Lifecycle
 #
 #             ┌──────────────────────────────┐
-# set part →  │ → beforeShow → show → hide → │  → part unset 
+# set part →  │ → show → afterShow → hide →  │  → part unset 
 #             └──────────────────────────────┘
 #
 # The lifecycle hooks that the `part` binding handler provides are very

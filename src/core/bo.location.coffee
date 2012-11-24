@@ -127,6 +127,8 @@ location.reset = ->
 # Initialises the location subsystem, to be called when the application is
 # ready to begin receiving messages (`urlChanged:external` messages).
 location.initialise = ->
+    bo.log.info "Initialising location services"
+
     location.initialised = true
 
     bo.bus.publish 'urlChanged:external', 

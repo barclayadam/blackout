@@ -21,7 +21,7 @@ getLabelFor = (element) ->
     _.find labels, (l) ->
         l.getAttribute('for') is element.id
 
-rules =
+bo.validation.rules = rules =
     required: 
         validator: (value, options) ->
             hasValue value
@@ -265,5 +265,3 @@ defineRegexValidator = (name, regex) ->
 
 defineRegexValidator 'email', /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/i
 defineRegexValidator 'postcode', /(GIR ?0AA)|((([A-Z][0-9]{1,2})|(([A-Z][A-HJ-Y][0-9]{1,2})|(([A-Z][0-9][A-Z])|([A-Z][A-HJ-Y][0-9]?[A-Z])))) ?[0-9][A-Z]{2})/i
-
-bo.validation.rules = rules

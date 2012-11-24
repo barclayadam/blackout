@@ -49,21 +49,6 @@ createCustomEngine = (templateEngine) ->
 
     templateEngine
 
-#ko.templateEngine.prototype['makeTemplateSource'] = function(template, templateDocument) {
-#    // Named template
-#    if (typeof template == "string") {
-#        templateDocument = templateDocument || document;
-#        var elem = templateDocument.getElementById(template);
-#        if (!elem)
-#            throw new Error("Cannot find template with ID " + template);
-#        return new ko.templateSources.domElement(elem);
-#    } else if ((template.nodeType == 1) || (template.nodeType == 8)) {
-#        // Anonymous template
-#        return new ko.templateSources.anonymousTemplate(template);
-#    } else
-#        throw new Error("Unknown template type: " + template);
-#};
-
 ko.setTemplateEngine createCustomEngine new ko.nativeTemplateEngine()
 
 # The public API of the custom templating support built on-top of the
@@ -96,7 +81,7 @@ templating.loadingTemplate = '<div class="template-loading">Loading...</div>'
 # This property is used from the default implementation of
 # `bo.templating.loadExternalTemplate`, which can be completely overriden
 # if this simple case does not suffice for a given project.
-templating.externalPath = '/Templates/Get/{name}'
+templating.externalPath = '/Templates/{name}'
 
 templating.loadExternalTemplate = (name) ->
     path = templating.externalPath.replace '{name}', name

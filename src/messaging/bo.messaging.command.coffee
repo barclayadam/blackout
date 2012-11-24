@@ -18,7 +18,7 @@ messaging.command = (commandName, values = {}) ->
         .data(values)
         .post()
 
-# TODO: This should not differ just on capitilisation of the C!
+# TODO: This should not differ just on capitalisation of the C!
 
 class messaging.Command
     # Initialises a new instance of the `bo.messaging.Command` class with the
