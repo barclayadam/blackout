@@ -35,6 +35,10 @@ describe 'Sorter', ->
             sorted = (new bo.Sorter()).sort @unsorted
             expect(_.pluck(sorted, 'id')).toEqual ['ab', 'js', 'abOlder', 'mj']
 
+        it 'should have sort order as an observable', ->
+            sorter = new bo.Sorter()
+            expect(sorter.definition).toBeObservable()
+
     describe 'by string definition', ->
         describe 'single property sorting', ->
             it 'should sort by default ascending', ->
@@ -49,9 +53,17 @@ describe 'Sorter', ->
                 sorted = (new bo.Sorter 'name descending').sort @unsorted
                 expect(_.pluck(sorted, 'id')).toEqual ['mj', 'js', 'ab', 'abOlder']
 
-            it 'should fully qualify with direction when converting to string', ->
+            it 'should fully qualify with default ascending direction when converting to string', ->
                 definition = (new bo.Sorter 'name').toString()
                 expect(definition).toEqual 'name ascending'
+
+            it 'should enable getting sort order by property name', ->
+                sorter = new bo.Sorter 'name ascending'
+                expect(sorter.getPropertySortOrder('name')).toEqual 'ascending'
+
+            it 'should return undefined when asked for sort order of property not ordered', ->
+                sorter = new bo.Sorter 'name ascending'
+                expect(sorter.getPropertySortOrder('nonProperty')).toEqual undefined
 
         describe 'multiple property sorting', ->
             it 'should sort by default ascending', ->
@@ -69,3 +81,13 @@ describe 'Sorter', ->
             it 'should fully qualify with direction when converting to string', ->
                 definition = (new bo.Sorter 'name desc, age ascending').toString()
                 expect(definition).toEqual 'name descending, age ascending'
+
+            it 'should enable getting sort order by property name', ->
+                sorter = new bo.Sorter 'name desc, age ascending'
+
+                expect(sorter.getPropertySortOrder('name')).toEqual 'descending'
+                expect(sorter.getPropertySortOrder('age')).toEqual 'ascending'
+
+            it 'should return undefined when asked for sort order of property not ordered', ->
+                sorter = new bo.Sorter 'name ascending'
+                expect(sorter.getPropertySortOrder('nonProperty')).toEqual undefined

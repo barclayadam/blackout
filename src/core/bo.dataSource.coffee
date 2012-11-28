@@ -61,23 +61,7 @@ class bo.DataSource
         # when in client-side only mode).
         @_loadedItems = ko.observableArray()
 
-        @_sortByAsString = ko.observable()
-        @_sortByDetails = ko.observable()
-
-        # When new sorting order given will create the string representation
-        # of that sorting order in a normalised fashion (e.g. always use
-        # `ascending` or `descending` instead of `asc` or `desc`).
-        @_sortByDetails.subscribe (newValue) =>
-            normalised = _.reduce newValue, ((memo, o) -> 
-                    prop = "#{o.name} #{toOrderDirection(o.order)}"
-
-                    if memo 
-                        "#{memo}, #{prop}" 
-                    else 
-                        prop
-                ), ''
-
-            @_sortByAsString normalised
+        @_sorter = new bo.Sorter
 
         # The sorting order of this `DataSource`, a textual
         # description of the properties by which the data is sorted.
@@ -88,37 +72,17 @@ class bo.DataSource
         #
         # `property1 ascending[, property2 descending]` 
         @sortBy = ko.computed
-            read: @_sortByAsString
+            read: => 
+                @_sorter.toString()
 
             write: (value) =>
-                # TODO: Allow setting an object
-                properties = _(value.split(',')).map (p) ->
-                    p = ko.utils.stringTrim p
-
-                    indexOfSpace = p.indexOf ' '
-
-                    if indexOfSpace > -1
-                        name: p.substring 0, indexOfSpace
-                        order: toOrderDirection p.substring indexOfSpace + 1
-                    else
-                        name: p
-                        order: 'ascending'
-
-                @_sortByDetails properties
+                @_sorter.setSortOrder value
 
         # The items that have been loaded, presented sorted, filtered and
         # grouped as determined by the options passed to this `DataSource`.
         @items = ko.computed =>
-            if @_sortByDetails()? and not @_serverPagingEnabled
-                @_loadedItems().sort (a, b) => 
-                    for p in @_sortByDetails()
-                        if a[p.name] > b[p.name]
-                            return if p.order is 'ascending' then 1 else -1
-                        
-                        if a[p.name] < b[p.name]
-                            return if p.order is 'ascending' then -1 else 1
-
-                    0
+            if not @_serverPagingEnabled
+                @_sorter.sort @_loadedItems()
             else
                 @_loadedItems()
 
@@ -136,11 +100,7 @@ class bo.DataSource
         @_setupInitialData()
 
     getPropertySortOrder: (propertyName) ->
-        sortedBy = @_sortByDetails()
-
-        if sortedBy? and sortedBy.length > 0
-            ordering = _.find sortedBy, (o) -> o.name is propertyName            
-            ordering?.order    
+        @_sorter.getPropertySortOrder propertyName
 
     # Removes the given item from this data source.
     #
@@ -267,7 +227,7 @@ class bo.DataSource
             loadOptions.pageSize = @options.serverPaging
             loadOptions.pageNumber = Math.ceil @pageNumber() / @clientPagesPerServerPage
         
-        if @sortBy()?
+        if @sortBy() != ""
             loadOptions.orderBy = @sortBy()
 
         if _.isEqual loadOptions, @_lastProviderOptions
