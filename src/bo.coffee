@@ -45,6 +45,7 @@
         #= messaging/bo.messaging.query.coffee
         #= messaging/bo.messaging.command.coffee
 
+        #= ui/bo.ui.uiaction.coffee
         #= ui/bo.ui.partBindingHandler.coffee
         #= ui/bo.ui.regionManager.coffee
     )
