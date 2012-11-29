@@ -13,17 +13,17 @@
 #   shown to the user visually as an `executing` observable exists that keeps track of
 #   the execution status of the action.
 #
-# * A UI action can mark itself as a 'serial' action, meaning that if the
+# * A UI action can mark itself as a 'disableDuringExecution' action, meaning that if the
 #   action is asynchrounous the user can not execute the action multiple times in parallel,
 #   which is particularly useful when submitting forms to the server.
 bo.UiAction = (f) ->
     if _.isFunction f
         enabled = ko.observable true
         action = f
-        serial = false
+        disableDuringExecution = false
     else
         enabled = bo.utils.asObservable (f.enabled ? true)
-        serial = f.serial ? false
+        disableDuringExecution = f.disableDuringExecution ? false
         action = f.action
 
     executing = ko.observable false
@@ -33,10 +33,10 @@ bo.UiAction = (f) ->
 
         executing: executing
 
-        serial: serial
+        disableDuringExecution: disableDuringExecution
 
         execute: ->
-            if enabled() and (not serial or not executing())
+            if enabled() and (not disableDuringExecution or not executing())
                 executing true
                 ret = action.apply this, arguments
 

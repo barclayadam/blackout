@@ -89,7 +89,7 @@ describe 'UIAction', ->
 
             expect(@action.executing()).toBe false # Execution has finished 
 
-    describe 'async action that returns promise, marked as serial', ->
+    describe 'async action that returns promise, marked as disableDuringExecution', ->
         beforeEach ->
             @deferred = jQuery.Deferred()
 
@@ -97,7 +97,7 @@ describe 'UIAction', ->
                 @deferred
             
             @action = bo.UiAction 
-                serial: true
+                disableDuringExecution: true
 
                 action: @actionSpy
 
