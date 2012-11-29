@@ -107,3 +107,9 @@ describe 'UIAction', ->
 
         it 'should only execute function once whilst the first has not completed', ->            
             expect(@actionSpy).toHaveBeenCalledOnce()
+
+        it 'should allow execution again after first call completes', ->      
+            @deferred.resolve()
+            @action.execute()
+
+            expect(@actionSpy).toHaveBeenCalledTwice()
