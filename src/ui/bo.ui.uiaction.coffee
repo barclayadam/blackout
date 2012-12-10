@@ -16,15 +16,15 @@
 # * A UI action can mark itself as a 'disableDuringExecution' action, meaning that if the
 #   action is asynchrounous the user can not execute the action multiple times in parallel,
 #   which is particularly useful when submitting forms to the server.
-bo.UiAction = (f) ->
-    if _.isFunction f
+bo.UiAction = (funcOrOptions) ->
+    if _.isFunction funcOrOptions
         enabled = ko.observable true
-        action = f
+        action = funcOrOptions
         disableDuringExecution = false
     else
-        enabled = bo.utils.asObservable (f.enabled ? true)
-        disableDuringExecution = f.disableDuringExecution ? false
-        action = f.action
+        enabled = bo.utils.asObservable (funcOrOptions.enabled ? true)
+        disableDuringExecution = funcOrOptions.disableDuringExecution ? false
+        action = funcOrOptions.action
 
     executing = ko.observable false
         
