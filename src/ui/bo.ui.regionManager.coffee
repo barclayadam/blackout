@@ -12,14 +12,14 @@ class bo.RegionManager
         else if @defaultRegion?
             @regions[@defaultRegion] viewModel
         else
-            throw new Error 'Cannot use show when multiple regions exist'
+            throw new Error 'Cannot use the showSingle method when multiple regions exist'
     
     show: (viewModels) ->
         for regionKey, vm of viewModels
             if @regions[regionKey] is undefined
-                throw new Error "This region manager does not have a '#{regionKey}' region."
-
-            @regions[regionKey] vm
+                bo.log.debug "This region manager does not have a '#{regionKey}' region"
+            else
+                @regions[regionKey] vm
 
         # Avoid automated return.
         undefined
@@ -66,7 +66,7 @@ koBindingHandlers.region =
         regionManager = bindingContext[regionManagerContextKey]
 
         if regionManager is undefined
-            throw new Error 'region binding handler / tag must be a child of a regionManager'
+            throw new Error 'A region binding handler / tag must be a child of a regionManager'
 
         regionId = element.id or 'main'
         isDefault = (element.getAttribute 'data-default') is 'true'

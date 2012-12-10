@@ -13,7 +13,7 @@ describe 'region manager', ->
                 @applyBindingsToHtmlFixture()
 
         it 'should throw an exception detailing incorrect usage', ->
-            expect(@applyBindingsFunc).toThrow 'region binding handler / tag must be a child of a regionManager'
+            expect(@applyBindingsFunc).toThrow 'A region binding handler / tag must be a child of a regionManager'
 
     describe 'single region', ->
         beforeEach ->
@@ -163,10 +163,11 @@ describe 'region manager', ->
 
             describe 'with unknown region specified in show', ->
                 beforeEach ->
-                    @showWithUnknownRegion = =>
-                        @regionManager.show 
-                            'main': {}
-                            'unknown': {}
+                    bo.log.debug = @spy()
 
-                it 'should throw a descriptive error', ->
-                    expect(@showWithUnknownRegion).toThrow "This region manager does not have a 'unknown' region."
+                    @regionManager.show 
+                        'main': {}
+                        'unknown': {}
+
+                it 'should log a debug error message', ->
+                    expect(bo.log.debug).toHaveBeenCalledWith "This region manager does not have a 'unknown' region"
