@@ -137,7 +137,7 @@ location.initialise = ->
         variables: location.routeVariables()
         external: true
 
-# Bind to the popstate event, as polyfilled previously, and convert
+# Bind to the popstate event, and convert
 # it into a message that is published on the bus for others to
 # listen to.
 ko.utils.registerEventHandler window, 'popstate', ->
