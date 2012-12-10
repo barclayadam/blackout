@@ -8,6 +8,10 @@ class bo.App
 
         bo.location.initialise()
 
+        bo.bus.subscribe 'routeNavigated', (msg) =>
+            if msg.options?
+                @regionManager.show msg.options
+
 koBindingHandlers.app =
     init: (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) ->
         app = valueAccessor()
@@ -18,6 +22,6 @@ koBindingHandlers.app =
  
         { controlsDescendantBindings: true }
 
-# TODO: Remove jQUery dependency
+# TODO: Remove jQuery dependency
 $(document).ready ->
     ko.applyBindings {}
