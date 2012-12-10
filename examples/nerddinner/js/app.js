@@ -10,7 +10,3 @@ bo.bus.subscribe('routeNavigated', function(msg) {
 		nerddinner.app.regionManager.show(msg.options);
 	}
 })
-
-jQuery(function() {
-    nerddinner.app.start();   
-});

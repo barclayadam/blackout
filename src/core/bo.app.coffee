@@ -6,10 +6,18 @@ class bo.App
     start: ->
         bo.log.info "Starting application"
 
-        ko.applyBindings @
-
         bo.location.initialise()
 
 koBindingHandlers.app =
     init: (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) ->
-        koBindingHandlers.regionManager.init element, (-> valueAccessor().regionManager), allBindingsAccessor, viewModel, bindingContext
+        app = valueAccessor()
+
+        koBindingHandlers.regionManager.init element, (-> app.regionManager), allBindingsAccessor, viewModel, bindingContext
+
+        app.start()
+ 
+        { controlsDescendantBindings: true }
+
+# TODO: Remove jQUery dependency
+$(document).ready ->
+    ko.applyBindings {}
