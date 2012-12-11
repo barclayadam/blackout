@@ -56,6 +56,11 @@ class RequestBuilder
 
             getDeferred.fail callback
 
+        promise.then = (success, failure) ->
+            failureHandlerRegistered = failureHandlerRegistered or failure?
+
+            getDeferred.then success, failure
+
         if listening
             requestDetectionFrame.push promise
 

@@ -136,6 +136,42 @@
 
             it 'should not publish ajaxResponseFailureUnhandled', ->
                 expect("ajaxResponseFailureUnhandled:#{@path}").toHaveNotBeenPublished()
+
+        describe 'failure, with failure handlers added as second argument to then', ->
+            beforeEach ->
+                @path = '/Users/List'
+                @request = bo.ajax.url(@path)[methodName]()
+                @response = "Failed"
+
+                @doneSpy = @spy()
+                @failSpy = @spy()
+                
+                @request.then @doneSpy, @failSpy
+
+                @server.respondWith httpMethod, @path, [500, { "Content-Type": "text/html" }, @response]
+                @server.respond()
+                
+            it 'should not resolve promise with response from server if response is 500', ->
+                expect(@doneSpy).toHaveNotBeenCalled()
+
+            it 'should raise an ajaxRequestSent message', ->
+                expect("ajaxRequestSent:#{@path}").toHaveBeenPublishedWith
+                    path: @path
+                    method: httpMethod
+
+            it 'should raise an ajaxResponseReceived message', ->
+                expect("ajaxResponseReceived:failure:#{@path}").toHaveBeenPublishedWith
+                    path: @path
+                    method: httpMethod
+                    responseText: @response
+                    status: 500
+                    success: false
+                
+            it 'should fail promise with response from server if response is not 200', ->
+                expect(@failSpy).toHaveBeenCalled()
+
+            it 'should not publish ajaxResponseFailureUnhandled', ->
+                expect("ajaxResponseFailureUnhandled:#{@path}").toHaveNotBeenPublished()
         
         describe 'failure with no fail handlers added', ->
             beforeEach ->
