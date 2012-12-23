@@ -12,37 +12,35 @@ describe 'component binding provider', ->
             @myTextObservable = ko.observable 'A Value'
             @myUpdatedTextObservable = ko.observable 'A Value'
 
-            @applyBindingsToHtmlFixture 
+            @applyBindingsToFixture 
                 myTextObservable: @myTextObservable 
                 myUpdatedTextObservable: @myUpdatedTextObservable
-
-            @wrapper = @fixture.find("div") 
 
             @myUpdatedTextObservable 'A New Value'
 
         it 'should apply bindings with literal values', ->
-            expect(@fixture.find('#literal')).toHaveText 'My Text'
+            expect(document.getElementById('literal')).toHaveText 'My Text'
 
         it 'should apply multiple bindings with literal values', ->
-            expect(@fixture.find('#multiple')).toHaveText 'My Text'
-            expect(@fixture.find('#multiple')).toHaveClass 'myClass'
+            expect(document.getElementById('multiple')).toHaveText 'My Text'
+            expect(document.getElementById('multiple')).toHaveClass 'myClass'
 
         it 'should apply bindings with observable values', ->
-            expect(@fixture.find('#non-updated')).toHaveText @myTextObservable()
+            expect(document.getElementById('non-updated')).toHaveText @myTextObservable()
 
         it 'should apply bindings with observable values for updates', ->
-            expect(@fixture.find('#updated')).toHaveText @myUpdatedTextObservable()
+            expect(document.getElementById('updated')).toHaveText @myUpdatedTextObservable()
 
     describe 'binding handler not specified as tag compatible', ->
         beforeEach ->           
             @setHtmlFixture """
-                <div data-option="'My Text'">Existing Value</div>
+                <div id='fixture' data-option="'My Text'">Existing Value</div>
             """
 
-            @applyBindingsToHtmlFixture {}
+            @applyBindingsToFixture {}
 
         it 'should not use binding handler', ->
-            expect(@fixture.find("div")).toHaveText 'Existing Value'
+            expect(document.getElementById("fixture")).toHaveText 'Existing Value'
 
     describe 'binding handler specified as tag compatible, with replacement', ->
         beforeEach ->   
@@ -81,27 +79,27 @@ describe 'component binding provider', ->
                 </div>
             """
 
-            @applyBindingsToHtmlFixture {}
+            @applyBindingsToFixture {}
 
         it 'should call binding handlers init function, and allow text content of nodes to be set', ->
-            expect(@fixture.find("#tag-sample")).toHaveText 'My New Text'
+            expect(document.getElementById("tag-sample")).toHaveText 'My New Text'
 
         it 'should call binding handlers update function', ->
-            expect(@fixture.find("#tag-sample")).toHaveClass 'myClass'
+            expect(document.getElementById("tag-sample")).toHaveClass 'myClass'
 
         it 'should replace node using tag name specified in binding handler', ->
-            expect(@fixture.find("#tag-sample")[0].tagName.toLowerCase()).toEqual 'div'
-            expect(@fixture.find("#complex-option-sample")[0].tagName.toLowerCase()).toEqual 'span'
-            expect(@fixture.find("#template-tag")[0].tagName.toLowerCase()).toEqual 'div'
+            expect(document.getElementById("tag-sample").tagName.toLowerCase()).toEqual 'div'
+            expect(document.getElementById("complex-option-sample").tagName.toLowerCase()).toEqual 'span'
+            expect(document.getElementById("template-tag").tagName.toLowerCase()).toEqual 'div'
 
         it 'should work with templating', ->
-            expect(@fixture.find("#template-tag")).toHaveText 'A Cool Template'
+            expect(document.getElementById("template-tag")).toHaveText 'A Cool Template'
 
         it 'should maintain existing attributes', ->
-            expect(@fixture.find("#template-tag")).toHaveAttr 'class', 'my-class'
+            expect(document.getElementById("template-tag")).toHaveAttr 'class', 'my-class'
 
         it 'should use data-bind attribute as well', ->
-            expect(@fixture.find("#tag-sample")).toHaveClass 'myOtherBoundClass'
+            expect(document.getElementById("tag-sample")).toHaveClass 'myOtherBoundClass'
 
         it 'should pass simple type data-option to init', ->
             expect(@valuePassed).toEqual 'My Passed In Value'
@@ -123,13 +121,13 @@ describe 'component binding provider', ->
                 </div>
             """
 
-            @applyBindingsToHtmlFixture {}
+            @applyBindingsToFixture {}
 
         it 'should call binding handlers init function', ->
-            expect(@fixture.find("#input-control")).toHaveClass 'a-new-class'
+            expect(document.getElementById("input-control")).toHaveClass 'a-new-class'
 
         it 'should not replace the element with another', ->
-            expect(@fixture.find("#input-control")[0].tagName).toEqual 'INPUT'
+            expect(document.getElementById("input-control").tagName).toEqual 'INPUT'
 
     describe 'multiple binding handlers specified as tag compatible, without replacement', ->
         beforeEach ->   
@@ -151,11 +149,11 @@ describe 'component binding provider', ->
                 </div>
             """
 
-            @applyBindingsToHtmlFixture {}
+            @applyBindingsToFixture {}
 
         it 'should call all binding handlers init function', ->
-            expect(@fixture.find("#example-control")).toHaveClass 'a-new-class'
-            expect(@fixture.find("#example-control")).toHaveClass 'another-new-class'
+            expect(document.getElementById("example-control")).toHaveClass 'a-new-class'
+            expect(document.getElementById("example-control")).toHaveClass 'another-new-class'
 
         it 'should not replace the element with another', ->
-            expect(@fixture.find("#example-control")[0].tagName).toEqual 'EXAMPLE'
+            expect(document.getElementById("example-control").tagName).toEqual 'EXAMPLE'

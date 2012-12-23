@@ -2,15 +2,15 @@ describe 'part binding handler', ->
     describe 'binding undefined view model', ->
         beforeEach ->           
             @setHtmlFixture """
-                <div data-bind="part: viewModel">
+                <div id="fixture" data-bind="part: viewModel">
                     This is an anonymous template
                 </div>
             """
 
-            @applyBindingsToHtmlFixture 
+            @applyBindingsToFixture 
                 viewModel: undefined
 
-            @wrapper = @fixture.find("div") 
+            @wrapper = document.getElementById "fixture"
 
         it 'should not render the template', ->
             expect(@wrapper).toBeEmpty()
@@ -29,17 +29,17 @@ describe 'part binding handler', ->
                     ko.utils.unwrapObservable valueAccessor() # Ensure a subscription exists
                     
             @setHtmlFixture """
-                <div data-bind="part: viewModel">
+                <div id="fixture" data-bind="part: viewModel">
                     This is an anonymous template
 
                     <span data-bind="test1: anObservableProperty"></span>
                 </div>
             """
 
-            @applyBindingsToHtmlFixture 
+            @applyBindingsToFixture 
                 viewModel: @viewModel
 
-            @wrapper = @fixture.find("div") 
+            @wrapper = document.getElementById "fixture"
 
             @viewModel.anObservableProperty 'A New Value'
 
@@ -62,13 +62,13 @@ describe 'part binding handler', ->
                 templateName: 'myNamedPartTemplate'
 
             @setHtmlFixture """
-                <div data-bind="part: viewModel"></div>
+                <div id="fixture" data-bind="part: viewModel"></div>
             """
 
-            @applyBindingsToHtmlFixture 
+            @applyBindingsToFixture 
                 viewModel: @viewModel
 
-            @wrapper = @fixture.find("div") 
+            @wrapper = document.getElementById "fixture"
 
         it 'should use the named template', ->
             # Just check that when binding directly to a property of the view model 
@@ -85,18 +85,18 @@ describe 'part binding handler', ->
                     anObservableProperty: ko.observable()
 
                     show: @spy =>
-                        @showHadContent = @fixture.find("div").text().length > 0
+                        @showHadContent = document.getElementById("fixture").innerText.length > 0
 
                     afterShow: @spy =>
-                        @afterShowHadContent = @fixture.find("div").text().length > 0
+                        @afterShowHadContent = document.getElementById("fixture").innerText.length > 0
 
                 @setHtmlFixture """
-                    <div data-bind="part: viewModel">
+                    <div id="fixture" data-bind="part: viewModel">
                         This is the template
                     </div>
                 """
 
-                @applyBindingsToHtmlFixture 
+                @applyBindingsToFixture 
                     viewModel: @viewModel 
 
             it 'should call show function before afterShow', ->
@@ -117,22 +117,22 @@ describe 'part binding handler', ->
                         bo.ajax.url('/Users/Managers').get()
 
                     afterShow: @spy =>
-                        @afterShowHadContent = @fixture.find("div").text().length > 0
+                        @afterShowHadContent = document.getElementById("fixture").innerText.length > 0
 
                     hide: @spy()
 
                 @setHtmlFixture """
-                    <div data-bind="part: viewModel">
+                    <div id="fixture" data-bind="part: viewModel">
                         This is the template
                     </div>
                 """
 
-                @applyBindingsToHtmlFixture 
+                @applyBindingsToFixture 
                     viewModel: @viewModel 
 
             it 'should not render template before ajax requests complete', ->
                 # We have not responded from server yet
-                expect(@fixture.find("div")).toBeEmpty()
+                expect(document.getElementById("fixture")).toBeEmpty()
 
             it 'should not call afterShow before ajax requests complete', ->
                 # We have not responded from server yet
@@ -145,7 +145,7 @@ describe 'part binding handler', ->
 
                 it 'should render template', ->
                     # We have now responded from server
-                    expect(@fixture.find("div")).toNotBeEmpty()
+                    expect(document.getElementById("fixture")).not.toBeEmpty()
 
                 it 'should call afterShow before ajax requests complete', ->
                     # We have now responded from server
@@ -173,15 +173,15 @@ describe 'part binding handler', ->
                 @viewModel = ko.observable @viewModelOne
 
                 @setHtmlFixture """
-                    <div data-bind="part: viewModel">
+                    <div id="fixture" data-bind="part: viewModel">
                         This is the template
                     </div>
                 """
 
-                @applyBindingsToHtmlFixture 
+                @applyBindingsToFixture 
                     viewModel: @viewModel 
 
-                @wrapper = @fixture.find("div") 
+                @wrapper = document.getElementById "fixture" 
 
                 # Perform the switch of view models by updating the bound
                 # observable.

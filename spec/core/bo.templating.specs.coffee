@@ -3,11 +3,11 @@ describe 'templating', ->
     describe 'when using built-in template binding handler with anonymous template', ->
         beforeEach ->
             @setHtmlFixture """
-                <div data-bind="template: {}">My Anonymous Template Text</div>
+                <div id="templated" data-bind="template: {}">My Anonymous Template Text</div>
             """
 
-            @applyBindingsToHtmlFixture {}  
-            @wrapper = @fixture.find("div")  
+            @applyBindingsToFixture {}  
+            @wrapper = document.getElementById 'templated'
 
         it 'should render the anonymous template', ->
             expect(@wrapper).toHaveText 'My Anonymous Template Text'  
@@ -18,11 +18,11 @@ describe 'templating', ->
                 bo.templating.set 'myNamedTemplate', 'A Cool Template'
 
                 @setHtmlFixture """
-                    <div data-bind="template: 'myNamedTemplate'"></div>
+                    <div id="templated" data-bind="template: 'myNamedTemplate'"></div>
                 """
 
-                @applyBindingsToHtmlFixture {}  
-                @wrapper = @fixture.find("div")  
+                @applyBindingsToFixture {}  
+                @wrapper = document.getElementById 'templated' 
 
             it 'should render template', ->
                 expect(@wrapper).toHaveText 'A Cool Template'   
@@ -33,11 +33,11 @@ describe 'templating', ->
                 bo.templating.set 'myNamedTemplate', 'A Cool Template 2'
 
                 @setHtmlFixture """
-                    <div data-bind="template: 'myNamedTemplate'"></div>
+                    <div id="templated" data-bind="template: 'myNamedTemplate'"></div>
                 """
 
-                @applyBindingsToHtmlFixture {}  
-                @wrapper = @fixture.find("div")  
+                @applyBindingsToFixture {}  
+                @wrapper = document.getElementById 'templated'
 
             it 'should render the last template added', ->
                 expect(@wrapper).toHaveText 'A Cool Template 2'      
@@ -48,11 +48,11 @@ describe 'templating', ->
                 bo.templating.set 'myNamedTemplate', @template
                 
                 @setHtmlFixture """
-                    <div data-bind="template: 'myNamedTemplate'"></div>
+                    <div id="templated" data-bind="template: 'myNamedTemplate'"></div>
                 """
 
-                @applyBindingsToHtmlFixture {}  
-                @wrapper = @fixture.find("div")  
+                @applyBindingsToFixture {}
+                @wrapper = document.getElementById 'templated'
 
             it 'should render the template', ->
                 expect(@wrapper).toHaveText @template()
@@ -87,9 +87,9 @@ describe 'templating', ->
 
                 @ajaxSpy = @spy $, 'ajax'
 
-                @applyBindingsToHtmlFixture {}  
-                @wrapperOne = @fixture.find "#one"
-                @wrapperTwo = @fixture.find "#two"
+                @applyBindingsToFixture {}  
+                @wrapperOne = document.getElementById "one"
+                @wrapperTwo = document.getElementById "two"
 
             it 'should immediately render the loading template (bo.templating.loadingTemplate)', ->
                 expect(@wrapperOne).toHaveHtml bo.templating.loadingTemplate

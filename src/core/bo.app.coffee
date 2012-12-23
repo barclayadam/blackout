@@ -21,7 +21,3 @@ koBindingHandlers.app =
         app.start()
  
         { controlsDescendantBindings: true }
-
-# TODO: Remove jQuery dependency
-$(document).ready ->
-    ko.applyBindings {}

@@ -48,6 +48,14 @@
         #= ui/bo.ui.uiaction.coffee
         #= ui/bo.ui.partBindingHandler.coffee
         #= ui/bo.ui.regionManager.coffee
+
+        # Once everything has been loaded we bootstrap, which simply involved attempting
+        # to bind the current document, which will find any app binding handler definitions
+        # which kicks off the 'app' semantics of a Blackout application.
+
+        # TODO: Remove jQuery dependency
+        $(document).ready ->
+            ko.applyBindings {}
     )
 
 )(window, document, window["jQuery"], window["ko"])

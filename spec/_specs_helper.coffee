@@ -9,18 +9,14 @@ beforeEach ->
     window.sessionStorage.clear()
     window.localStorage.clear()
     
-    @fixture = $('<div id="fixture" />').appendTo('body')
-
     @setHtmlFixture = (html) =>
-        @fixture.empty()
-        $(html).appendTo(@fixture)
+        setFixtures html
 
-    @applyBindingsToHtmlFixture = (viewModel) =>
-        ko.applyBindings viewModel, @fixture[0]
+    @applyBindingsToFixture = (viewModel) =>
+        ko.applyBindings viewModel, document.getElementById 'jasmine-fixture'
 
     @respondWithTemplate = (path, body) ->
         @server.respondWith "GET", path, [200, { "Content-Type": "text/html" }, body]
 
 afterEach ->    
     window.sinonSandbox.restore()
-    $('#fixture').remove()

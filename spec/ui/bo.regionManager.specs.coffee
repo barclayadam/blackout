@@ -10,7 +10,7 @@ describe 'region manager', ->
             """
 
             @applyBindingsFunc = =>
-                @applyBindingsToHtmlFixture()
+                @applyBindingsToFixture()
 
         it 'should throw an exception detailing incorrect usage', ->
             expect(@applyBindingsFunc).toThrow 'A region binding handler / tag must be a child of a regionManager'
@@ -23,28 +23,26 @@ describe 'region manager', ->
             # body, but it is not a requirement.
             @setHtmlFixture """
                 <div id="body" data-bind="regionManager: regionManager">
-                    <header>This is the header</header>
+                    <header id="header">This is the header</header>
 
                     <region id="my-main-region" class="region"></region>
 
-                    <footer>This is the footer</footer>
+                    <footer id="footer">This is the footer</footer>
                 </div>
             """
 
-            @applyBindingsToHtmlFixture 
+            @applyBindingsToFixture 
                 regionManager: @regionManager
 
-            @wrapper = @fixture.find("div")
-
         it 'should not affect any contents of element that is not a region', ->
-            expect(@wrapper.find("header")).toHaveText "This is the header"
-            expect(@wrapper.find("footer")).toHaveText "This is the footer"
+            expect(document.getElementById("header")).toHaveText "This is the header"
+            expect(document.getElementById("footer")).toHaveText "This is the footer"
 
         it 'should replace region with a div tag', ->
-            expect(@wrapper.find("div.region")).toExist()
+            expect(document.getElementById("my-main-region").tagName.toLowerCase()).toEqual "div"
 
         it 'should place no content in region if no view model has been set ', ->
-            expect(@wrapper.find("div.region")).toBeEmpty()
+            expect(document.getElementById("my-main-region")).toBeEmpty()
 
         describe 'with view model set', ->
             beforeEach ->
@@ -58,7 +56,7 @@ describe 'region manager', ->
                 @regionManager.showSingle @viewModel
 
             it 'should render the view model and its associated template in single region', ->
-                expect(@wrapper.find("div.region")).toHaveText 'This is the template'
+                expect(document.getElementById("my-main-region")).toHaveText 'This is the template'
 
             it 'should use part binding handler to handle rendering', ->
                 expect(@partBindingHandlerSpy).toHaveBeenCalled()
@@ -67,35 +65,31 @@ describe 'region manager', ->
         beforeEach ->
             @regionManager = new bo.RegionManager()
 
-            # Typically, a region manager would be the root `app` on the
-            # body, but it is not a requirement.
             @setHtmlFixture """
                 <div id="body" data-bind="regionManager: regionManager">
-                    <header>This is the header</header>
+                    <header id="header">This is the header</header>
 
                     <region id="main" data-default="true"></region>
                     <region id="help"></region>
 
-                    <footer>This is the footer</footer>
+                    <footer id="footer">This is the footer</footer>
                 </div>
             """
 
-            @applyBindingsToHtmlFixture 
+            @applyBindingsToFixture 
                 regionManager: @regionManager
 
-            @wrapper = @fixture.find("div")
-
         it 'should not affect any contents of element that is not a region', ->
-            expect(@wrapper.find("header")).toHaveText "This is the header"
-            expect(@wrapper.find("footer")).toHaveText "This is the footer"
+            expect(document.getElementById("header")).toHaveText "This is the header"
+            expect(document.getElementById("footer")).toHaveText "This is the footer"
 
         it 'should replace all regions with div tags', ->
-            expect(@wrapper.find("div#main")).toExist()
-            expect(@wrapper.find("div#help")).toExist()
+            expect(document.getElementById("main")).toExist()
+            expect(document.getElementById("help")).toExist()
 
         it 'should place no content in regions if no view model has been set ', ->
-            expect(@wrapper.find("div#main")).toBeEmpty()
-            expect(@wrapper.find("div#help")).toBeEmpty()
+            expect(document.getElementById("main")).toBeEmpty()
+            expect(document.getElementById("help")).toBeEmpty()
 
         describe 'show', ->
             beforeEach ->
@@ -107,7 +101,7 @@ describe 'region manager', ->
                 @regionManager.showSingle @viewModel
 
             it 'should set the view model to the default region', ->
-                expect(@wrapper.find("div#main")).toHaveText 'This is the main template'
+                expect(document.getElementById("main")).toHaveText 'This is the main template'
 
         describe 'show', ->
             describe 'with one view model set', ->
@@ -121,10 +115,10 @@ describe 'region manager', ->
                         'main': @mainViewModel
 
                 it 'should render the view model and its associated template in set region', ->
-                    expect(@wrapper.find("div#main")).toHaveText 'This is the main template'
+                    expect(document.getElementById("main")).toHaveText 'This is the main template'
 
                 it 'should leave the unset region blank', ->
-                    expect(@wrapper.find("div#help")).toBeEmpty()
+                    expect(document.getElementById("help")).toBeEmpty()
 
             describe 'with all view models set', ->
                 beforeEach ->
@@ -142,8 +136,8 @@ describe 'region manager', ->
                         'help': @helpViewModel
 
                 it 'should render the view models and associated templates', ->
-                    expect(@wrapper.find("div#main")).toHaveText 'This is the main template'
-                    expect(@wrapper.find("div#help")).toHaveText 'This is the help template'
+                    expect(document.getElementById("main")).toHaveText 'This is the main template'
+                    expect(document.getElementById("help")).toHaveText 'This is the help template'
 
                 describe 'show called again with only a single region', ->
                     beforeEach ->
@@ -156,10 +150,10 @@ describe 'region manager', ->
                             'main': @newMainViewModel
 
                     it 'should re-render the changed region', ->    
-                        expect(@wrapper.find("div#main")).toHaveText 'This is the new main template'
+                        expect(document.getElementById("main")).toHaveText 'This is the new main template'
 
                     it 'should not change the region not passed in', ->    
-                        expect(@wrapper.find("div#help")).toHaveText 'This is the help template'
+                        expect(document.getElementById("help")).toHaveText 'This is the help template'
 
             describe 'with unknown region specified in show', ->
                 beforeEach ->
