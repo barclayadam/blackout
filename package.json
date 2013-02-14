@@ -1,8 +1,12 @@
 {
   "name": "blackout",
+
   "description": "Lightning-fast web development with knockout.js at its core.",
+
   "version": "2.0.0",
+
   "homepage": "https://github.com/barclayadam/blackout",
+
   "keywords": [
     "knockout",
     "plugin",
@@ -12,24 +16,35 @@
     "spa",
     "spi"
   ],
+
   "licenses": [
     {
       "type": "MIT",
       "url": "https://github.com/barclayadam/blackout/blob/master/license.txt"
     }
   ],
+
   "author": {
     "name": "Adam Barclay",
     "email": "barclay.adam@gmail.com"
   },
+
   "bugs": {
     "web": "https://github.com/barclayadam/blackout/issues"
   },
+
   "repository": {
     "type": "git",
     "url": "https://github.com/barclayadam/blackout.git"
   },
+
   "github": "https://github.com/barclayadam/blackout",
+  
+  "scripts": {
+    "start": "grunt",
+    "test": "grunt test"
+  },
+
   "devDependencies": {
     "grunt": "~0.4.0rc8",
     "rigger": "0.3.20",
