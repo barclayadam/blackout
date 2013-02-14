@@ -1,1 +1,1 @@
-./node_modules/.bin/grunt serve
+grunt serve
