@@ -10,6 +10,10 @@ beforeEach(function () {
     window.sessionStorage.clear();
     window.localStorage.clear();
 
+    this.getFixtureTextContent = function() {
+        return document.getElementById("fixture").innerText || document.getElementById("fixture").textContent;
+    }
+
     this.setHtmlFixture = function (html) {
         setFixtures(html);
     };

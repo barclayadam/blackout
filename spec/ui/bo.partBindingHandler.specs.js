@@ -85,11 +85,11 @@ describe('part binding handler', function () {
                     anObservableProperty: ko.observable(),
 
                     show: this.spy(function () {
-                        _this.showHadContent = document.getElementById("fixture").innerText.length > 0;
+                        _this.showHadContent = _this.getFixtureTextContent().length > 0;
                     }),
 
                     afterShow: this.spy(function () {
-                        _this.afterShowHadContent = document.getElementById("fixture").innerText.length > 0;
+                        _this.afterShowHadContent = _this.getFixtureTextContent().length > 0;
                     })
                 };
 
@@ -125,7 +125,7 @@ describe('part binding handler', function () {
                     }),
 
                     afterShow: this.spy(function () {
-                        _this.afterShowHadContent = document.getElementById("fixture").innerText.length > 0;
+                        _this.afterShowHadContent = _this.getFixtureTextContent().length > 0;
                     }),
 
                     hide: this.spy()
