@@ -48,7 +48,7 @@ describe('UIAction', function () {
         it('should return undefined on execution', function () {
             expect(this.returnValue).toBeUndefined();
         });
-    );
+    })
 
     describe('basic action with enabled observable passed', function () {
         beforeEach(function () {

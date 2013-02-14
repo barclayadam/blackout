@@ -46,7 +46,7 @@ bo.UiAction = function(funcOrOptions) {
 
         ret = action.apply(this, arguments);
 
-        if (ret.then) { // TODO: Better way of determining a promise?
+        if (ret && ret.then) { // TODO: Better way of determining a promise?
           ret.then(function() {
             executing(false);
           });
