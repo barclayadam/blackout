@@ -111,7 +111,7 @@ describe('location', function () {
         it('should have populated uri observable from current URL', function () {
             expect(bo.location.uri).toBeObservable();
             expect(bo.location.uri().toString()).toContain('http://localhost');
-            expect(bo.location.uri().toString()).toContain('spec/runner.html');
+            expect(bo.location.uri().toString()).toContain('runner.html');
         });
 
         it('should have populated host property from current URL', function () {
@@ -125,7 +125,7 @@ describe('location', function () {
 
         it('should have populated path observable from current URL', function () {
             expect(bo.location.path).toBeObservable();
-            expect(bo.location.path()).toEqual('/spec/runner.html');
+            expect(bo.location.path()).toContain('runner.html');
         });
 
         it('should have populated variables observable from current URL', function () {
